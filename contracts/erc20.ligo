@@ -6,13 +6,16 @@ type action is
 | Approve of (address * balanceAmount)
 | BalanceOf of (address)
 | TotalSupply of (unit)
+| Mint of (balanceAmount)
+| Burn of (balanceAmount)
 
 type account is record
-  balance   : balanceAmount;
+  balance: balanceAmount;
   allowances: map(address, balanceAmount);
 end
 
 type store is record
+  owner: address;
   totalSupply: balanceAmount;
   accounts: big_map(address, account);
 end
@@ -45,9 +48,13 @@ function allowance (const addressOwner: address; const addressSpender: address; 
 
 function isAllowed (const addressOwner: address; const addressSpender: address; const value : balanceAmount; var store : store) : bool is
   block {
-    const storeAccountOwner: account = getAccount(addressOwner, store.accounts);
-    var allowedAmount: balanceAmount :=  getAllowance(addressSpender, storeAccountOwner.allowances);
-    var isAllowed: bool := allowedAmount >= value;
+    var isAllowed: bool := False;
+    if sender =/= addressOwner then block {
+      const storeAccountOwner: account = getAccount(addressOwner, store.accounts);
+      var allowedAmount: balanceAmount :=  getAllowance(addressSpender, storeAccountOwner.allowances);
+      isAllowed := allowedAmount >= value;
+    }
+    else isAllowed := True;
   } with isAllowed;
 
 function approve (const addressSpender: address; const value: balanceAmount; var store : store) : return is
@@ -102,6 +109,54 @@ function transfer (const addressFrom: address; const addressDestination: address
     }
   } with (emptyOps, store);
 
+function mint (const value : balanceAmount ; var store : store) : return is
+ block {
+  // Fail if is not the owner
+  if sender =/= store.owner then failwith("You must be the owner of the contract to mint tokens");
+  else block {
+    var ownerAccount: account := record 
+        balance = 0n;
+        allowances = (map end : map(address, balanceAmount));
+    end;
+    case store.accounts[store.owner] of
+    | None -> skip
+    | Some(n) -> ownerAccount := n
+    end;
+
+    // Update the owner balance and totalSupply
+    ownerAccount.balance := ownerAccount.balance + value;
+    store.accounts[store.owner] := ownerAccount;
+    store.totalSupply := store.totalSupply + value;
+  }
+ } with (emptyOps, store)
+
+function burn (const value : balanceAmount ; var store : store) : return is
+ block {
+  // Fail if is not the owner
+  if sender =/= store.owner then failwith("You must be the owner of the contract to burn tokens");
+  else block {
+    var ownerAccount: account := record 
+        balance = 0n;
+        allowances = (map end : map(address, balanceAmount));
+    end;
+    case store.accounts[store.owner] of
+    | None -> skip
+    | Some(n) -> ownerAccount := n
+    end;
+
+    // Check that the owner can spend that much
+    if value > ownerAccount.balance 
+    then failwith ("Owner balance is too low");
+    else skip;
+
+    // Update balances and totalSupply
+    ownerAccount.balance := abs(ownerAccount.balance - value);
+    store.accounts[store.owner] := ownerAccount;
+    store.totalSupply := abs(store.totalSupply - value);
+  }
+ } with (emptyOps, store)
+
+
 function balanceOf (const addressOwner: address; var store : store) : return is
   block {
     const addressOwnerAccount: account = getAccount(addressOwner, store.accounts);
@@ -123,4 +178,6 @@ function main (const action : action ; const store : store) : return is
     | Approve(n) -> approve(n.0, n.1, store)
     | BalanceOf(n) -> balanceOf(n, store)
     | TotalSupply(n) -> totalSupply(store)
+    | Mint(n) -> mint(n, store)
+    | Burn(n) -> burn(n, store)
     end;
