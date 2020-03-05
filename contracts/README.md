@@ -47,6 +47,24 @@ ligo dry-run erc20.ligo --format=json --syntax=pascaligo --sender=tz1MbY6h2rAVGE
 ligo dry-run erc20.ligo --format=json --syntax=pascaligo --sender=tz1MbY6h2rAVGECbMj987EyrhBrqt6eoX9Q9 main 'Transfer(("tz1MZ4GPjAA2gZxKTozJt8Cu5Gvu6WU2ikZ4": address), ("tz1MbY6h2rAVGECbMj987EyrhBrqt6eoX9Q9": address), 10n)' 'record owner = "tz1MbY6h2rAVGECbMj987EyrhBrqt6eoX9Q9"; accounts = big_map("tz1MZ4GPjAA2gZxKTozJt8Cu5Gvu6WU2ikZ4" : address) -> record balance = 10n; allowances =  map("tz1MbY6h2rAVGECbMj987EyrhBrqt6eoX9Q9" : address) -> 10n; end; end; end; totalSupply = 10n; end'
 ```
 
+Method Mint:
+```
+ligo dry-run erc20.ligo --format=json --syntax=pascaligo --sender=tz1MbY6h2rAVGECbMj987EyrhBrqt6eoX9Q9 main 'Mint(10n)' 'record owner = "tz1MbY6h2rAVGECbMj987EyrhBrqt6eoX9Q9"; accounts = big_map("tz1MZ4GPjAA2gZxKTozJt8Cu5Gvu6WU2ikZ4" : address) -> record balance = 10n; allowances =  map("tz1MZ4GPjAA2gZxKTozJt8Cu5Gvu6WU2ikZ4" : address) -> 10n; end; end; end; totalSupply = 10n; end'
+```
+
+```
+ligo dry-run erc20.ligo --format=json --syntax=pascaligo --sender=tz1MbY6h2rAVGECbMj987EyrhBrqt6eoX9Q9 main 'Mint(10n)' 'record owner = sender; accounts = big_map("tz1MZ4GPjAA2gZxKTozJt8Cu5Gvu6WU2ikZ4" : address) -> record balance = 10n; allowances =  map("tz1MZ4GPjAA2gZxKTozJt8Cu5Gvu6WU2ikZ4" : address) -> 10n; end; end; end; totalSupply = 10n; end'
+```
+
+Method Burn:
+```
+ligo dry-run erc20.ligo --format=json --syntax=pascaligo --sender=tz1MbY6h2rAVGECbMj987EyrhBrqt6eoX9Q9 main 'Burn(20n)' 'record owner = "tz1MbY6h2rAVGECbMj987EyrhBrqt6eoX9Q9"; accounts = big_map("tz1MbY6h2rAVGECbMj987EyrhBrqt6eoX9Q9" : address) -> record balance = 20n; allowances =  map("tz1MZ4GPjAA2gZxKTozJt8Cu5Gvu6WU2ikZ4" : address) -> 10n; end; end; end; totalSupply = 20n; end'
+```
+
+```
+ligo dry-run erc20.ligo --format=json --syntax=pascaligo --sender=tz1MbY6h2rAVGECbMj987EyrhBrqt6eoX9Q9 main 'Burn(20n)' 'record owner = "tz1MbY6h2rAVGECbMj987EyrhBrqt6eoX9Q9"; accounts = big_map("tz1MbY6h2rAVGECbMj987EyrhBrqt6eoX9Q9" : address) -> record balance = 10n; allowances =  map("tz1MZ4GPjAA2gZxKTozJt8Cu5Gvu6WU2ikZ4" : address) -> 10n; end; end; end; totalSupply = 10n; end'
+```
+
 #### For the full-pool.ligo file:
 
 ##### Compilation...
