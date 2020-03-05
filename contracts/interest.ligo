@@ -1,10 +1,16 @@
 
-#include "conversions.ligo"
+#include "./conversions.ligo"
 
-function main(const p: unit; const s: unit): (list(operation) * tez) is
+const emptyOps: list(operation) = list end;
+
+type store is record  
+  interest: tez;   
+end
+
+type return is list(operation) * store
+
+function main(const action: unit; const store: store): return is
   block {
-    const noOperations: list(operation) = nil;
-
     const anualBlocks: int = 500000;
     const anualInterest: int = 5;
 
@@ -17,9 +23,9 @@ function main(const p: unit; const s: unit): (list(operation) * tez) is
     const accruedTezAsInt: int = (accruedInterest * anualInterest * depositAsInt)/10000;
     const newDepositAsInt: int = depositAsInt + accruedTezAsInt;
 
-    const res: tez = natToMutez(abs(newDepositAsInt));
+    store.interest := natToMutez(abs(newDepositAsInt));
 
-  } with(noOperations, res)
+  } with(emptyOps, store)
   
 
   
