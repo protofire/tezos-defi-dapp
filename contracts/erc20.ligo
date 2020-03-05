@@ -17,7 +17,7 @@ type store is record
   accounts: big_map(address, account);
 end
 
-type return is list(operation) * store
+type return is list(operation) * store;
 
 const emptyOps : list(operation) = list end;
 
