@@ -149,6 +149,11 @@ function burn (const value : balanceAmount ; var store : store) : return is
     then failwith ("Owner balance is too low");
     else skip;
 
+    // Check totalSupply
+    if value > store.totalSupply 
+    then failwith ("TotalSupply is too low");
+    else skip;
+
     // Update balances and totalSupply
     ownerAccount.balance := abs(ownerAccount.balance - value);
     store.accounts[store.owner] := ownerAccount;
