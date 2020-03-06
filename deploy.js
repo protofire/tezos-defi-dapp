@@ -47,6 +47,7 @@ const deployPoolContract = async (ownerAccount) => {
         storage: {
             owner: ownerAccount,
             interest: 0,
+            exchangeRate: 2,
             deposits: new MichelsonMap(),
             liquidity: 0,
         },
