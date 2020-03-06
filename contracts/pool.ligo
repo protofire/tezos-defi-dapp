@@ -3,7 +3,7 @@
 type action is
 | Deposit of (unit)
 | Withdraw of (unit)
-| UpdateExchangeRate of (nat)
+| UpdateExchangeRate of (int)
 
 type deposit_info is record
   tezAmount: tez;
@@ -12,7 +12,7 @@ end
 
 type store is record  
   owner: address;
-  exchangeRate: nat;
+  exchangeRate: int;
   interest: tez;
   deposits: big_map(address, deposit_info);
   liquidity: tez;
@@ -30,16 +30,21 @@ function getSender(const mock: bool): address is
       else skip
   } with(senderAddress)
 
-function calculateInterest(const elapsedBlocks: int): tez is
+function calculateInterest(const elapsedBlocks: int; const deposit: tez; var store: store): tez is
   block {
-    const interest: tez = 0tz;
+    const anualBlocks: int = 522119;
+    
+    const accruedInterest: int = (elapsedBlocks * 100) / anualBlocks;
+    const depositAsNat: nat = tezToNatWithMutez(deposit);
+    const depositAsInt: int = natToInt(depositAsNat);
+    const accruedTezAsInt: int = (accruedInterest * store.exchangeRate * depositAsInt)/10000;
+    const newDepositAsInt: int = depositAsInt + accruedTezAsInt;
 
-    if(elapsedBlocks >= 100)
-       then interest := 1tz;
-       else skip
+    const interest: tez = natToMutez(abs(newDepositAsInt));
+
   } with(interest)
 
-function updateExchangeRate(const value : nat ; var store : store) : return is
+function updateExchangeRate(const value : int ; var store : store) : return is
  block {
   // Fail if is not the owner
   if (sender =/= store.owner) 
@@ -64,7 +69,7 @@ function depositImp(var store: store): return is
           | Some(di) -> 
             block {                 
               const elapsedBlocks:int = now - di.blockTimestamp;
-              di.tezAmount := di.tezAmount + calculateInterest(elapsedBlocks) + amount;
+              di.tezAmount := di.tezAmount + calculateInterest(elapsedBlocks, di.tezAmount, store) + amount;
               di.blockTimestamp := now;
 
               depositsMap[senderAddress] := di;            
@@ -95,7 +100,7 @@ function withdrawImp(var store: store): return is
         
     var di: deposit_info := get_force(senderAddress, store.deposits);
     const elapsedBlocks:int = now - di.blockTimestamp;
-    var withdrawAmount: tez := di.tezAmount + calculateInterest(elapsedBlocks);
+    var withdrawAmount: tez := di.tezAmount + calculateInterest(elapsedBlocks, di.tezAmount, store);
 
     if withdrawAmount > store.liquidity
       then failwith("No tez to withdraw!");

@@ -15,8 +15,9 @@ function main(const action: unit; const store: store): return is
   block {
     // TODO: check anual blocks from tezos
     const anualBlocks: int = 500000;
+
     // TODO: add an entry point, with some security(owner), start with 2 percent
-    const anualInterest: int = 5;
+    const anualInterest: int = 5; //exchangeRate!!
 
     // TODO: diferencia entre el deposito y el withdraw
     const elapsedBlocks: int = 20000;
