@@ -1,0 +1,24 @@
+{
+  "mnemonic": [
+    "soldier",
+    "swap",
+    "garden",
+    "quick",
+    "raw",
+    "lazy",
+    "borrow",
+    "cake",
+    "marine",
+    "donkey",
+    "pet",
+    "heart",
+    "truck",
+    "year",
+    "truly"
+  ],
+  "secret": "2845fcccdca28f4d8f25f78ecc95d79e5660fba3",
+  "amount": "16249597947",
+  "pkh": "tz1iVJzEmngqsmSzyzLTEoGagdgcgrHWDTsv",
+  "password": "LpmdyvCm6S",
+  "email": "kgcyufoa.dzyqxvhn@tezos.example.org"
+}

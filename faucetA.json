@@ -1,0 +1,24 @@
+{
+  "mnemonic": [
+    "cycle",
+    "shove",
+    "lizard",
+    "grace",
+    "motion",
+    "skirt",
+    "actress",
+    "wave",
+    "stable",
+    "lift",
+    "august",
+    "twist",
+    "man",
+    "comfort",
+    "prosper"
+  ],
+  "secret": "8c5e7722c217ba340056526443f9faca185a13f8",
+  "amount": "11355350146",
+  "pkh": "tz1Mwga4BgZWSP9xZmm8ZBHfRRjnDVGTzat6",
+  "password": "gFGFVcwxTe",
+  "email": "qepcimdj.bqvrxfxx@tezos.example.org"
+}

@@ -1,0 +1,14 @@
+{
+  "name": "tezos-defi-dapp",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@taquito/taquito": "^6.1.0-beta.0",
+    "typescript": "~3.7.2"
+  },
+  "scripts": {
+    "build": "node build.js",
+    "deploy": "node deploy.js",
+    "test:latest": "node test/test.spec.js"
+  }
+}
