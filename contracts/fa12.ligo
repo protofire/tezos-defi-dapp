@@ -69,13 +69,13 @@ function approve (const addressSpender: address; const value: balanceAmount; var
     }
   } with (emptyOps, store);
 
-function transfer (const addressFrom: address; const addressDestination: address; const value: balanceAmount; var store : store) : return is
+function transfer (const addressFrom: address; const addressTo: address; const value: balanceAmount; var store : store) : return is
   block {
     // If accountFrom = accountDestination transfer is not necessary
-    if addressFrom = addressDestination then skip;
+    if addressFrom = addressTo then skip;
     else block {
       // Check if accountFrom allowed to spend value
-      case isAllowed(addressFrom, addressDestination, value, store) of 
+      case isAllowed(addressFrom, addressTo, value, store) of 
       | False -> failwith ("Sender not allowed to spend token")
       | True -> skip
       end;
@@ -90,18 +90,18 @@ function transfer (const addressFrom: address; const addressDestination: address
       addressFromAccount.balance := abs(addressFromAccount.balance - value);  // ensure non negative
       store.accounts[addressFrom] := addressFromAccount;
 
-      const addressDestinationAccount: account = getAccount(addressDestination, store.accounts);
-      addressDestinationAccount.balance := abs(addressDestinationAccount.balance - value);  // ensure non negative
-      store.accounts[addressDestination] := addressDestinationAccount;
+      const addressToAccount: account = getAccount(addressTo, store.accounts);
+      addressToAccount.balance := abs(addressToAccount.balance - value);  // ensure non negative
+      store.accounts[addressTo] := addressToAccount;
 
       // Update allowances
       case store.accounts[addressFrom] of
         | None -> skip
         | Some(account) -> block {
-            case account.allowances[addressDestination] of
+            case account.allowances[addressTo] of
               | None -> skip
               | Some(allowanceAmount) -> block {
-                  account.allowances[addressDestination] :=  abs(allowanceAmount - value);
+                  account.allowances[addressTo] :=  abs(allowanceAmount - value);
                   store.accounts[addressFrom] := record balance = addressFromAccount.balance; allowances = account.allowances; end;
                 }
             end;
