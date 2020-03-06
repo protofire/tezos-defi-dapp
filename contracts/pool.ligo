@@ -1,5 +1,6 @@
-// variant defining pseudo multi-entrypoint actions
-type entry_action is
+#include "./conversions.ligo"
+
+type action is
 | Deposit
 | Withdraw
 
@@ -8,12 +9,16 @@ type deposit_info is record
   blockTimestamp: timestamp;
 end
 
-type finance_storage is record  
+type store is record  
+  owner: address;
+  interest: tez;
   deposits: big_map(address, deposit_info);
-  liquidity: tez;   
+  liquidity: tez;
 end
 
-const noOperations: list(operation) = nil;
+const noOperations: list(operation) = list end;
+
+type return is list(operation) * store
 
 function getSender(const mock: bool): address is
   block {
@@ -32,7 +37,7 @@ function calculateInterest(const elapsedBlocks: int): tez is
        else skip
   } with(interest)
 
-function depositImp(var finance_storage: finance_storage): (list(operation) * finance_storage) is
+function depositImp(var store: store): return is
   block {
     if amount = 0mutez
       then failwith("No tez transferred!");
@@ -40,7 +45,7 @@ function depositImp(var finance_storage: finance_storage): (list(operation) * fi
         const senderAddress: address = getSender(False);
 
         //setting the deposit to the sender
-        var depositsMap: big_map(address, deposit_info) := finance_storage.deposits;    
+        var depositsMap: big_map(address, deposit_info) := store.deposits;    
         var senderDepositInfo: option(deposit_info) := depositsMap[senderAddress];            
 
         case senderDepositInfo of          
@@ -51,12 +56,12 @@ function depositImp(var finance_storage: finance_storage): (list(operation) * fi
               di.blockTimestamp := now;
 
               depositsMap[senderAddress] := di;            
-              finance_storage.deposits := depositsMap;              
-              finance_storage.liquidity := finance_storage.liquidity + amount;  
+              store.deposits := depositsMap;              
+              store.liquidity := store.liquidity + amount;  
             }
           | None -> 
             block {
-              finance_storage.liquidity := finance_storage.liquidity + amount;  
+              store.liquidity := store.liquidity + amount;  
 
               const deposit : deposit_info = record
                 tezAmount = amount;
@@ -64,31 +69,31 @@ function depositImp(var finance_storage: finance_storage): (list(operation) * fi
               end;
 
               depositsMap[sender] := deposit;
-              finance_storage.deposits := depositsMap;
+              store.deposits := depositsMap;
             }
         end;     
       }
-  } with(noOperations, finance_storage)
+  } with(noOperations, store)
 
-function withdrawImp(var finance_storage: finance_storage): (list(operation) * finance_storage) is
+function withdrawImp(var store: store): return is
   block {    
     const senderAddress: address = getSender(False);
 
     var operations: list(operation) := nil;
         
-    var di: deposit_info := get_force(senderAddress, finance_storage.deposits);
+    var di: deposit_info := get_force(senderAddress, store.deposits);
     const elapsedBlocks:int = now - di.blockTimestamp;
     var withdrawAmount: tez := di.tezAmount + calculateInterest(elapsedBlocks);
 
-    if withdrawAmount > finance_storage.liquidity
+    if withdrawAmount > store.liquidity
       then failwith("No tez to withdraw!");
       else block {
         // update storage
-        var depositsMap: big_map(address, deposit_info) := finance_storage.deposits;                
+        var depositsMap: big_map(address, deposit_info) := store.deposits;                
         remove senderAddress from map depositsMap;
-        finance_storage.deposits := depositsMap;  
+        store.deposits := depositsMap;  
 
-        finance_storage.liquidity := finance_storage.liquidity - withdrawAmount;                              
+        store.liquidity := store.liquidity - withdrawAmount;                              
 
         // Create the operation to transfer tez to sender
         const receiver: contract(unit) = get_contract(senderAddress);
@@ -97,13 +102,13 @@ function withdrawImp(var finance_storage: finance_storage): (list(operation) * f
            payoutOperation 
         end;          
       }
-  } with(operations, finance_storage)
+  } with(operations, store)
 
 // Entrypoint
-function main(const action: entry_action; var finance_storage: finance_storage): (list(operation) * finance_storage) is
+function main(const action: action; var store: store): return is
   block {
     skip
   } with case action of
-    | Deposit(param) -> depositImp(finance_storage)
-    | Withdraw(param) -> withdrawImp(finance_storage)
+    | Deposit(param) -> depositImp(store)
+    | Withdraw(param) -> withdrawImp(store)
     end;  

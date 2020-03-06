@@ -44,6 +44,7 @@ function allowance (const addressOwner: address; const addressSpender: address; 
   block {
     const storeAccountOwner: account = getAccount(addressOwner, store.accounts);
     var allowed: balanceAmount :=  getAllowance(addressSpender, storeAccountOwner.allowances); 
+    // TODO add transaction
   } with (emptyOps, store);
 
 function isAllowed (const addressOwner: address; const addressSpender: address; const value : balanceAmount; var store : store) : bool is
@@ -166,11 +167,13 @@ function balanceOf (const addressOwner: address; var store : store) : return is
   block {
     const addressOwnerAccount: account = getAccount(addressOwner, store.accounts);
     const addressOwnerBalance: balanceAmount = addressOwnerAccount.balance;
+    //TODO add transaction
   } with (emptyOps, store);
 
 function totalSupply (var store : store) : return is
   block {
     var totalSupply: balanceAmount := store.totalSupply;
+    // TODO add transaction
   } with (emptyOps, store);
 
 function main (const action : action ; const store : store) : return is 

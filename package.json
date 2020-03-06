@@ -8,7 +8,6 @@
   },
   "scripts": {
     "build": "node build.js",
-    "deploy": "node deploy.js",
-    "test:latest": "node test/test.spec.js"
+    "deploy": "node deploy.js"
   }
 }

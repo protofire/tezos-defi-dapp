@@ -12,7 +12,7 @@ Tezos.setProvider({ rpc: providerUrl });
     
     const ownerAccount = await Tezos.signer.publicKeyHash();
     const op = await Tezos.contract.originate({
-        code: JSON.parse(fs.readFileSync("./build/erc20_factory.json").toString()),
+        code: JSON.parse(fs.readFileSync("./build/fa12_factory.json").toString()),
         storage: {
             owner: ownerAccount,
             totalSupply: "1000000000",
@@ -31,8 +31,8 @@ Tezos.setProvider({ rpc: providerUrl });
         network: providerUrl
     }
 
-    fs.writeFileSync('./deployed/erc20_latest.json', JSON.stringify(detail))
-    console.log('Contract erc20 deployed at:', contract.address)
+    fs.writeFileSync('./deployed/fa12_latest.json', JSON.stringify(detail))
+    console.log('Contract fa12 deployed at:', contract.address)
 })().catch(e => {
     console.error(e)
 });
