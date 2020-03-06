@@ -1,8 +1,9 @@
 #include "./conversions.ligo"
 
 type action is
-| Deposit
-| Withdraw
+| Deposit of (unit)
+| Withdraw of (unit)
+| UpdateExchangeRate of (nat)
 
 type deposit_info is record
   tezAmount: tez;
@@ -11,12 +12,13 @@ end
 
 type store is record  
   owner: address;
+  exchangeRate: nat;
   interest: tez;
   deposits: big_map(address, deposit_info);
   liquidity: tez;
 end
 
-const noOperations: list(operation) = list end;
+const emptyOps: list(operation) = list end;
 
 type return is list(operation) * store
 
@@ -36,6 +38,16 @@ function calculateInterest(const elapsedBlocks: int): tez is
        then interest := 1tz;
        else skip
   } with(interest)
+
+function updateExchangeRate(const value : nat ; var store : store) : return is
+ block {
+  // Fail if is not the owner
+  if (sender =/= store.owner) 
+    then failwith("You must be the owner of the contract to update the exchange rate");
+    else block {
+      store.exchangeRate := value;
+    }
+ } with (emptyOps, store)
 
 function depositImp(var store: store): return is
   block {
@@ -73,7 +85,7 @@ function depositImp(var store: store): return is
             }
         end;     
       }
-  } with(noOperations, store)
+  } with(emptyOps, store)
 
 function withdrawImp(var store: store): return is
   block {    
@@ -105,10 +117,11 @@ function withdrawImp(var store: store): return is
   } with(operations, store)
 
 // Entrypoint
-function main(const action: action; var store: store): return is
+function main (const action: action; var store: store): return is
   block {
     skip
   } with case action of
-    | Deposit(param) -> depositImp(store)
-    | Withdraw(param) -> withdrawImp(store)
+    | Deposit(n) -> depositImp(store)
+    | Withdraw(n) -> withdrawImp(store)
+    | UpdateExchangeRate(n) -> updateExchangeRate(n, store)
     end;  
