@@ -8,6 +8,7 @@
   },
   "scripts": {
     "build": "node build.js",
-    "deploy": "node deploy.js"
+    "deploy": "node deploy.js",
+    "test": "node 'test/fa12.spec.js'"
   }
 }

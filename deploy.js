@@ -1,20 +1,17 @@
 const { Tezos, MichelsonMap } = require('@taquito/taquito');
+const { InMemorySigner } = require('@taquito/signer');
 const fs = require("fs");
 
-const faucet = JSON.parse(fs.readFileSync('./faucetA.json').toString());
+const faucet = require('./faucetA.json');
 const { email, password, mnemonic, secret } = faucet;
 
 const providerUrl = "https://rpctest.tzbeta.net";
-Tezos.setProvider({ rpc: providerUrl });
+const signer = InMemorySigner.fromFundraiser(email,password, mnemonic.join(' '));
+Tezos.setProvider({ rpc: providerUrl, signer });
 
-const setup = async () => {
-    await Tezos.importKey(email, password, mnemonic.join(" "), secret);
-    const ownerAccount = await Tezos.signer.publicKeyHash();
-    return ownerAccount;
-}
-
-const deployFa12Contract = async (ownerAccount) => {
+const deployFa12Contract = async () => {
     // Deploy fa12 contract
+    const ownerAccount = await Tezos.signer.publicKeyHash();
     const op = await Tezos.contract.originate({
         code: JSON.parse(fs.readFileSync("./build/fa12_factory.json").toString()),
         storage: {
@@ -28,6 +25,7 @@ const deployFa12Contract = async (ownerAccount) => {
             }),
         },
     });
+    await op.confirmation();
     const contract = await op.contract();
 
     const detail = {
@@ -39,9 +37,9 @@ const deployFa12Contract = async (ownerAccount) => {
     console.log('Contract fa12 deployed at:', contract.address);
 }
 
-const deployPoolContract = async (ownerAccount) => {
-
+const deployPoolContract = async () => {
     // Deploy pool contract
+    const ownerAccount = await Tezos.signer.publicKeyHash();
     const op = await Tezos.contract.originate({
         code: JSON.parse(fs.readFileSync("./build/pool_factory.json").toString()),
         storage: {
@@ -52,6 +50,7 @@ const deployPoolContract = async (ownerAccount) => {
             liquidity: 0,
         },
     });
+    await op.confirmation();
     const contract = await op.contract();
 
     const detail = {
@@ -65,11 +64,8 @@ const deployPoolContract = async (ownerAccount) => {
 }
 
 (async () => {
-    const ownerAccount = await setup();
-
-    await deployFa12Contract(ownerAccount);
-
-    await deployPoolContract(ownerAccount);
+    await deployFa12Contract();
+    await deployPoolContract();
 
 })().catch(e => {
     console.error(e)
