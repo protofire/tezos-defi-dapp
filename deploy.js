@@ -1,4 +1,4 @@
-const { Tezos, MichelsonMap } = require('@taquito/taquito');
+const { Tezos, MichelsonMap, UnitValue } = require('@taquito/taquito');
 const { InMemorySigner } = require('@taquito/signer');
 const fs = require("fs");
 
@@ -48,7 +48,6 @@ const deployPoolContract = async () => {
         code: JSON.parse(fs.readFileSync("./build/pool_factory.json").toString()),
         storage: {
             owner: ownerAccount,
-            interest: 0,
             exchangeRate: 2,
             deposits: new MichelsonMap(),
             liquidity: 0,
@@ -57,6 +56,9 @@ const deployPoolContract = async () => {
     await op.confirmation();
     const contract = await op.contract();
 
+    const operationAddLiquidity = await contract.methods.addLiquidity(UnitValue).send({ amount: 10000 });
+    await operationAddLiquidity.confirmation();
+  
     const detail = {
         address: contract.address,
         owner: ownerAccount,
