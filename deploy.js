@@ -16,10 +16,13 @@ const deployFa12Contract = async () => {
         code: JSON.parse(fs.readFileSync("./build/fa12_factory.json").toString()),
         storage: {
             owner: ownerAccount,
-            totalSupply: "1000000000",
+            totalSupply: "1000000000000000000000000",
+            decimals: "18",
+            symbol: "pTez",
+            name: "Pool Tezos coin",
             accounts:  MichelsonMap.fromLiteral({
                 [ownerAccount]: {
-                    balance: "100000000",
+                    balance: "1000000000000000000000000",
                     allowances:  new MichelsonMap(),
                 },
             }),

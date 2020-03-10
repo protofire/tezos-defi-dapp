@@ -16,6 +16,9 @@ end
 
 type store is record
   owner: address;
+  decimals: nat; // Added this property used in the erc20 ethereum specification
+  symbol: string; // Added this property used in the erc20 ethereum specification
+  name: string; // Added this property used in the erc20 ethereum specification
   totalSupply: balanceAmount;
   accounts: big_map(address, account);
 end
