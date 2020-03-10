@@ -84,7 +84,7 @@ const testMint =  async () => {
 };
 
 
-const testTransfer =  async () => {
+const testTransferA =  async () => {
   // Given
   const contractAddress = contractDeploy.address;
   const contract = await Tezos.contract.at(contractAddress);
@@ -114,11 +114,46 @@ const testTransfer =  async () => {
   Account: ${accountFaucetB} - Initial balance: ${initialAccountFaucetBBalance.toString()} - Balance after: ${balanceAccountFaucetBAfter}.`);
 };
 
+const testTransferB =  async () => {
+  // Given
+  const contractAddress = contractDeploy.address;
+  Tezos.setProvider({ signer: signerFaucetB });
+
+  const accountFaucetA = await signerFaucetA.publicKeyHash();
+  const accountFaucetB = await signerFaucetB.publicKeyHash();
+  const contract = await Tezos.contract.at(contractAddress);
+  const initialStorage = await getStorage(contractAddress, [accountFaucetA, accountFaucetB]);
+  const initialAccountFaucetABalance = initialStorage.accounts[accountFaucetA].balance;
+  const initialAccountFaucetBBalance = initialStorage.accounts[accountFaucetB].balance;
+
+  const value = '20';
+
+  // When
+  const operationAllow = await contract.methods.approve(accountFaucetA, value).send();
+  await operationAllow.confirmation();
+
+  const operationTransfer = await contract.methods.transfer(accountFaucetB, accountFaucetA, value).send();
+  await operationTransfer.confirmation();
+
+  // Then
+  const storageAfter = await getStorage(contractAddress, [accountFaucetA, accountFaucetB]);
+  const balanceAccountFaucetAAfter = storageAfter.accounts[accountFaucetA].balance;
+  const balanceAccountFaucetBAfter = storageAfter.accounts[accountFaucetB].balance;
+
+  assert(initialAccountFaucetBBalance.minus(value).toString(), balanceAccountFaucetBAfter.toString(), 'Balance minus value should be equal to balance after transfer for account B.');
+  assert(initialAccountFaucetABalance.plus(value).toString(), balanceAccountFaucetAAfter.toString(), 'Balance plus value should be equal to balance after transfer for account A.');
+
+  console.log(`[OK] Transfer amount of ${value} from ${accountFaucetB} to ${accountFaucetA}. 
+  Account: ${accountFaucetB} - Initial balance: ${initialAccountFaucetBBalance.toString()} - Balance after: ${balanceAccountFaucetBAfter}.
+  Account: ${accountFaucetA} - Initial balance: ${initialAccountFaucetABalance.toString()} - Balance after: ${balanceAccountFaucetAAfter}.`);
+};
+
 const test = async () => {
     const tests = [
       testMethods, 
       testMint,
-      testTransfer,
+      testTransferA,
+      testTransferB,
     ];
 
     for (let test of tests) {
