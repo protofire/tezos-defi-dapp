@@ -3,6 +3,7 @@
 type action is
 | Deposit of (unit)
 | Withdraw of (unit)
+| AddLiquidity of (unit)
 | UpdateExchangeRate of (int)
 
 type deposit_info is record
@@ -13,7 +14,6 @@ end
 type store is record  
   owner: address;
   exchangeRate: int;
-  interest: tez;
   deposits: big_map(address, deposit_info);
   liquidity: tez;
 end
@@ -121,6 +121,20 @@ function withdrawImp(var store: store): return is
       }
   } with(operations, store)
 
+function addLiquidity( var store : store) : return is
+ block {
+  // Fail if is not the owner
+  if (sender =/= store.owner) 
+    then failwith("You must be the owner of the contract to add liquidity");
+    else block {
+      if (amount = 0mutez)
+        then failwith("No tez transferred!");
+        else block {
+          store.liquidity := store.liquidity + amount;
+        }
+    }
+} with (emptyOps, store)
+
 // Entrypoint
 function main (const action: action; var store: store): return is
   block {
@@ -129,4 +143,5 @@ function main (const action: action; var store: store): return is
     | Deposit(n) -> depositImp(store)
     | Withdraw(n) -> withdrawImp(store)
     | UpdateExchangeRate(n) -> updateExchangeRate(n, store)
+    | AddLiquidity(n) ->  addLiquidity(store)
     end;  
