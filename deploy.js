@@ -30,6 +30,7 @@ const deployFa12Contract = async () => {
 
     const detail = {
         address: contract.address,
+        owner: ownerAccount,
         network: providerUrl,
     };
 
@@ -55,6 +56,7 @@ const deployPoolContract = async () => {
 
     const detail = {
         address: contract.address,
+        owner: ownerAccount,
         network: providerUrl,
     };
 
