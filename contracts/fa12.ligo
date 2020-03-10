@@ -95,7 +95,7 @@ function transfer (const addressFrom : address; const addressTo : address; const
       store.accounts[addressFrom] := addressFromAccount;
 
       const addressToAccount: account = getAccount(addressTo, store.accounts);
-      addressToAccount.balance := abs(addressToAccount.balance - value);  // ensure non negative
+      addressToAccount.balance := addressToAccount.balance + value;  // ensure non negative
       store.accounts[addressTo] := addressToAccount;
 
       // Update allowances

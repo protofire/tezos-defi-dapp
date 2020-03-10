@@ -5,7 +5,7 @@ const fs = require("fs");
 const faucet = require('./faucetA.json');
 const { email, password, mnemonic, secret } = faucet;
 
-const providerUrl = "https://rpctest.tzbeta.net";
+const providerUrl = "https://api.tez.ie/rpc/babylonnet";
 const signer = InMemorySigner.fromFundraiser(email,password, mnemonic.join(' '));
 Tezos.setProvider({ rpc: providerUrl, signer });
 
