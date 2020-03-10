@@ -2,7 +2,6 @@ const assert = require('assert');
 const { Tezos } = require('@taquito/taquito');
 const { InMemorySigner } = require('@taquito/signer');
 const BigNumber = require("bignumber.js");
-const fetch = require("node-fetch");
 
 const utils = require('./utils');
 const { tokenAmountInUnits, unitsInTokenAmount} = utils;
@@ -85,8 +84,8 @@ const testMint =  async () => {
     const balanceFaucetAAfter = storageAfter.accounts[accountFaucetA].balance;
     const balanceFaucetBAfter = storageAfter.accounts[accountFaucetB].balance;
 
-    assert(initialFaucetABalance.plus(value).toString(), balanceFaucetAAfter.toString(), 'Balance plus value should be equal to balance after mint.');
-    assert(initialStorage.totalSupply.plus(value).toString(), storageAfter.totalSupply.toString(), 'TotalSupply should be the same.');
+    assert(initialFaucetABalance.plus(value).toString() === balanceFaucetAAfter.toString(), 'Balance plus value should be equal to balance after mint.');
+    assert(initialStorage.totalSupply.plus(value).toString() === storageAfter.totalSupply.toString(), 'TotalSupply should be the same.');
     console.log(`[OK] Mint amount ${tokenAmountInUnits(valueBN, decimals)} ${symbol}, check supply and account balance. 
     Total suppĺy: ${tokenAmountInUnits(storageAfter.totalSupply, decimals)} ${symbol}.
     Balance ${accountFaucetA}: ${tokenAmountInUnits(balanceFaucetAAfter, decimals)} ${symbol}.
@@ -119,8 +118,8 @@ const testTransferA =  async () => {
   const balanceAccountFaucetAAfter = storageAfter.accounts[accountFaucetA].balance;
   const balanceAccountFaucetBAfter = storageAfter.accounts[accountFaucetB].balance;
 
-  assert(initialAccountFaucetABalance.minus(value).toString(), balanceAccountFaucetAAfter.toString(), 'Balance minus value should be equal to balance after transfer for account A.');
-  assert(initialAccountFaucetBBalance.plus(value).toString(), balanceAccountFaucetBAfter.toString(), 'Balance plus value should be equal to balance after transfer for account B.');
+  assert(initialAccountFaucetABalance.minus(value).toString() === balanceAccountFaucetAAfter.toString(), 'Balance minus value should be equal to balance after transfer for account A.');
+  assert(initialAccountFaucetBBalance.plus(value).toString() === balanceAccountFaucetBAfter.toString(), 'Balance plus value should be equal to balance after transfer for account B.');
 
   console.log(`[OK] Transfer amount of ${tokenAmountInUnits(valueBN, decimals)} ${symbol} from ${accountFaucetA} to ${accountFaucetB}. 
   Account: ${accountFaucetA} - Initial balance: ${tokenAmountInUnits(initialAccountFaucetABalance, decimals)} ${symbol} - Balance after: ${tokenAmountInUnits(balanceAccountFaucetAAfter, decimals)} ${symbol}.
@@ -156,8 +155,8 @@ const testTransferB =  async () => {
   const balanceAccountFaucetAAfter = storageAfter.accounts[accountFaucetA].balance;
   const balanceAccountFaucetBAfter = storageAfter.accounts[accountFaucetB].balance;
 
-  assert(initialAccountFaucetBBalance.minus(value).toString(), balanceAccountFaucetBAfter.toString(), 'Balance minus value should be equal to balance after transfer for account B.');
-  assert(initialAccountFaucetABalance.plus(value).toString(), balanceAccountFaucetAAfter.toString(), 'Balance plus value should be equal to balance after transfer for account A.');
+  assert(initialAccountFaucetBBalance.minus(value).toString() === balanceAccountFaucetBAfter.toString(), 'Balance minus value should be equal to balance after transfer for account B.');
+  assert(initialAccountFaucetABalance.plus(value).toString() === balanceAccountFaucetAAfter.toString(), 'Balance plus value should be equal to balance after transfer for account A.');
 
   console.log(`[OK] Transfer amount of ${tokenAmountInUnits(valueBN, decimals)} ${symbol} from ${accountFaucetB} to ${accountFaucetA}. 
   Account: ${accountFaucetB} - Initial balance: ${tokenAmountInUnits(initialAccountFaucetBBalance, decimals)} ${symbol} - Balance after: ${tokenAmountInUnits(balanceAccountFaucetBAfter, decimals)} ${symbol}.
@@ -173,9 +172,9 @@ const testProperties =  async () => {
   const storage = await contract.storage();
 
   // Then
-  assert(storage.decimals.toString(), "18", "Decimals should be 18");
-  assert(storage.symbol, "pTez", "Symbol must be pTez");
-  assert(storage.name, "Pool Tezos coin", "Name should be Pool Tezos coin");
+  assert(storage.decimals.toString() === "18", "Decimals should be 18");
+  assert(storage.symbol === "pTez", "Symbol must be pTez");
+  assert(storage.name === "Pool Tezos coin", "Name should be Pool Tezos coin");
   console.log(`[OK] Token properties. Symbol: ${storage.symbol}, Name: ${storage.name}, Decimals: ${storage.decimals}.`) 
 };
 
