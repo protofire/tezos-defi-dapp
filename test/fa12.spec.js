@@ -51,7 +51,7 @@ const testMethods = async () => {
     
     //Then
     assert(methodsKeys.length === methodsThatMustExist.length, "Some methods doesn't exist");
-    console.log(`[OK] Methods: ${methodsThatMustExist.join(', ')}`)
+    console.log(`[OK] Methods: ${methodsThatMustExist.join(', ')}.`)
 };
 
 const testMint =  async () => {
@@ -148,12 +148,34 @@ const testTransferB =  async () => {
   Account: ${accountFaucetA} - Initial balance: ${initialAccountFaucetABalance.toString()} - Balance after: ${balanceAccountFaucetAAfter}.`);
 };
 
+const testAllow =  async () => {
+  // Given
+  const contractAddress = contractDeploy.address;
+  Tezos.setProvider({ signer: signerFaucetB });
+
+  const accountFaucetA = await signerFaucetA.publicKeyHash();
+  const accountFaucetB = await signerFaucetB.publicKeyHash();
+  const contract = await Tezos.contract.at(contractAddress);
+
+  const value = '100';
+  // When
+  try {
+    const operationTransfer = await contract.methods.transfer(accountFaucetB, accountFaucetA, value).send();
+    await operationTransfer.confirmation();
+
+  // Then
+  } catch (err) {
+    console.log(`[OK] The transfer must be allowed.`);
+  }
+};
+
 const test = async () => {
     const tests = [
       testMethods, 
       testMint,
       testTransferA,
       testTransferB,
+      testAllow,
     ];
 
     for (let test of tests) {
