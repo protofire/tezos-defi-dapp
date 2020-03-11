@@ -3,11 +3,20 @@ const { InMemorySigner } = require('@taquito/signer');
 const fs = require("fs");
 
 const faucetA = require('./faucetA.json');
+const faucetB = require('./faucetB.json');
 
-const providerUrl = "https://api.tez.ie/rpc/babylonnet";
-//const providerUrl = "https://rpctest.tzbeta.net";
+const providerUrl = "https://api.tez.ie/rpc/carthagenet";
+
 const signer = InMemorySigner.fromFundraiser(faucetA.email, faucetA.password, faucetA.mnemonic.join(' '));
 Tezos.setProvider({ rpc: providerUrl, signer });
+
+const activateFaucets = async () => {
+    const opFaucetA = await Tezos.tz.activate(faucetA.pkh, faucetA.secret);
+    await opFaucetA.confirmation();
+
+    const opFaucetB = await Tezos.tz.activate(faucetB.pkh, faucetB.secret);
+    await opFaucetB.confirmation();
+}
 
 const deployFa12Contract = async () => {
     // Deploy fa12 contract
@@ -72,6 +81,7 @@ const deployPoolContract = async () => {
 }
 
 (async () => {
+    await activateFaucets();
     await deployFa12Contract();
     await deployPoolContract();
 
