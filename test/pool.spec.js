@@ -96,12 +96,14 @@ const testDeposit =  async () => {
   // Then
   const storageAfter = await getStorage(contractAddress, [accountFaucetA, accountFaucetB]);
   const afterDepositBalance = storageAfter.deposits[accountFaucetA].tezAmount;
+  const afterLiquidity = storageAfter.liquidity;
   const accountFaucetAAfterBalance = await Tezos.tz.getBalance(accountFaucetA)
 
   assert(afterDepositBalance.isGreaterThan(initialDepositBalance), 'Deposit should be updated');
   console.log(`[OK] Deposit: user made a deposit of ${value} tz. 
-  Initial account ${accountFaucetA} balance: ${tzFormatter(accountFaucetAInitialBalance, 'tz')}. After account ${accountFaucetA} balance: ${tzFormatter(accountFaucetAAfterBalance, 'tz')}
-  Initial deposit balance:  ${tzFormatter(initialDepositBalance, 'tz')}. After deposit balance with interest: ${tzFormatter(afterDepositBalance, 'tz')}.`)
+  Liquidity: ${tzFormatter(afterLiquidity, 'tz')}.
+  Initial account ${accountFaucetA} balance: ${tzFormatter(accountFaucetAInitialBalance, 'tz')}. After account ${accountFaucetA} balance: ${tzFormatter(accountFaucetAAfterBalance, 'tz')}.
+  Initial balance:  ${tzFormatter(initialDepositBalance, 'tz')}. After balance: ${tzFormatter(afterDepositBalance, 'tz')}.`)
 };
 
 const testWithdraw = async() => {
@@ -118,19 +120,22 @@ const testWithdraw = async() => {
   
     const initialStorage = await getStorage(contractAddress, [accountFaucetA, accountFaucetB]);
     const initialDepositBalance = initialStorage.deposits[accountFaucetA].tezAmount;
+    const initialLiquidity = initialStorage.liquidity;
   
     // When
-    const op = await contract.methods.withdraw(UnitValue).send({ amount: value });
+    const op = await contract.methods.withdraw(UnitValue).send();
     await op.confirmation();
   
     // Then
     const storageAfter = await getStorage(contractAddress, [accountFaucetA, accountFaucetB]);
     const afterDepositBalance = storageAfter.deposits[accountFaucetA].tezAmount;
+    const afterLiquidity = storageAfter.liquidity;
     const accountFaucetAAfterBalance = await Tezos.tz.getBalance(accountFaucetA)
 
     assert(accountFaucetAAfterBalance.isGreaterThan(accountFaucetAInitialBalance) && afterDepositBalance.isZero(), 'Deposit should be updated');
-    console.log(`[OK] Withdraw: user made a withdraw of ${value} tz. 
-    Initial account ${accountFaucetA} balance: ${tzFormatter(accountFaucetAInitialBalance, 'tz')}. After account ${accountFaucetA} balance: ${tzFormatter(accountFaucetAAfterBalance, 'tz')}
+    console.log(`[OK] Withdraw: user made a withdraw. 
+    Liquidity: ${tzFormatter(afterLiquidity, 'tz')}.
+    Initial account ${accountFaucetA} balance: ${tzFormatter(accountFaucetAInitialBalance, 'tz')}. After account ${accountFaucetA} balance: ${tzFormatter(accountFaucetAAfterBalance, 'tz')}.
     Initial balance:  ${tzFormatter(initialDepositBalance, 'tz')}. After balance: ${tzFormatter(afterDepositBalance, 'tz')}.`)
 }
 
