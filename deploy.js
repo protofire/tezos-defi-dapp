@@ -5,6 +5,7 @@ const fs = require("fs");
 const faucetA = require('./faucetA.json');
 
 const providerUrl = "https://api.tez.ie/rpc/babylonnet";
+//const providerUrl = "https://rpctest.tzbeta.net";
 const signer = InMemorySigner.fromFundraiser(faucetA.email, faucetA.password, faucetA.mnemonic.join(' '));
 Tezos.setProvider({ rpc: providerUrl, signer });
 
@@ -56,7 +57,7 @@ const deployPoolContract = async () => {
     const contract = await op.contract();
 
     // Send tez
-    const operationAddLiquidity = await contract.methods.addLiquidity(UnitValue).send({ amount: 10000 });
+    const operationAddLiquidity = await contract.methods.addLiquidity(UnitValue).send({ amount: 1000 });
     await operationAddLiquidity.confirmation();
   
     const detail = {
