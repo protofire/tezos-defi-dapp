@@ -1,0 +1,24 @@
+{
+  "mnemonic": [
+    "olympic",
+    "paddle",
+    "amount",
+    "render",
+    "candy",
+    "cereal",
+    "indicate",
+    "spring",
+    "defy",
+    "wing",
+    "devote",
+    "ridge",
+    "fruit",
+    "nose",
+    "frequent"
+  ],
+  "secret": "e333f2db293e2a54b379584e9f08cd9246efed65",
+  "amount": "42712362912",
+  "pkh": "tz1eyauDRoqHpqxWnbzAgeDihuEg4WU1B9cU",
+  "password": "lAKPzeVjYv",
+  "email": "wnytbask.ymfbrgpb@tezos.example.org"
+}
