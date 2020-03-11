@@ -2,9 +2,6 @@ const BigNumber = require('bignumber.js');
 const TezosToolKit = require('@taquito/taquito');
 const { Tezos } = TezosToolKit; 
 
-const TZ_DECIMALS = 6;
-const MTZ_DECIMALS = 3;
-
 exports.tzFormatter = (amount, format) => {
   const bigNum = new BigNumber(amount);
   if (bigNum.isNaN()) {

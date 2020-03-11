@@ -13,8 +13,7 @@ const faucetB = require('../faucetB.json');
 const signerFaucetA = InMemorySigner.fromFundraiser(faucetA.email, faucetA.password, faucetA.mnemonic.join(' '));
 const signerFaucetB = InMemorySigner.fromFundraiser(faucetB.email, faucetB.password, faucetB.mnemonic.join(' '));
 
-const rpc = 'https://api.tez.ie/rpc/babylonnet';
-//const rpc = 'https://rpctest.tzbeta.net';
+const rpc = contractDeploy.network;
 
 Tezos.setProvider({ rpc, signer: signerFaucetA });
 
