@@ -1,9 +1,37 @@
-# tezos-defi-dapp
+### tezos-defi-dapp
 User interface with high level of deFi functionalities 
 
-# Commands to activate faucet accounts
-```
-tezos-client -A rpcalpha.tzbeta.net -P 443 -S activate account faucetA with "faucetA.json" --force
-tezos-client -A rpcalpha.tzbeta.net -P 443 -S activate account faucetB with "faucetB.json" --force
 
+### Download faucet ...
+You can download faucet from `https://faucet.tzalpha.net/` 
+Replace the content of the faucetA and faucetB files with some faucet downloaded from the previous url.
+This is in case the accounts run out of balance.
+
+### Installing
+Execute this command
+```
+yarn install
+```
+
+### Build
+You can build the existing contracts, ligo.pool and fa12.ligo executing this command
+```
+yarn build
+```
+
+### Deploy
+You can deploy the existing contracts, ligo.pool and fa12.ligo, to the carthagenet network executing this command. Also the faucets files are going to be activated with this script.
+```
+yarn deploy
+```
+
+### Running unit tests
+To run the unit tests for the pool.ligo contract, you must execute the following command:
+```
+yarn test:pool
+```
+
+To run the unit tests for the fa12.ligo contract, you must execute the following command:
+```
+yarn test:token
 ```
