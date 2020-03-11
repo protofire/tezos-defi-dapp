@@ -193,7 +193,7 @@ function totalSupply (const contr : contract(balanceAmount); var store : store) 
 
 function main (const action : action ; const store : store) : return is 
   block {
-    if amount =/= 0tz then failwith ("This contract do not accept token");
+    if amount =/= 0tz then failwith ("This contract do not accept token amount");
     else skip;
   } with case action of
     GetAllowance(n) -> allowance(n.0, n.1, n.2, store)

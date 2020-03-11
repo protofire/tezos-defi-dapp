@@ -2,11 +2,10 @@ const { Tezos, MichelsonMap, UnitValue } = require('@taquito/taquito');
 const { InMemorySigner } = require('@taquito/signer');
 const fs = require("fs");
 
-const faucet = require('./faucetA.json');
-const { email, password, mnemonic, secret } = faucet;
+const faucetA = require('./faucetA.json');
 
 const providerUrl = "https://api.tez.ie/rpc/babylonnet";
-const signer = InMemorySigner.fromFundraiser(email,password, mnemonic.join(' '));
+const signer = InMemorySigner.fromFundraiser(faucetA.email, faucetA.password, faucetA.mnemonic.join(' '));
 Tezos.setProvider({ rpc: providerUrl, signer });
 
 const deployFa12Contract = async () => {
@@ -56,6 +55,7 @@ const deployPoolContract = async () => {
     await op.confirmation();
     const contract = await op.contract();
 
+    // Send tez
     const operationAddLiquidity = await contract.methods.addLiquidity(UnitValue).send({ amount: 10000 });
     await operationAddLiquidity.confirmation();
   

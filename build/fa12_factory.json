@@ -155,7 +155,8 @@
               [ [ { "prim": "PUSH",
                     "args":
                       [ { "prim": "string" },
-                        { "string": "This contract do not accept token" } ] },
+                        { "string":
+                            "This contract do not accept token amount" } ] },
                   { "prim": "FAILWITH" } ],
                 [ { "prim": "PUSH",
                     "args": [ { "prim": "unit" }, { "prim": "Unit" } ] } ] ] },
