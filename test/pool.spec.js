@@ -114,12 +114,9 @@ const testWithdraw = async() => {
     const accountFaucetA = await signerFaucetA.publicKeyHash();
     const accountFaucetB = await signerFaucetB.publicKeyHash();
     const accountFaucetAInitialBalance = await Tezos.tz.getBalance(accountFaucetA)
-
-    const value = 1; // Send 1 tez
   
     const initialStorage = await getStorage(contractAddress, [accountFaucetA, accountFaucetB]);
     const initialDepositBalance = initialStorage.deposits[accountFaucetA].tezAmount;
-    const initialLiquidity = initialStorage.liquidity;
   
     // When
     const op = await contract.methods.withdraw(UnitValue).send();

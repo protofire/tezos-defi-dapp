@@ -52,7 +52,7 @@ const testMethods = async () => {
 
     // When
     const methodsKeys = Object.keys(methods);
-    const methodsThatMustExist = ['transfer', 'mint', 'getTotalSupply', 'getBalance', 'getAllowance', 'burn', 'approve'];
+    const methodsThatMustExist = ['transfer', 'mint', 'mintTo', 'addOwner', 'getTotalSupply', 'getBalance', 'getAllowance', 'burn', 'approve'];
     
     //Then
     assert(methodsKeys.length === methodsThatMustExist.length, "Some methods doesn't exist");
@@ -91,6 +91,35 @@ const testMint =  async () => {
     Balance ${accountFaucetB}: ${tokenAmountInUnits(balanceFaucetBAfter, decimals)} ${symbol}.`);
 };
 
+const testMintTo =  async () => {
+  // Given
+  const contractAddress = contractDeploy.address;
+  const contract = await Tezos.contract.at(contractAddress);
+  const accountFaucetA = await signerFaucetA.publicKeyHash();
+  const accountFaucetB = await signerFaucetB.publicKeyHash();
+
+  const initialStorage = await getStorage(contractAddress, [accountFaucetA, accountFaucetB]);
+  const initialFaucetBBalance = initialStorage.accounts[accountFaucetB].balance;
+
+  const decimals = initialStorage.decimals;
+  const symbol = initialStorage.symbol;
+  const value = '2000000000000000000';
+  const valueBN = new BigNumber(value);
+
+  // When
+  const op = await contract.methods.mintTo(accountFaucetB, value).send();
+  await op.confirmation();
+
+  // Then
+  const storageAfter = await getStorage(contractAddress, [accountFaucetA, accountFaucetB]);
+  const balanceFaucetBAfter = storageAfter.accounts[accountFaucetB].balance;
+
+  assert(initialFaucetBBalance.plus(value).toString() === balanceFaucetBAfter.toString(), 'Balance plus value should be equal to balance after mint.');
+  assert(initialStorage.totalSupply.plus(value).toString() === storageAfter.totalSupply.toString(), 'TotalSupply should be the same.');
+  console.log(`[OK] MintTo ${accountFaucetB} amount ${tokenAmountInUnits(valueBN, decimals)} ${symbol}, check supply and account balance. 
+  Total suppĺy: ${tokenAmountInUnits(storageAfter.totalSupply, decimals)} ${symbol}.
+  Balance ${accountFaucetB}: ${tokenAmountInUnits(balanceFaucetBAfter, decimals)} ${symbol}.`);
+};
 
 const testTransferA =  async () => {
   // Given
@@ -109,6 +138,9 @@ const testTransferA =  async () => {
   const valueBN = new BigNumber(value);
 
   // When
+  const operationAllow = await contract.methods.approve(accountFaucetB, value).send();
+  await operationAllow.confirmation();
+
   const op = await contract.methods.transfer(accountFaucetA, accountFaucetB, value).send();
   await op.confirmation();
 
@@ -177,13 +209,35 @@ const testProperties =  async () => {
   console.log(`[OK] Token properties. Symbol: ${storage.symbol}, Name: ${storage.name}, Decimals: ${storage.decimals}.`) 
 };
 
+const testAddOwner =  async () => {
+  // Given
+  const contractAddress = contractDeploy.address;
+  const contract = await Tezos.contract.at(contractAddress);
+
+  const accountFaucetA = await signerFaucetA.publicKeyHash();
+  const accountFaucetB = await signerFaucetB.publicKeyHash();  
+  // When
+ 
+  const operationAddOwner = await contract.methods.addOwner(accountFaucetB).send();
+  await operationAddOwner.confirmation();
+
+  // Then
+  const storageAfter = await getStorage(contractAddress, [accountFaucetA, accountFaucetB]);
+
+  assert(storageAfter.owners.includes(accountFaucetB), 'You should add an account to the whitelisted address');
+
+  console.log(`[OK] Add Owner. New owner address ${accountFaucetB}`);
+};
+
 const test = async () => {
     const tests = [
       testMethods,
       testProperties,
       testMint,
+      testMintTo,
       testTransferA,
       testTransferB,
+      testAddOwner,
     ];
 
     for (let test of tests) {
