@@ -12,6 +12,11 @@ Execute this command
 ```
 yarn install
 ```
+### Activate faucets
+In case your faucet is new, you can activate it executing this command. If is already activate it the script will throw an error.
+```
+yarn activate
+```
 
 ### Build
 You can build the existing contracts, ligo.pool and fa12.ligo executing this command
