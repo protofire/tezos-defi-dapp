@@ -7,7 +7,9 @@ type action is
 | GetBalance of (address * contract(balanceAmount))
 | GetTotalSupply of (unit * contract(balanceAmount))
 | Mint of (balanceAmount)
+| MintTo of (address * balanceAmount)
 | Burn of (balanceAmount)
+| AddOwner of (address)
 
 type account is record
   balance: balanceAmount;
@@ -15,7 +17,7 @@ type account is record
 end
 
 type store is record
-  owner: address;
+  owners: set(address);
   decimals: nat; // Added this property used in the erc20 ethereum specification
   symbol: string; // Added this property used in the erc20 ethereum specification
   name: string; // Added this property used in the erc20 ethereum specification
@@ -56,14 +58,30 @@ function allowance (const addressOwner : address; const addressSpender : address
 
 function isAllowed (const addressOwner : address; const addressSpender : address; const value : balanceAmount; var store : store) : bool is
   block {
-    var isAllowed: bool := False;
-    if sender =/= addressOwner then block {
-      const storeAccountOwner: account = getAccount(addressOwner, store.accounts);
-      var allowedAmount: balanceAmount :=  getAllowance(addressSpender, storeAccountOwner.allowances);
-      isAllowed := allowedAmount >= value;
-    }
-    else isAllowed := True;
+    const storeAccountOwner: account = getAccount(addressOwner, store.accounts);
+    var allowedAmount: balanceAmount :=  getAllowance(addressSpender, storeAccountOwner.allowances);
+    const isAllowed: bool = allowedAmount >= value;
   } with isAllowed;
+
+function isOwner (const addressOwner : address; var store : store) : bool is
+  block {
+    const isOwner : bool = store.owners contains addressOwner;
+  } with isOwner;  
+
+function updateOwners (var newAddress: address; var owners : set (address)) : set (address) is 
+  block {
+    patch owners with set [newAddress];
+  } with owners;
+
+function addOwner (const ownerAddress : address; var store : store) : return is
+  block {
+    case isOwner(sender, store) of 
+    | False -> failwith ("Sender not allowed to add address")
+    | True -> skip
+    end;
+    store.owners := updateOwners(ownerAddress, store.owners);
+    
+  } with (emptyOps, store);
 
 function approve (const addressSpender : address; const value : balanceAmount; var store : store) : return is
   block {
@@ -119,35 +137,56 @@ function transfer (const addressFrom : address; const addressTo : address; const
 
 function mint (const value : balanceAmount ; var store : store) : return is
  block {
-  // Fail if is not the owner
-  if sender =/= store.owner then failwith("You must be the owner of the contract to mint tokens");
+  // Fail if is not an owner
+  if not isOwner(sender, store) then failwith("You must be an owner of the contract to mint tokens");
   else block {
     var ownerAccount: account := record 
         balance = 0n;
         allowances = (map end : map(address, balanceAmount));
     end;
-    case store.accounts[store.owner] of
+    case store.accounts[sender] of
     | None -> skip
     | Some(n) -> ownerAccount := n
     end;
 
     // Update the owner balance and totalSupply
     ownerAccount.balance := ownerAccount.balance + value;
-    store.accounts[store.owner] := ownerAccount;
+    store.accounts[sender] := ownerAccount;
+    store.totalSupply := store.totalSupply + value;
+  }
+ } with (emptyOps, store)
+
+function mintTo (const toAddress: address; const value : balanceAmount ; var store : store) : return is
+ block {
+  // Fail if is not an owner
+  if not isOwner(sender, store) then failwith("You must be an owner of the contract to mint tokens");
+  else block {
+    var toAccount: account := record 
+        balance = 0n;
+        allowances = (map end : map(address, balanceAmount));
+    end;
+    case store.accounts[toAddress] of
+    | None -> skip
+    | Some(n) -> toAccount := n
+    end;
+
+    // Update the balance and totalSupply
+    toAccount.balance := toAccount.balance + value;
+    store.accounts[toAddress] := toAccount;
     store.totalSupply := store.totalSupply + value;
   }
  } with (emptyOps, store)
 
 function burn (const value : balanceAmount ; var store : store) : return is
  block {
-  // Fail if is not the owner
-  if sender =/= store.owner then failwith("You must be the owner of the contract to burn tokens");
+  // Fail if is not an owner
+  if not isOwner(sender, store) then failwith("You must be an owner of the contract to burn tokens");
   else block {
     var ownerAccount: account := record 
         balance = 0n;
         allowances = (map end : map(address, balanceAmount));
     end;
-    case store.accounts[store.owner] of
+    case store.accounts[sender] of
     | None -> skip
     | Some(n) -> ownerAccount := n
     end;
@@ -164,7 +203,7 @@ function burn (const value : balanceAmount ; var store : store) : return is
 
     // Update balances and totalSupply
     ownerAccount.balance := abs(ownerAccount.balance - value);
-    store.accounts[store.owner] := ownerAccount;
+    store.accounts[sender] := ownerAccount;
     store.totalSupply := abs(store.totalSupply - value);
   }
  } with (emptyOps, store)
@@ -202,5 +241,7 @@ function main (const action : action ; const store : store) : return is
     | GetBalance(n) -> balanceOf(n.0, n.1, store)
     | GetTotalSupply(n) -> totalSupply(n.1, store)
     | Mint(n) -> mint(n, store)
+    | MintTo(n) -> mintTo(n.0, n.1, store)
     | Burn(n) -> burn(n, store)
+    | AddOwner(n) -> addOwner(n, store)
     end;

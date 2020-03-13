@@ -5,6 +5,10 @@ type action is
 | Withdraw of (unit)
 | AddLiquidity of (unit)
 | UpdateExchangeRate of (int)
+| UpdateTokenAddress of (address)
+
+type parameter is
+| MintTo of (address * nat)
 
 type deposit_info is record
   tezAmount: tez;
@@ -16,6 +20,7 @@ type store is record
   exchangeRate: int;
   deposits: big_map(address, deposit_info);
   liquidity: tez;
+  tokenAddress: address;
 end
 
 const emptyOps: list(operation) = list end;
@@ -54,8 +59,28 @@ function updateExchangeRate(const value : int ; var store : store) : return is
     }
  } with (emptyOps, store)
 
+function updateTokenAddress(const tokenAddress : address ; var store : store) : return is
+ block {
+  // Fail if is not the owner
+  if (sender =/= store.owner) 
+    then failwith("You must be the owner of the contract to update the token address");
+    else store.tokenAddress := tokenAddress;
+ } with (emptyOps, store)
+
+function tokenProxy (const action : parameter; const store : store): operation is
+  block {
+    const tokenContract: contract (parameter) =
+      case (Tezos.get_contract_opt (store.tokenAddress) : option (contract (parameter))) of
+        Some (contract) -> contract
+      | None -> (failwith ("Contract not found.") : contract (parameter))
+      end;
+    const proxyOperation : operation = Tezos.transaction (action, 0tez, tokenContract);
+  } with proxyOperation
+
 function depositImp(var store: store): return is
   block {
+    var operations: list(operation) := nil;
+
     if amount = 0mutez
       then failwith("No tez transferred!");
       else block {     
@@ -88,9 +113,19 @@ function depositImp(var store: store): return is
               depositsMap[sender] := deposit;
               store.deposits := depositsMap;
             }
-        end;     
+        end; 
+
+        // TODO mintTo tokens
+        const amountInNat: nat = tezToNatWithTz(amount);
+        const amountInNatExchangeRate: int = natToInt(amountInNat) / store.exchangeRate;
+        const amountToMint: nat = intToNat(amountInNatExchangeRate);
+
+        const tokenProxyOperation: operation = tokenProxy(MintTo(Tezos.self_address, amountToMint), store);
+        operations := list 
+          tokenProxyOperation 
+        end;
       }
-  } with(emptyOps, store)
+  } with(operations, store)
 
 function withdrawImp(var store: store): return is
   block {    
@@ -144,4 +179,5 @@ function main (const action: action; var store: store): return is
     | Withdraw(n) -> withdrawImp(store)
     | UpdateExchangeRate(n) -> updateExchangeRate(n, store)
     | AddLiquidity(n) ->  addLiquidity(store)
+    | UpdateTokenAddress(n) -> updateTokenAddress(n, store)
     end;  
