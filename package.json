@@ -7,6 +7,7 @@
     "typescript": "~3.7.2"
   },
   "scripts": {
+    "activate": "node activateAccounts.js",
     "build": "node build.js",
     "deploy": "node deploy.js",
     "test:token": "node 'test/fa12.spec.js'",
