@@ -1,4 +1,4 @@
-const { Tezos, MichelsonMap, UnitValue, MichelsonSet } = require('@taquito/taquito');
+const { Tezos } = require('@taquito/taquito');
 const { InMemorySigner } = require('@taquito/signer');
 
 const faucetA = require('./faucetA.json');
