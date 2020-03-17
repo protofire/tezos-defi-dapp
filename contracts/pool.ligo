@@ -1,4 +1,5 @@
 #include "./conversions.ligo"
+#include "./math.ligo"
 
 type action is
 | Deposit of (unit)
@@ -7,8 +8,17 @@ type action is
 | UpdateExchangeRate of (int)
 | UpdateTokenAddress of (address)
 
+// Same action type as in fa12 file, If not will throw an error
 type parameter is
+| GetAllowance of (address * address * contract(nat))
+| Transfer of (address * address * nat)
+| Approve of (address * nat)
+| GetBalance of (address * contract(nat))
+| GetTotalSupply of (unit * contract(nat))
+| Mint of (nat)
 | MintTo of (address * nat)
+| Burn of (nat)
+| AddOwner of (address)
 
 type deposit_info is record
   tezAmount: tez;
@@ -110,17 +120,18 @@ function depositImp(var store: store): return is
                 blockTimestamp = now;
               end;
 
-              depositsMap[sender] := deposit;
+              depositsMap[senderAddress] := deposit;
               store.deposits := depositsMap;
             }
         end; 
 
-        // TODO mintTo tokens
+        // mintTo tokens to the senderAddress
         const amountInNat: nat = tezToNatWithTz(amount);
-        const amountInNatExchangeRate: int = natToInt(amountInNat) / store.exchangeRate;
+        // The token has 18 decimals, so we need to multiply the amount by 1000000000000000000, we use the pow library
+        const amountInNatExchangeRate: int = (natToInt(amountInNat) / store.exchangeRate) * pow(10, 18);
         const amountToMint: nat = intToNat(amountInNatExchangeRate);
 
-        const tokenProxyOperation: operation = tokenProxy(MintTo(Tezos.self_address, amountToMint), store);
+        const tokenProxyOperation: operation = tokenProxy(MintTo(senderAddress, amountToMint), store);
         operations := list 
           tokenProxyOperation 
         end;
