@@ -35,3 +35,59 @@ exports.unitsInTokenAmount = (units, decimals) => {
 exports.tokenSymbolToDisplayString = (symbol) => {
     return symbol.toUpperCase();
 };
+
+exports.getTokenStorage = async (address, keys) => {
+  const contract = await Tezos.contract.at(address);
+  const storage = await contract.storage();
+  const accounts = await keys.reduce(async (prev, current) => {
+    const value = await prev;
+
+    let entry = {
+      balance: new BigNumber(0),
+      allowances: {},
+    };
+
+    try {
+      entry = await storage.accounts.get(current);
+    } catch (err) {
+      // Do nothing
+    }
+
+    return {
+      ...value,
+      [current]: entry
+    };
+  }, Promise.resolve({}));
+  return {
+    ...storage,
+    accounts
+  };
+};
+
+exports.getPoolStorage = async (address, keys) => {
+  const contract = await Tezos.contract.at(address);
+  const storage = await contract.storage();
+  const deposits = await keys.reduce(async (prev, current) => {
+    const value = await prev;
+
+    let entry = {
+      tezAmount: new BigNumber(0),
+      blockTimestamp: null,
+    };
+
+    try {
+      entry = await storage.deposits.get(current);
+    } catch (err) {
+      // Do nothing
+    }
+
+    return {
+      ...value,
+      [current]: entry
+    };
+  }, Promise.resolve({}));
+  return {
+    ...storage,
+    deposits
+  };
+};
