@@ -9,73 +9,77 @@ const rpc = "https://api.tez.ie/rpc/carthagenet";
 const signer = InMemorySigner.fromFundraiser(faucetA.email, faucetA.password, faucetA.mnemonic.join(' '));
 Tezos.setProvider({ rpc, signer });
 
-const deployFa12Contract = async () => {
-    // Deploy fa12 contract
-    const ownerAccount = await Tezos.signer.publicKeyHash();
+let contracts = ['fa12', 'pool'];
+
+const args = process.argv.slice(2);
+
+if( args.length ) {
+    contracts = args
+}
+
+const deployer = async (options) => {
+    const { file, storage, owner } = options;
+
     const op = await Tezos.contract.originate({
-        code: JSON.parse(fs.readFileSync("./build/fa12_factory.json").toString()),
-        storage: {
-            owners: [ownerAccount],
-            totalSupply: "1000000000000000000000000",
-            decimals: "18",
-            symbol: "pTez",
-            name: "Pool Tezos coin",
-            accounts:  MichelsonMap.fromLiteral({
-                [ownerAccount]: {
-                    balance: "1000000000000000000000000",
-                    allowances:  new MichelsonMap(),
-                },
-            }),
-        },
+        code: JSON.parse(fs.readFileSync(`./build/${file}_factory.json`).toString()),
+        storage,
     });
     await op.confirmation();
     const contract = await op.contract();
 
     const detail = {
         address: contract.address,
-        owner: ownerAccount,
+        owner,
         network: rpc,
     };
 
-    fs.writeFileSync('./deployed/fa12_latest.json', JSON.stringify(detail));
-    console.log('Contract fa12 deployed at:', contract.address);
+    fs.writeFileSync(`./deployed/${file}_latest.json`, JSON.stringify(detail));
+    console.log(`Contract ${file} deployed at:`, contract.address);
+
+    return contract;
 }
+
+const deployFa12Contract = async () => {
+    // Deploy fa12 contract
+    const owner = await Tezos.signer.publicKeyHash();
+    const storage = {
+        owners: [owner],
+        totalSupply: "1000000000000000000000000",
+        decimals: "18",
+        symbol: "pTez",
+        name: "Pool Tezos coin",
+        accounts:  MichelsonMap.fromLiteral({
+            [owner]: {
+                balance: "1000000000000000000000000",
+                allowances:  new MichelsonMap(),
+            },
+        }),
+    };
+
+    await deployer({storage, file: 'fa12', owner});
+};
 
 const deployPoolContract = async () => {
     // Deploy pool contract
-    const contractDeploy = require('./deployed/fa12_latest.json');
+    const contractFa12Deploy = require('./deployed/fa12_latest.json');
+    const owner = await Tezos.signer.publicKeyHash();
 
-    const ownerAccount = await Tezos.signer.publicKeyHash();
-    const op = await Tezos.contract.originate({
-        code: JSON.parse(fs.readFileSync("./build/pool_factory.json").toString()),
-        storage: {
-            owner: ownerAccount,
-            exchangeRate: 2,
-            deposits: new MichelsonMap(),
-            liquidity: 0,
-            tokenAddress: contractDeploy.address
-        },
-    });
-    await op.confirmation();
-    const contract = await op.contract();
+    const storage = {
+        owner,
+        exchangeRate: 2,
+        deposits: new MichelsonMap(),
+        liquidity: 0,
+        tokenAddress: contractFa12Deploy.address
+    }
+
+    const contractPool = await deployer({storage, file: 'pool', owner});
 
     // Send tez
-    const operationAddLiquidity = await contract.methods.addLiquidity(UnitValue).send({ amount: 10 });
+    const operationAddLiquidity = await contractPool.methods.addLiquidity(UnitValue).send({ amount: 10 });
     await operationAddLiquidity.confirmation();
-  
-    const detail = {
-        address: contract.address,
-        owner: ownerAccount,
-        network: rpc,
-    };
-
-    fs.writeFileSync('./deployed/pool_latest.json', JSON.stringify(detail));
-    console.log('Contract pool deployed at:', contract.address);
-
-}
+};
 
 (async () => {
-    await deployFa12Contract();
-    await deployPoolContract();
-
+    if(contracts.includes('fa12')) await deployFa12Contract();
+    if(contracts.includes('pool')) await deployPoolContract();
 })().catch(e => console.error(e));
