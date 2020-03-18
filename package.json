@@ -7,13 +7,13 @@
     "typescript": "~3.7.2"
   },
   "scripts": {
-    "activate": "node activateAccounts.js",
-    "build": "node build.js",
-    "build:token": "node build.js fa12",
-    "build:pool": "node build.js pool",
-    "deploy": "node deploy.js",
-    "deploy:token": "node deploy.js fa12",
-    "deploy:pool": "node deploy.js pool",
+    "activate": "node ./scripts/activateAccounts.js",
+    "build": "node ./scripts/build.js",
+    "build:token": "node ./scripts/build.js fa12",
+    "build:pool": "node ./scripts/build.js pool",
+    "deploy": "node ./scripts/deploy.js",
+    "deploy:token": "node ./scripts/deploy.js fa12",
+    "deploy:pool": "node ./scripts/deploy.js pool",
     "test:token": "node 'test/fa12.spec.js'",
     "test:pool": "node 'test/pool.spec.js'",
     "test:interaction": "node test/interactions.spec.js"
