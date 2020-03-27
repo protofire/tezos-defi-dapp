@@ -2,7 +2,7 @@ const { Tezos, MichelsonMap, UnitValue, MichelsonSet } = require('@taquito/taqui
 const { InMemorySigner } = require('@taquito/signer');
 const fs = require("fs");
 
-const faucetA = require('./faucetA.json');
+const faucetA = require('../faucetA.json');
 
 const rpc = "https://api.tez.ie/rpc/carthagenet";
 
@@ -61,15 +61,20 @@ const deployFa12Contract = async () => {
 
 const deployPoolContract = async () => {
     // Deploy pool contract
-    const contractFa12Deploy = require('./deployed/fa12_latest.json');
+    const contractFa12Deploy = require('../deployed/fa12_latest.json');
     const owner = await Tezos.signer.publicKeyHash();
 
     const storage = {
         owner,
-        exchangeRate: 2,
+        exchangeRatio: 2,
+        collateralRatio: 2,
         deposits: new MichelsonMap(),
+        borrows: new MichelsonMap(),
         liquidity: 0,
-        tokenAddress: contractFa12Deploy.address
+        token: {
+            contractAddress: contractFa12Deploy.address,
+            tokenDecimals: 18,
+        }
     }
 
     const contractPool = await deployer({storage, file: 'pool', owner});

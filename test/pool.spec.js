@@ -24,7 +24,7 @@ const testMethods = async () => {
 
     // When
     const methodsKeys = Object.keys(methods);
-    const methodsThatMustExist = ['withdraw', 'updateExchangeRate',  'addLiquidity', 'deposit', 'updateTokenAddress'];
+    const methodsThatMustExist = ['withdraw', 'updateExchangeRatio', 'updateCollateralRatio', 'addLiquidity', 'deposit', 'updateTokenAddress', 'updateTokenDecimals'];
     
     //Then
     assert(methodsKeys.length === methodsThatMustExist.length, "Some methods doesn't exist");
@@ -89,9 +89,10 @@ const testWithdraw = async() => {
     const accountFaucetA = await signerFaucetA.publicKeyHash();
     const accountFaucetB = await signerFaucetB.publicKeyHash();
     const accountFaucetAInitialBalance = await Tezos.tz.getBalance(accountFaucetA)
-    
+    const amountToWithdraw = 1;
+
     // When
-    const operationWithdraw = await contract.methods.withdraw(UnitValue).send();
+    const operationWithdraw = await contract.methods.withdraw(amountToWithdraw).send();
     await operationWithdraw.confirmation();
   
     // Then

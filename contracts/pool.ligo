@@ -1,36 +1,34 @@
-#include "./conversions.ligo"
-#include "./math.ligo"
+#include "./utils/conversions.ligo"
+#include "./utils/math.ligo"
+#include "./partials/tokenActions.ligo"
 
 type action is
 | Deposit of (unit)
-| Withdraw of (unit)
+| Withdraw of (nat)
 | AddLiquidity of (unit)
-| UpdateExchangeRate of (int)
+| UpdateExchangeRatio of (int)
+| UpdateCollateralRatio of (int)
 | UpdateTokenAddress of (address)
+| UpdateTokenDecimals of (nat)
 
-// Same action type as in fa12 file, If not will throw an error
-type parameter is
-| GetAllowance of (address * address * contract(nat))
-| Transfer of (address * address * nat)
-| Approve of (address * nat)
-| GetBalance of (address * contract(nat))
-| GetTotalSupply of (unit * contract(nat))
-| Mint of (nat)
-| MintTo of (address * nat)
-| Burn of (nat)
-| AddOwner of (address)
-
-type deposit_info is record
+type depositInfo is record
   tezAmount: tez;
   blockTimestamp: timestamp;
 end
 
+type tokenInformation is record
+  contractAddress: address;
+  tokenDecimals: nat;
+end
+
 type store is record  
   owner: address;
-  exchangeRate: int;
-  deposits: big_map(address, deposit_info);
+  deposits: big_map(address, depositInfo);
+  borrows: big_map(address, depositInfo);
+  exchangeRatio: int;
+  collateralRatio: int; //  The collateral ratio that borrows must maintain (e.g. 2 implies 2:1), this represents the percentage of supplied value that can be actively borrowed at any given time.
   liquidity: tez;
-  tokenAddress: address;
+  token: tokenInformation;
 end
 
 const emptyOps: list(operation) = list end;
@@ -52,39 +50,61 @@ function calculateInterest(const elapsedBlocks: int; const deposit: tez; var sto
     const accruedInterest: int = (elapsedBlocks * 100) / anualBlocks;
     const depositAsNat: nat = tezToNatWithMutez(deposit);
     const depositAsInt: int = natToInt(depositAsNat);
-    const accruedTezAsInt: int = (accruedInterest * store.exchangeRate * depositAsInt)/10000;
+    const accruedTezAsInt: int = (accruedInterest * store.exchangeRatio * depositAsInt)/10000;
     const newDepositAsInt: int = depositAsInt + accruedTezAsInt;
 
     const interest: tez = natToMutez(abs(newDepositAsInt));
 
   } with(interest)
 
-function updateExchangeRate(const value : int ; var store : store) : return is
+function updateExchangeRatio(const value : int ; var store : store) : return is
  block {
   // Fail if is not the owner
   if (sender =/= store.owner) 
-    then failwith("You must be the owner of the contract to update the exchange rate");
+    then failwith("You must be the owner of the contract to update the exchange ratio");
     else block {
-      store.exchangeRate := value;
+      store.exchangeRatio := value;
     }
  } with (emptyOps, store)
 
-function updateTokenAddress(const tokenAddress : address ; var store : store) : return is
+ function updateCollateralRatio(const value : int ; var store : store) : return is
+ block {
+  // Fail if is not the owner
+  if (sender =/= store.owner) 
+    then failwith("You must be the owner of the contract to update the collateral ratio");
+    else block {
+      store.collateralRatio := value;
+    }
+ } with (emptyOps, store)
+
+function updateTokenAddress(const contractAddress : address ; var store : store) : return is
  block {
   // Fail if is not the owner
   if (sender =/= store.owner) 
     then failwith("You must be the owner of the contract to update the token address");
-    else store.tokenAddress := tokenAddress;
+    else  block {
+      patch store.token with record [contractAddress = contractAddress]
+    }
  } with (emptyOps, store)
 
-function tokenProxy (const action : parameter; const store : store): operation is
+function updateTokenDecimals(const tokenDecimals : nat ; var store : store) : return is
+ block {
+  // Fail if is not the owner
+  if (sender =/= store.owner) 
+    then failwith("You must be the owner of the contract to update the token decimals");
+    else  block {
+      patch store.token with record [tokenDecimals = tokenDecimals]   
+    }
+ } with (emptyOps, store)
+
+function tokenProxy (const action : tokenAction; const store : store): operation is
   block {
-    const tokenContract: contract (parameter) =
-      case (Tezos.get_contract_opt (store.tokenAddress) : option (contract (parameter))) of
+    const tokenContract: contract (tokenAction) =
+      case (Tezos.get_contract_opt (store.token.contractAddress) : option (contract (tokenAction))) of
         Some (contract) -> contract
-      | None -> (failwith ("Contract not found.") : contract (parameter))
+      | None -> (failwith ("Contract not found.") : contract (tokenAction))
       end;
-    const proxyOperation : operation = Tezos.transaction (action, 0tez, tokenContract);
+    const proxyOperation : operation = Tezos.transaction (action, 0mutez, tokenContract);
   } with proxyOperation
 
 function depositImp(var store: store): return is
@@ -96,9 +116,9 @@ function depositImp(var store: store): return is
       else block {     
         const senderAddress: address = getSender(False);
 
-        //setting the deposit to the sender
-        var depositsMap: big_map(address, deposit_info) := store.deposits;    
-        var senderDepositInfo: option(deposit_info) := depositsMap[senderAddress];            
+        // Setting the deposit to the sender
+        var depositsMap: big_map(address, depositInfo) := store.deposits;    
+        var senderDepositInfo: option(depositInfo) := depositsMap[senderAddress];            
 
         case senderDepositInfo of          
           | Some(di) -> 
@@ -115,7 +135,7 @@ function depositImp(var store: store): return is
             block {
               store.liquidity := store.liquidity + amount;  
 
-              const deposit : deposit_info = record
+              const deposit : depositInfo = record
                 tezAmount = amount;
                 blockTimestamp = now;
               end;
@@ -125,34 +145,39 @@ function depositImp(var store: store): return is
             }
         end; 
 
+        //TODO: try to get the decimals property from the token contract
+
         // mintTo tokens to the senderAddress
         const amountInNat: nat = tezToNatWithTz(amount);
-        // The token has 18 decimals, so we need to multiply the amount by 1000000000000000000, we use the pow library
-        const amountInNatExchangeRate: int = (natToInt(amountInNat) / store.exchangeRate) * pow(10, 18);
+        // The user receives a quantity of pTokens equal to the underlying tokens supplied, divided by the current Exchange Rate.
+        const decimals: nat = store.token.tokenDecimals;
+        const amountInNatExchangeRate: int = (natToInt(amountInNat) / store.exchangeRatio) * pow(10, natToInt(decimals));
         const amountToMint: nat = intToNat(amountInNatExchangeRate);
 
-        const tokenProxyOperation: operation = tokenProxy(MintTo(senderAddress, amountToMint), store);
-        operations := list 
-          tokenProxyOperation 
+        const tokenProxyMintToOperation: operation = tokenProxy(MintTo(senderAddress, amountToMint), store);
+        operations := list
+         tokenProxyMintToOperation
         end;
       }
   } with(operations, store)
 
-function withdrawImp(var store: store): return is
+function withdrawImp(var amountToWithdraw: nat; var store: store): return is
   block {    
     const senderAddress: address = getSender(False);
 
     var operations: list(operation) := nil;
         
-    var di: deposit_info := get_force(senderAddress, store.deposits);
+    var di: depositInfo := get_force(senderAddress, store.deposits);
     const elapsedBlocks:int = now - di.blockTimestamp;
     var withdrawAmount: tez := di.tezAmount + calculateInterest(elapsedBlocks, di.tezAmount, store);
 
+    // TODO add accountLiquidity validation,
+    // account collateral * collateral factor - account borrow balance
     if withdrawAmount > store.liquidity
       then failwith("No tez to withdraw!");
       else block {
         // update storage
-        var depositsMap: big_map(address, deposit_info) := store.deposits;                
+        var depositsMap: big_map(address, depositInfo) := store.deposits;                
         remove senderAddress from map depositsMap;
         store.deposits := depositsMap;  
 
@@ -187,8 +212,10 @@ function main (const action: action; var store: store): return is
     skip
   } with case action of
     | Deposit(n) -> depositImp(store)
-    | Withdraw(n) -> withdrawImp(store)
-    | UpdateExchangeRate(n) -> updateExchangeRate(n, store)
+    | Withdraw(n) -> withdrawImp(n, store)
+    | UpdateExchangeRatio(n) -> updateExchangeRatio(n, store)
+    | UpdateCollateralRatio(n) -> updateCollateralRatio(n, store)
     | AddLiquidity(n) ->  addLiquidity(store)
     | UpdateTokenAddress(n) -> updateTokenAddress(n, store)
+    | UpdateTokenDecimals(n) -> updateTokenDecimals(n, store)
     end;  

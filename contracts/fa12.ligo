@@ -1,19 +1,8 @@
-type balanceAmount is nat;
-
-type action is
-| GetAllowance of (address * address * contract(balanceAmount))
-| Transfer of (address * address * balanceAmount)
-| Approve of (address * balanceAmount)
-| GetBalance of (address * contract(balanceAmount))
-| GetTotalSupply of (unit * contract(balanceAmount))
-| Mint of (balanceAmount)
-| MintTo of (address * balanceAmount)
-| Burn of (balanceAmount)
-| AddOwner of (address)
+#include "./partials/tokenActions.ligo"
 
 type account is record
-  balance: balanceAmount;
-  allowances: map(address, balanceAmount);
+  balance: nat;
+  allowances: map(address, nat);
 end
 
 type store is record
@@ -21,7 +10,7 @@ type store is record
   decimals: nat; // Added this property used in the erc20 ethereum specification
   symbol: string; // Added this property used in the erc20 ethereum specification
   name: string; // Added this property used in the erc20 ethereum specification
-  totalSupply: balanceAmount;
+  totalSupply: nat;
   accounts: big_map(address, account);
 end
 
@@ -38,28 +27,28 @@ function getAccount (const addressAccount : address ; const accounts: big_map(ad
       | None -> record balance = 0n; allowances = emptyAllowances; end
     end
 
-function getAllowance(const addressAccount : address ; const allowances : map(address, balanceAmount)) : balanceAmount is
+function getAllowance(const addressAccount : address ; const allowances : map(address, nat)) : nat is
   block { skip } with
     case allowances[addressAccount] of
       | Some(value) -> value
       | None -> 0n
     end
 
-function allowance (const addressOwner : address; const addressSpender : address; const contr : contract(balanceAmount); var store : store) : return is
+function allowance (const addressOwner : address; const addressSpender : address; const callback : contract(nat); var store : store) : return is
   block {
     const storeAccountOwner: account = getAccount(addressOwner, store.accounts);
-    var allowed: balanceAmount :=  getAllowance(addressSpender, storeAccountOwner.allowances); 
+    var allowed: nat :=  getAllowance(addressSpender, storeAccountOwner.allowances); 
 
-    const allowedOperation: operation = transaction(allowed, 0tz, contr);
+    const allowedOperation: operation = transaction(allowed, 0tz, callback);
     operations := list 
         allowedOperation 
     end;
   } with (operations, store);
 
-function isAllowed (const addressOwner : address; const addressSpender : address; const value : balanceAmount; var store : store) : bool is
+function isAllowed (const addressOwner : address; const addressSpender : address; const value : nat; var store : store) : bool is
   block {
     const storeAccountOwner: account = getAccount(addressOwner, store.accounts);
-    var allowedAmount: balanceAmount :=  getAllowance(addressSpender, storeAccountOwner.allowances);
+    var allowedAmount: nat :=  getAllowance(addressSpender, storeAccountOwner.allowances);
     const isAllowed: bool = allowedAmount >= value;
   } with isAllowed;
 
@@ -83,7 +72,7 @@ function addOwner (const ownerAddress : address; var store : store) : return is
     
   } with (emptyOps, store);
 
-function approve (const addressSpender : address; const value : balanceAmount; var store : store) : return is
+function approve (const addressSpender : address; const value : nat; var store : store) : return is
   block {
     // If sender is the spender approving is not necessary
     if sender = addressSpender then skip;
@@ -94,7 +83,7 @@ function approve (const addressSpender : address; const value : balanceAmount; v
     }
   } with (emptyOps, store);
 
-function transfer (const addressFrom : address; const addressTo : address; const value : balanceAmount; var store : store) : return is
+function transfer (const addressFrom : address; const addressTo : address; const value : nat; var store : store) : return is
   block {
     // If accountFrom = accountDestination transfer is not necessary
     if addressFrom = addressTo then skip;
@@ -135,14 +124,14 @@ function transfer (const addressFrom : address; const addressTo : address; const
     }
   } with (emptyOps, store);
 
-function mint (const value : balanceAmount ; var store : store) : return is
+function mint (const value : nat ; var store : store) : return is
  block {
   // Fail if is not an owner
   if not isOwner(sender, store) then failwith("You must be an owner of the contract to mint tokens");
   else block {
     var ownerAccount: account := record 
         balance = 0n;
-        allowances = (map end : map(address, balanceAmount));
+        allowances = (map end : map(address, nat));
     end;
     case store.accounts[sender] of
     | None -> skip
@@ -156,14 +145,14 @@ function mint (const value : balanceAmount ; var store : store) : return is
   }
  } with (emptyOps, store)
 
-function mintTo (const toAddress: address; const value : balanceAmount ; var store : store) : return is
+function mintTo (const toAddress: address; const value : nat ; var store : store) : return is
  block {
   // Fail if is not an owner
   if not isOwner(sender, store) then failwith("You must be an owner of the contract to mint tokens");
   else block {
     var toAccount: account := record 
         balance = 0n;
-        allowances = (map end : map(address, balanceAmount));
+        allowances = (map end : map(address, nat));
     end;
     case store.accounts[toAddress] of
     | None -> skip
@@ -177,14 +166,14 @@ function mintTo (const toAddress: address; const value : balanceAmount ; var sto
   }
  } with (emptyOps, store)
 
-function burn (const value : balanceAmount ; var store : store) : return is
+function burn (const value : nat ; var store : store) : return is
  block {
   // Fail if is not an owner
   if not isOwner(sender, store) then failwith("You must be an owner of the contract to burn tokens");
   else block {
     var ownerAccount: account := record 
         balance = 0n;
-        allowances = (map end : map(address, balanceAmount));
+        allowances = (map end : map(address, nat));
     end;
     case store.accounts[sender] of
     | None -> skip
@@ -209,28 +198,58 @@ function burn (const value : balanceAmount ; var store : store) : return is
  } with (emptyOps, store)
 
 
-function balanceOf (const addressOwner : address; const contr : contract(balanceAmount); var store : store) : return is
+function balanceOf (const addressOwner : address; const callback : contract(nat); var store : store) : return is
   block {
     const addressOwnerAccount: account = getAccount(addressOwner, store.accounts);
-    const addressOwnerBalance: balanceAmount = addressOwnerAccount.balance;
+    const addressOwnerBalance: nat = addressOwnerAccount.balance;
 
-    const addressOwnerBalanceOperation: operation = transaction(addressOwnerBalance, 0tz, contr);
+    const addressOwnerBalanceOperation: operation = transaction(addressOwnerBalance, 0tz, callback);
     operations := list 
         addressOwnerBalanceOperation 
     end; 
   } with (operations, store);
 
-function totalSupply (const contr : contract(balanceAmount); var store : store) : return is
+function totalSupply (const callback : contract(nat); var store : store) : return is
   block {
-    var totalSupply: balanceAmount := store.totalSupply;
+    var totalSupply: nat := store.totalSupply;
 
-    const totalSupplyOperation: operation = transaction(totalSupply, 0tz, contr);
+    const totalSupplyOperation: operation = transaction(totalSupply, 0mutez, callback);
     operations := list 
         totalSupplyOperation 
     end;  
   } with (operations, store);
 
-function main (const action : action ; const store : store) : return is 
+function decimals (const callback : contract(nat); var store : store) : return is
+  block {
+    var decimals: nat := store.decimals;
+
+    const decimalsOperation: operation = transaction(decimals, 0mutez, callback);
+    operations := list 
+        decimalsOperation 
+    end;  
+} with (operations, store);
+
+function name (const callback : contract(string); var store : store) : return is
+  block {
+    var name: string := store.name;
+
+    const nameOperation: operation = transaction(name, 0mutez, callback);
+    operations := list 
+        nameOperation 
+    end;  
+} with (operations, store);
+
+function symbol (const callback : contract(string); var store : store) : return is
+  block {
+    var symbol: string := store.symbol;
+
+    const symbolOperation: operation = transaction(symbol, 0mutez, callback);
+    operations := list 
+        symbolOperation 
+    end;  
+} with (operations, store);
+
+function main (const action : tokenAction ; const store : store) : return is 
   block {
     if amount =/= 0tz then failwith ("This contract do not accept token amount");
     else skip;
@@ -244,4 +263,7 @@ function main (const action : action ; const store : store) : return is
     | MintTo(n) -> mintTo(n.0, n.1, store)
     | Burn(n) -> burn(n, store)
     | AddOwner(n) -> addOwner(n, store)
+    | Decimals(n) -> decimals(n.1, store)
+    | Symbol(n) -> symbol(n.1, store)
+    | Name(n) -> name(n.1, store)
     end;

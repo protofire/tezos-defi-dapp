@@ -1,0 +1,13 @@
+type tokenAction is
+| GetAllowance of (address * address * contract(nat))
+| Transfer of (address * address * nat)
+| Approve of (address * nat)
+| GetBalance of (address * contract(nat))
+| GetTotalSupply of (unit * contract(nat))
+| Mint of (nat)
+| MintTo of (address * nat)
+| Burn of (nat)
+| AddOwner of (address)
+| Symbol of (unit * contract(string))
+| Name of (unit * contract(string))
+| Decimals of (unit * contract(nat))

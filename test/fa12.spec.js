@@ -22,7 +22,7 @@ const testMethods = async () => {
 
     // When
     const methodsKeys = Object.keys(methods);
-    const methodsThatMustExist = ['transfer', 'mint', 'mintTo', 'addOwner', 'getTotalSupply', 'getBalance', 'getAllowance', 'burn', 'approve'];
+    const methodsThatMustExist = ['transfer', 'mint', 'mintTo', 'addOwner', 'getTotalSupply', 'getBalance', 'getAllowance', 'burn', 'approve', 'decimals', 'symbol', 'name'];
     
     //Then
     assert(methodsKeys.length === methodsThatMustExist.length, "Some methods doesn't exist");

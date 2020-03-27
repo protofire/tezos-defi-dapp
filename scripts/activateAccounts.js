@@ -1,8 +1,8 @@
 const { Tezos } = require('@taquito/taquito');
 const { InMemorySigner } = require('@taquito/signer');
 
-const faucetA = require('./faucetA.json');
-const faucetB = require('./faucetB.json');
+const faucetA = require('../faucetA.json');
+const faucetB = require('../faucetB.json');
 const faucets = [faucetA, faucetB];
 
 const rpc = "https://api.tez.ie/rpc/carthagenet";
