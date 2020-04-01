@@ -7,6 +7,7 @@ type tokenAction is
 | Mint of (nat)
 | MintTo of (address * nat)
 | Burn of (nat)
+| BurnTo of (address * nat)
 | AddOwner of (address)
 | Symbol of (unit * contract(string))
 | Name of (unit * contract(string))

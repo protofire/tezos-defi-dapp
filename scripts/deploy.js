@@ -66,15 +66,20 @@ const deployPoolContract = async () => {
 
     const storage = {
         owner,
-        exchangeRatio: 2,
+        supplyBalances: new MichelsonMap(),
+        borrowBalances: new MichelsonMap(),
         collateralRatio: 2,
-        deposits: new MichelsonMap(),
-        borrows: new MichelsonMap(),
+        borrowInterest: 2,
+        supplyInterest: 1,
         liquidity: 0,
         token: {
             contractAddress: contractFa12Deploy.address,
             tokenDecimals: 18,
-        }
+        },
+        exchangeRatio: {
+            ratio: 1,
+            blockTimestamp: "2019-06-21T09:11:37Z"
+        },
     }
 
     const contractPool = await deployer({storage, file: 'pool', owner});
