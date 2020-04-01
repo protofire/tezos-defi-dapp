@@ -30,8 +30,8 @@ type action is
 
 type store is record  
   owner: address;
-  supplyBalances: big_map(address, balanceInfo);
-  borrowBalances: big_map(address, balanceInfo);
+  deposits: big_map(address, balanceInfo);
+  borrows: big_map(address, balanceInfo);
   exchangeRatio: exchangeRatioInformation; // Between TEZ and the pToken, this must be variable, but for now is ok
   collateralRatio: nat; // The collateral ratio that borrows must maintain (e.g. 2 implies 2:1), this represents the percentage of supplied value that can be actively borrowed at any given time.
   borrowInterest: nat;
@@ -136,8 +136,8 @@ function depositImp(var store: store): return is
         const senderAddress: address = getSender(False);
 
         // Setting the deposit to the sender
-        var supplyBalancesMap: big_map(address, balanceInfo) := store.supplyBalances;    
-        var senderbalanceInfo: option(balanceInfo) := supplyBalancesMap[senderAddress];            
+        var depositsMap: big_map(address, balanceInfo) := store.deposits;    
+        var senderbalanceInfo: option(balanceInfo) := depositsMap[senderAddress];            
 
         case senderbalanceInfo of          
           | Some(di) -> 
@@ -146,8 +146,8 @@ function depositImp(var store: store): return is
               di.tezAmount := di.tezAmount + calculateInterest(elapsedBlocks, di.tezAmount, store) + amount;
               di.blockTimestamp := now;
 
-              supplyBalancesMap[senderAddress] := di;            
-              store.supplyBalances := supplyBalancesMap;              
+              depositsMap[senderAddress] := di;            
+              store.deposits := depositsMap;              
               store.liquidity := store.liquidity + amount;  
             }
           | None -> 
@@ -157,8 +157,8 @@ function depositImp(var store: store): return is
                 blockTimestamp = now;
               end;
 
-              supplyBalancesMap[senderAddress] := deposit;
-              store.supplyBalances := supplyBalancesMap;
+              depositsMap[senderAddress] := deposit;
+              store.deposits := depositsMap;
               store.liquidity := store.liquidity + amount;  
             }
         end; 
@@ -191,8 +191,8 @@ function withdrawImp(var amountToWithdraw: nat; var store: store): return is
 
     var operations: list(operation) := nil;
         
-    var supplyBalancesMap: big_map(address, balanceInfo) := store.supplyBalances;    
-    var senderbalanceInfo: option(balanceInfo) := supplyBalancesMap[senderAddress];            
+    var depositsMap: big_map(address, balanceInfo) := store.deposits;    
+    var senderbalanceInfo: option(balanceInfo) := depositsMap[senderAddress];            
 
     case senderbalanceInfo of 
         | None -> failwith("Account doesn't exist!")
@@ -202,8 +202,8 @@ function withdrawImp(var amountToWithdraw: nat; var store: store): return is
             di.tezAmount := di.tezAmount + calculateInterest(elapsedBlocks, di.tezAmount, store);
             di.blockTimestamp := now;
 
-            supplyBalancesMap[senderAddress] := di;            
-            store.supplyBalances := supplyBalancesMap;              
+            depositsMap[senderAddress] := di;            
+            store.deposits := depositsMap;              
 
             // The amount redeemed must be less than the user's account liquidity 
             // and the market's available liquidity.
@@ -225,8 +225,8 @@ function withdrawImp(var amountToWithdraw: nat; var store: store): return is
                 di.tezAmount := di.tezAmount - natToTz(amountToWithdraw);
                 di.blockTimestamp := now;
 
-                supplyBalancesMap[senderAddress] := di;            
-                store.supplyBalances := supplyBalancesMap;  
+                depositsMap[senderAddress] := di;            
+                store.deposits := depositsMap;  
 
                 // Update liquidity
                 store.liquidity := store.liquidity - natToTz(amountToWithdraw);
@@ -271,8 +271,8 @@ function getBalanceOf (const accountAddress: address; const callback : contract(
   block {
       var operations: list(operation) := nil;
 
-      var supplyBalancesMap: big_map(address, balanceInfo) := store.supplyBalances;    
-      var senderbalanceInfo: option(balanceInfo) := supplyBalancesMap[accountAddress];            
+      var depositsMap: big_map(address, balanceInfo) := store.deposits;    
+      var senderbalanceInfo: option(balanceInfo) := depositsMap[accountAddress];            
 
       case senderbalanceInfo of          
         | None -> failwith("Account address not found")

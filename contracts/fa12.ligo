@@ -91,11 +91,11 @@ function approve (const addressSpender : address; const value : nat; var store :
 
 function transfer (const addressFrom : address; const addressTo : address; const value : nat; var store : store) : return is
   block {
-    // #1 First check: When called with "from" account equal to the transaction sender, we assume that
+    // #1 First check: when called with "from" account equal to the transaction sender, we assume that
     // the user transfers their own money and this does not require approval.
     if addressFrom = addressTo then skip;
     else block {
-      // #2 NotEnoughAllowance, the transaction sender must be previously authorized to transfer at 
+      // #2 NotEnoughAllowance: the transaction sender must be previously authorized to transfer at 
       // least the requested number of tokens from the "from" account using the approve
       case isAllowed(addressFrom, addressTo, value, store) of 
       | False -> block {
@@ -105,7 +105,7 @@ function transfer (const addressFrom : address; const addressTo : address; const
       end;
 
       const addressFromAccount: account = getAccount(addressFrom, store.accounts);
-      // #3 NotEnoughBalance: Check that the accountFrom can spend that much
+      // #3 NotEnoughBalance: check that the accountFrom can spend that much
       if value > addressFromAccount.balance
       then failwith ("NotEnoughBalance");
       else skip;
