@@ -2,31 +2,40 @@
 #include "./utils/math.ligo"
 #include "./partials/tokenActions.ligo"
 
-type action is
-| Deposit of (unit)
-| Withdraw of (nat)
-| AddLiquidity of (unit)
-| UpdateExchangeRatio of (int)
-| UpdateCollateralRatio of (int)
-| UpdateTokenAddress of (address)
-| UpdateTokenDecimals of (nat)
-
-type depositInfo is record
-  tezAmount: tez;
-  blockTimestamp: timestamp;
-end
-
 type tokenInformation is record
   contractAddress: address;
   tokenDecimals: nat;
 end
 
+type balanceInfo is record
+  tezAmount: tez;
+  blockTimestamp: timestamp;
+end
+
+type exchangeRatioInformation is record
+  ratio: nat;
+  blockTimestamp: timestamp;
+end
+
+type action is
+| Deposit of (unit)
+| Withdraw of (nat)
+| AddLiquidity of (unit)
+| UpdateExchangeRatio of (nat)
+| UpdateCollateralRatio of (nat)
+| UpdateTokenAddress of (address)
+| UpdateTokenDecimals of (nat)
+| GetExchangeRatio of (unit * contract(exchangeRatioInformation))
+| GetBalanceOf of (address * contract(balanceInfo))
+
 type store is record  
   owner: address;
-  deposits: big_map(address, depositInfo);
-  borrows: big_map(address, depositInfo);
-  exchangeRatio: int;
-  collateralRatio: int; //  The collateral ratio that borrows must maintain (e.g. 2 implies 2:1), this represents the percentage of supplied value that can be actively borrowed at any given time.
+  deposits: big_map(address, balanceInfo);
+  borrows: big_map(address, balanceInfo);
+  exchangeRatio: exchangeRatioInformation; // Between TEZ and the pToken, this must be variable, but for now is ok
+  collateralRatio: nat; // The collateral ratio that borrows must maintain (e.g. 2 implies 2:1), this represents the percentage of supplied value that can be actively borrowed at any given time.
+  borrowInterest: nat;
+  supplyInterest: nat;
   liquidity: tez;
   token: tokenInformation;
 end
@@ -50,24 +59,34 @@ function calculateInterest(const elapsedBlocks: int; const deposit: tez; var sto
     const accruedInterest: int = (elapsedBlocks * 100) / anualBlocks;
     const depositAsNat: nat = tezToNatWithMutez(deposit);
     const depositAsInt: int = natToInt(depositAsNat);
-    const accruedTezAsInt: int = (accruedInterest * store.exchangeRatio * depositAsInt)/10000;
+    const accruedTezAsInt: int = (accruedInterest * natToInt(store.exchangeRatio.ratio) * depositAsInt)/10000;
     const newDepositAsInt: int = depositAsInt + accruedTezAsInt;
 
     const interest: tez = natToMutez(abs(newDepositAsInt));
 
   } with(interest)
 
-function updateExchangeRatio(const value : int ; var store : store) : return is
+function incrementExchangeRatio(const elapsedBlocks: int; var store: store): unit is
+  block {
+    if (elapsedBlocks < 10000)
+      then skip;
+      else block {
+        var ratioValue : nat := store.exchangeRatio.ratio + 1n;
+        patch store.exchangeRatio with record [ ratio = ratioValue ]
+      }
+  } with (unit)
+
+function updateExchangeRatio(const value : nat ; var store : store) : return is
  block {
   // Fail if is not the owner
   if (sender =/= store.owner) 
     then failwith("You must be the owner of the contract to update the exchange ratio");
     else block {
-      store.exchangeRatio := value;
+      patch store.exchangeRatio with record [ratio = value]
     }
  } with (emptyOps, store)
 
- function updateCollateralRatio(const value : int ; var store : store) : return is
+ function updateCollateralRatio(const value : nat ; var store : store) : return is
  block {
   // Fail if is not the owner
   if (sender =/= store.owner) 
@@ -117,10 +136,10 @@ function depositImp(var store: store): return is
         const senderAddress: address = getSender(False);
 
         // Setting the deposit to the sender
-        var depositsMap: big_map(address, depositInfo) := store.deposits;    
-        var senderDepositInfo: option(depositInfo) := depositsMap[senderAddress];            
+        var depositsMap: big_map(address, balanceInfo) := store.deposits;    
+        var senderbalanceInfo: option(balanceInfo) := depositsMap[senderAddress];            
 
-        case senderDepositInfo of          
+        case senderbalanceInfo of          
           | Some(di) -> 
             block {                 
               const elapsedBlocks:int = now - di.blockTimestamp;
@@ -133,17 +152,20 @@ function depositImp(var store: store): return is
             }
           | None -> 
             block {
-              store.liquidity := store.liquidity + amount;  
-
-              const deposit : depositInfo = record
+              const deposit : balanceInfo = record
                 tezAmount = amount;
                 blockTimestamp = now;
               end;
 
               depositsMap[senderAddress] := deposit;
               store.deposits := depositsMap;
+              store.liquidity := store.liquidity + amount;  
             }
         end; 
+
+        // Increment exchangeRatio
+        const elapsedBlocks: int = now - store.exchangeRatio.blockTimestamp;
+        incrementExchangeRatio(elapsedBlocks, store);
 
         //TODO: try to get the decimals property from the token contract
 
@@ -151,7 +173,9 @@ function depositImp(var store: store): return is
         const amountInNat: nat = tezToNatWithTz(amount);
         // The user receives a quantity of pTokens equal to the underlying tokens supplied, divided by the current Exchange Rate.
         const decimals: nat = store.token.tokenDecimals;
-        const amountInNatExchangeRate: int = (natToInt(amountInNat) / store.exchangeRatio) * pow(10, natToInt(decimals));
+
+        //TODO: if ratio is zero, failwith
+        const amountInNatExchangeRate: int = natToInt(amountInNat / store.exchangeRatio.ratio) * pow(10, natToInt(decimals));
         const amountToMint: nat = intToNat(amountInNatExchangeRate);
 
         const tokenProxyMintToOperation: operation = tokenProxy(MintTo(senderAddress, amountToMint), store);
@@ -162,33 +186,63 @@ function depositImp(var store: store): return is
   } with(operations, store)
 
 function withdrawImp(var amountToWithdraw: nat; var store: store): return is
-  block {    
-    const senderAddress: address = getSender(False);
-
+  block {  
     var operations: list(operation) := nil;
-        
-    var di: depositInfo := get_force(senderAddress, store.deposits);
-    const elapsedBlocks:int = now - di.blockTimestamp;
-    var withdrawAmount: tez := di.tezAmount + calculateInterest(elapsedBlocks, di.tezAmount, store);
 
-    // TODO add accountLiquidity validation,
-    // account collateral * collateral factor - account borrow balance
-    if withdrawAmount > store.liquidity
-      then failwith("No tez to withdraw!");
-      else block {
-        // update storage
-        var depositsMap: big_map(address, depositInfo) := store.deposits;                
-        remove senderAddress from map depositsMap;
-        store.deposits := depositsMap;  
+    if amountToWithdraw = 0n
+      then failwith("No amount to withdraw!"); 
+      else block {   
+        const senderAddress: address = getSender(False);
+            
+        var depositsMap: big_map(address, balanceInfo) := store.deposits;    
+        var senderbalanceInfo: option(balanceInfo) := depositsMap[senderAddress];            
 
-        store.liquidity := store.liquidity - withdrawAmount;                              
+        case senderbalanceInfo of 
+            | None -> failwith("Account doesn't exist!")
+            | Some(di) -> 
+              block {                 
+                const elapsedBlocks:int = now - di.blockTimestamp;
+                di.tezAmount := di.tezAmount + calculateInterest(elapsedBlocks, di.tezAmount, store);
+                di.blockTimestamp := now;
 
-        // Create the operation to transfer tez to sender
-        const receiver: contract(unit) = get_contract(senderAddress);
-        const payoutOperation: operation = transaction(unit, withdrawAmount, receiver);
-        operations:= list 
-           payoutOperation 
-        end;          
+                depositsMap[senderAddress] := di;            
+                store.deposits := depositsMap;              
+
+                // The amount redeemed must be less than the user's account liquidity 
+                // and the market's available liquidity.
+                if natToTz(amountToWithdraw) >= di.tezAmount or natToTz(amountToWithdraw) >= store.liquidity
+                  then failwith("No tez available to withdraw!");
+                  else block {
+                    // Increment exchangeRate
+                    const elapsedBlocks: int = now - store.exchangeRatio.blockTimestamp;
+                    incrementExchangeRatio(elapsedBlocks, store);
+
+                    // Calculate amount to burn
+                    //TODO: if ratio is zero, failwith
+                    const amountInTokensToBurn: nat = amountToWithdraw / store.exchangeRatio.ratio;
+
+                    // Burn pTokens
+                    const tokenProxyBurnToOperation: operation = tokenProxy(BurnTo(senderAddress, amountInTokensToBurn), store);
+
+                    // Update user's balance
+                    di.tezAmount := di.tezAmount - natToTz(amountToWithdraw);
+                    di.blockTimestamp := now;
+
+                    depositsMap[senderAddress] := di;            
+                    store.deposits := depositsMap;  
+
+                    // Update liquidity
+                    store.liquidity := store.liquidity - natToTz(amountToWithdraw);
+
+                    // Create the operation to transfer tez to sender
+                    const receiver: contract(unit) = get_contract(senderAddress);
+                    const payoutOperation: operation = Tezos.transaction(unit, natToTz(amountToWithdraw), receiver);
+                    operations:= list 
+                      payoutOperation
+                    end;
+                  }
+              }
+        end;
       }
   } with(operations, store)
 
@@ -206,7 +260,36 @@ function addLiquidity( var store : store) : return is
     }
 } with (emptyOps, store)
 
-// Entrypoint
+function getExchangeRatio (const callback : contract(exchangeRatioInformation); var store : store) : return is
+  block {
+    var exchangeRatio: exchangeRatioInformation := store.exchangeRatio;
+
+    const exchangeRatioOperation: operation = Tezos.transaction(exchangeRatio, 0mutez, callback);
+    operations := list 
+        exchangeRatioOperation 
+    end;  
+} with (operations, store);
+
+
+function getBalanceOf (const accountAddress: address; const callback : contract(balanceInfo); var store : store) : return is
+  block {
+      var operations: list(operation) := nil;
+
+      var depositsMap: big_map(address, balanceInfo) := store.deposits;    
+      var senderbalanceInfo: option(balanceInfo) := depositsMap[accountAddress];            
+
+      case senderbalanceInfo of          
+        | None -> failwith("Account address not found")
+        | Some(di) -> 
+          block {
+            const balanceOperation: operation = Tezos.transaction(di, 0mutez, callback);
+            operations := list 
+                balanceOperation 
+            end;   
+          }
+      end; 
+} with (operations, store);
+
 function main (const action: action; var store: store): return is
   block {
     skip
@@ -218,4 +301,6 @@ function main (const action: action; var store: store): return is
     | AddLiquidity(n) ->  addLiquidity(store)
     | UpdateTokenAddress(n) -> updateTokenAddress(n, store)
     | UpdateTokenDecimals(n) -> updateTokenDecimals(n, store)
-    end;  
+    | GetExchangeRatio(n) -> getExchangeRatio(n.1, store)
+    | GetBalanceOf(n) -> getBalanceOf(n.0, n.1, store)
+  end;  

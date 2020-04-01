@@ -22,7 +22,9 @@ const testMethods = async () => {
 
     // When
     const methodsKeys = Object.keys(methods);
-    const methodsThatMustExist = ['transfer', 'mint', 'mintTo', 'addOwner', 'getTotalSupply', 'getBalance', 'getAllowance', 'burn', 'approve', 'decimals', 'symbol', 'name'];
+    const methodsThatMustExist = ['transfer', 'mint', 'mintTo', 'addOwner', 
+    'getTotalSupply', 'getBalance', 'getAllowance', 'burn', 'burnTo',
+    'approve', 'decimals', 'symbol', 'name'];
     
     //Then
     assert(methodsKeys.length === methodsThatMustExist.length, "Some methods doesn't exist");
@@ -88,7 +90,7 @@ const testMintTo =  async () => {
   console.log(`[OK] MintTo ${accountFaucetB} amount ${tokenAmountInUnits(valueBN, decimals)} ${symbol}, check supply and account balance.`);
 };
 
-const testTransferA =  async () => {
+const testTransfer =  async () => {
   // Given
   Tezos.setProvider({ rpc, signer: signerFaucetA });
   const contractAddress = contractDeploy.address;
@@ -103,11 +105,15 @@ const testTransferA =  async () => {
   const decimals = initialStorage.decimals;
   const symbol = initialStorage.symbol;
   const value = '2000000000000000000';
+  const allowedBN = initialStorage.accounts[accountFaucetA].allowances.get(accountFaucetB) || (new BigNumber(0));
+  const allowed = allowedBN.toString();
   const valueBN = new BigNumber(value);
 
   // When
-  const operationAllow = await contract.methods.approve(accountFaucetB, value).send();
-  await operationAllow.confirmation();
+  if(value !== allowed && allowedBN && allowedBN.isZero()) {
+    const operationAllow = await contract.methods.approve(accountFaucetB, value).send();
+    await operationAllow.confirmation();
+  }
 
   const op = await contract.methods.transfer(accountFaucetA, accountFaucetB, value).send();
   await op.confirmation();
@@ -123,39 +129,25 @@ const testTransferA =  async () => {
   console.log(`[OK] Transfer amount of ${tokenAmountInUnits(valueBN, decimals)} ${symbol} from ${accountFaucetA} to ${accountFaucetB}.`);
 };
 
-const testTransferB =  async () => {
+const testVectorAttack =  async () => {
   // Given
+  Tezos.setProvider({ rpc, signer: signerFaucetA });
   const contractAddress = contractDeploy.address;
-  Tezos.setProvider({ rpc, signer: signerFaucetB });
-
-  const accountFaucetA = await signerFaucetA.publicKeyHash();
-  const accountFaucetB = await signerFaucetB.publicKeyHash();
   const contract = await Tezos.contract.at(contractAddress);
-  const initialStorage = await getTokenStorage(contractAddress, [accountFaucetA, accountFaucetB]);
-  const initialAccountFaucetABalance = initialStorage.accounts[accountFaucetA].balance;
-  const initialAccountFaucetBBalance = initialStorage.accounts[accountFaucetB].balance;
+  const accountFaucetB = await signerFaucetB.publicKeyHash();
 
-  const decimals = initialStorage.decimals;
-  const symbol = initialStorage.symbol;
-  const value = '2000000000000000000';
-  const valueBN = new BigNumber(value);
+  try {
+    // When
+    const operationAllow1 = await contract.methods.approve(accountFaucetB, '2000000000000000000').send();
+    await operationAllow1.confirmation();
 
-  // When
-  const operationAllow = await contract.methods.approve(accountFaucetA, value).send();
-  await operationAllow.confirmation();
+    const operationAllow2 = await contract.methods.approve(accountFaucetB, '2000000000000000000').send();
+    await operationAllow2.confirmation();
 
-  const operationTransfer = await contract.methods.transfer(accountFaucetB, accountFaucetA, value).send();
-  await operationTransfer.confirmation();
-
-  // Then
-  const storageAfter = await getTokenStorage(contractAddress, [accountFaucetA, accountFaucetB]);
-  const balanceAccountFaucetAAfter = storageAfter.accounts[accountFaucetA].balance;
-  const balanceAccountFaucetBAfter = storageAfter.accounts[accountFaucetB].balance;
-
-  assert(initialAccountFaucetBBalance.minus(value).toString() === balanceAccountFaucetBAfter.toString(), 'Balance minus value should be equal to balance after transfer for account B.');
-  assert(initialAccountFaucetABalance.plus(value).toString() === balanceAccountFaucetAAfter.toString(), 'Balance plus value should be equal to balance after transfer for account A.');
-
-  console.log(`[OK] Transfer amount of ${tokenAmountInUnits(valueBN, decimals)} ${symbol} from ${accountFaucetB} to ${accountFaucetA}.`);
+    // Then
+  } catch (err) {
+    console.log(`[OK] Check for vector attack, ${err.message}.`);
+  }
 };
 
 const testProperties =  async () => {
@@ -201,9 +193,9 @@ const test = async () => {
       testProperties,
       testMint,
       testMintTo,
-      testTransferA,
-      testTransferB,
+      testTransfer,
       testAddOwner,
+      testVectorAttack,
     ];
 
     for (let test of tests) {

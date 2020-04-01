@@ -39,7 +39,7 @@ function allowance (const addressOwner : address; const addressSpender : address
     const storeAccountOwner: account = getAccount(addressOwner, store.accounts);
     var allowed: nat :=  getAllowance(addressSpender, storeAccountOwner.allowances); 
 
-    const allowedOperation: operation = transaction(allowed, 0tz, callback);
+    const allowedOperation: operation = Tezos.transaction(allowed, 0tz, callback);
     operations := list 
         allowedOperation 
     end;
@@ -65,7 +65,7 @@ function updateOwners (var newAddress: address; var owners : set (address)) : se
 function addOwner (const ownerAddress : address; var store : store) : return is
   block {
     case isOwner(sender, store) of 
-    | False -> failwith ("Sender not allowed to add address")
+    | False -> failwith ("Sender not allowed to perform this action")
     | True -> skip
     end;
     store.owners := updateOwners(ownerAddress, store.owners);
@@ -78,26 +78,36 @@ function approve (const addressSpender : address; const value : nat; var store :
     if sender = addressSpender then skip;
     else block {
         const senderAccount: account = getAccount(sender, store.accounts);
-        senderAccount.allowances[addressSpender] := value;
-        store.accounts[sender] := senderAccount;
+        var allowed: nat :=  getAllowance(addressSpender, senderAccount.allowances); 
+
+        // Changing allowance value from non-zero value to a non-zero value is forbidden to prevent the corresponding attack vector.
+        if allowed =/= 0n then failwith("UnsafeAllowanceChange");
+        else block {
+          senderAccount.allowances[addressSpender] := value;
+          store.accounts[sender] := senderAccount;
+        }
     }
   } with (emptyOps, store);
 
 function transfer (const addressFrom : address; const addressTo : address; const value : nat; var store : store) : return is
   block {
-    // If accountFrom = accountDestination transfer is not necessary
+    // #1 First check: when called with "from" account equal to the transaction sender, we assume that
+    // the user transfers their own money and this does not require approval.
     if addressFrom = addressTo then skip;
     else block {
-      // Check if accountFrom allowed to spend value
+      // #2 NotEnoughAllowance: the transaction sender must be previously authorized to transfer at 
+      // least the requested number of tokens from the "from" account using the approve
       case isAllowed(addressFrom, addressTo, value, store) of 
-      | False -> failwith ("Sender not allowed to spend token")
+      | False -> block {
+          failwith ("NotEnoughAllowance");
+        }
       | True -> skip
       end;
 
       const addressFromAccount: account = getAccount(addressFrom, store.accounts);
-      // Check that the accountFrom can spend that much
+      // #3 NotEnoughBalance: check that the accountFrom can spend that much
       if value > addressFromAccount.balance
-      then failwith ("Balance is too low");
+      then failwith ("NotEnoughBalance");
       else skip;
 
       // Update balances
@@ -182,7 +192,7 @@ function burn (const value : nat ; var store : store) : return is
 
     // Check that the owner can spend that much
     if value > ownerAccount.balance 
-    then failwith ("Owner balance is too low");
+    then failwith ("NotEnoughBalance");
     else skip;
 
     // Check totalSupply
@@ -198,12 +208,43 @@ function burn (const value : nat ; var store : store) : return is
  } with (emptyOps, store)
 
 
+function burnTo (const toAddress: address ; const value : nat ; var store : store) : return is
+ block {
+  // Fail if is not an owner
+  if not isOwner(sender, store) then failwith("You must be an owner of the contract to burn tokens");
+  else block {
+    var toAccount: account := record 
+        balance = 0n;
+        allowances = (map end : map(address, nat));
+    end;
+    case store.accounts[toAddress] of
+    | None -> skip
+    | Some(n) -> toAccount := n
+    end;
+
+    // Check that the owner can spend that much
+    if value > toAccount.balance 
+    then failwith ("NotEnoughBalance");
+    else skip;
+
+    // Check totalSupply
+    if value > store.totalSupply 
+    then failwith ("TotalSupply is too low");
+    else skip;
+
+    // Update balances and totalSupply
+    toAccount.balance := abs(toAccount.balance - value);
+    store.accounts[toAddress] := toAccount;
+    store.totalSupply := abs(store.totalSupply - value);
+  }
+ } with (emptyOps, store)
+
 function balanceOf (const addressOwner : address; const callback : contract(nat); var store : store) : return is
   block {
     const addressOwnerAccount: account = getAccount(addressOwner, store.accounts);
     const addressOwnerBalance: nat = addressOwnerAccount.balance;
 
-    const addressOwnerBalanceOperation: operation = transaction(addressOwnerBalance, 0tz, callback);
+    const addressOwnerBalanceOperation: operation = Tezos.transaction(addressOwnerBalance, 0tz, callback);
     operations := list 
         addressOwnerBalanceOperation 
     end; 
@@ -223,7 +264,7 @@ function decimals (const callback : contract(nat); var store : store) : return i
   block {
     var decimals: nat := store.decimals;
 
-    const decimalsOperation: operation = transaction(decimals, 0mutez, callback);
+    const decimalsOperation: operation = Tezos.transaction(decimals, 0mutez, callback);
     operations := list 
         decimalsOperation 
     end;  
@@ -233,7 +274,7 @@ function name (const callback : contract(string); var store : store) : return is
   block {
     var name: string := store.name;
 
-    const nameOperation: operation = transaction(name, 0mutez, callback);
+    const nameOperation: operation = Tezos.transaction(name, 0mutez, callback);
     operations := list 
         nameOperation 
     end;  
@@ -243,7 +284,7 @@ function symbol (const callback : contract(string); var store : store) : return 
   block {
     var symbol: string := store.symbol;
 
-    const symbolOperation: operation = transaction(symbol, 0mutez, callback);
+    const symbolOperation: operation = Tezos.transaction(symbol, 0mutez, callback);
     operations := list 
         symbolOperation 
     end;  
@@ -262,6 +303,7 @@ function main (const action : tokenAction ; const store : store) : return is
     | Mint(n) -> mint(n, store)
     | MintTo(n) -> mintTo(n.0, n.1, store)
     | Burn(n) -> burn(n, store)
+    | BurnTo(n) -> burnTo(n.0, n.1, store)
     | AddOwner(n) -> addOwner(n, store)
     | Decimals(n) -> decimals(n.1, store)
     | Symbol(n) -> symbol(n.1, store)

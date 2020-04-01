@@ -2,6 +2,10 @@
   "name": "tezos-defi-dapp",
   "version": "0.1.0",
   "private": true,
+  "engines" : { 
+    "node" : ">=v12.13.0",
+    "yarn": "^1.12.3" 
+  },
   "dependencies": {
     "@taquito/taquito": "^6.1.0-beta.0",
     "typescript": "~3.7.2"
@@ -14,6 +18,7 @@
     "deploy": "node ./scripts/deploy.js",
     "deploy:token": "node ./scripts/deploy.js fa12",
     "deploy:pool": "node ./scripts/deploy.js pool",
+    "test": "yarn test:token && yarn test:pool && yarn test:interaction",
     "test:token": "node ./test/fa12.spec.js",
     "test:pool": "node ./test/pool.spec.js",
     "test:interaction": "node test/interactions.spec.js"
