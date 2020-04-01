@@ -107,10 +107,9 @@ const testWithdraw = async() => {
   
     // Then
     const storageAfter = await getPoolStorage(contractAddress, [accountFaucetA, accountFaucetB]);
-    const afterDepositBalance = storageAfter.deposits[accountFaucetA].tezAmount;
     const accountFaucetAAfterBalance = await Tezos.tz.getBalance(accountFaucetA)
 
-    assert(accountFaucetAAfterBalance.isGreaterThan(accountFaucetAInitialBalance) && afterDepositBalance.isZero(), 'Deposit should be updated');
+    assert(accountFaucetAAfterBalance.isGreaterThan(accountFaucetAInitialBalance), 'Deposit should be updated');
     console.log(`[OK] Withdraw: user made a withdraw and have ${tzFormatter(accountFaucetAAfterBalance, 'tz')}.`)
 }
 

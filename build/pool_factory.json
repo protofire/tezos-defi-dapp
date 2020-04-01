@@ -3292,7 +3292,7 @@
                                   { "prim": "DIG",
                                     "args": [ { "int": "3" } ] },
                                   { "prim": "CDR" } ] ] },
-                          { "prim": "COMPARE" }, { "prim": "LE" },
+                          { "prim": "COMPARE" }, { "prim": "GE" },
                           { "prim": "DIP",
                             "args":
                               [ [ { "prim": "DIP",
@@ -3319,8 +3319,8 @@
                                           { "prim": "CDR" },
                                           { "prim": "CAR" },
                                           { "prim": "CDR" } ] ] },
-                                  { "prim": "COMPARE" }, { "prim": "LE" } ] ] },
-                          { "prim": "AND" },
+                                  { "prim": "COMPARE" }, { "prim": "GE" } ] ] },
+                          { "prim": "OR" },
                           { "prim": "IF",
                             "args":
                               [ [ { "prim": "PUSH",

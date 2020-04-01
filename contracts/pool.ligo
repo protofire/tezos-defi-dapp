@@ -207,7 +207,7 @@ function withdrawImp(var amountToWithdraw: nat; var store: store): return is
 
             // The amount redeemed must be less than the user's account liquidity 
             // and the market's available liquidity.
-            if natToTz(amountToWithdraw) <= di.tezAmount and natToTz(amountToWithdraw) <= store.liquidity
+            if natToTz(amountToWithdraw) >= di.tezAmount or natToTz(amountToWithdraw) >= store.liquidity
               then failwith("No tez available to withdraw!");
               else block {
                 // Increment exchangeRate
