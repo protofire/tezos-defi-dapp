@@ -116,10 +116,10 @@ const testWithdraw = async() => {
 
 const test = async () => {
     const tests = [
-      testMethods,
-      testCheckLiquidity,
+     // testMethods,
+     // testCheckLiquidity,
       testDeposit,
-      testWithdraw,
+     // testWithdraw,
     ];
 
     for (let test of tests) {
