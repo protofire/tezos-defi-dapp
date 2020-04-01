@@ -105,11 +105,15 @@ const testTransfer =  async () => {
   const decimals = initialStorage.decimals;
   const symbol = initialStorage.symbol;
   const value = '2000000000000000000';
+  const allowedBN = initialStorage.accounts[accountFaucetA].allowances.get(accountFaucetB);
+  const allowed = allowedBN.toString();
   const valueBN = new BigNumber(value);
 
   // When
-  const operationAllow = await contract.methods.approve(accountFaucetB, value).send();
-  await operationAllow.confirmation();
+  if(value !== allowed && allowedBN && allowedBN.isZero()) {
+    const operationAllow = await contract.methods.approve(accountFaucetB, value).send();
+    await operationAllow.confirmation();
+  }
 
   const op = await contract.methods.transfer(accountFaucetA, accountFaucetB, value).send();
   await op.confirmation();
@@ -123,6 +127,27 @@ const testTransfer =  async () => {
   assert(initialAccountFaucetBBalance.plus(value).toString() === balanceAccountFaucetBAfter.toString(), 'Balance plus value should be equal to balance after transfer for account B.');
 
   console.log(`[OK] Transfer amount of ${tokenAmountInUnits(valueBN, decimals)} ${symbol} from ${accountFaucetA} to ${accountFaucetB}.`);
+};
+
+const testVectorAttack =  async () => {
+  // Given
+  Tezos.setProvider({ rpc, signer: signerFaucetA });
+  const contractAddress = contractDeploy.address;
+  const contract = await Tezos.contract.at(contractAddress);
+  const accountFaucetB = await signerFaucetB.publicKeyHash();
+
+  try {
+    // When
+    const operationAllow1 = await contract.methods.approve(accountFaucetB, '2000000000000000000').send();
+    await operationAllow1.confirmation();
+
+    const operationAllow2 = await contract.methods.approve(accountFaucetB, '2000000000000000000').send();
+    await operationAllow2.confirmation();
+
+    // Then
+  } catch (err) {
+    console.log(`[OK] Check for vector attack, ${err.message}.`);
+  }
 };
 
 const testProperties =  async () => {
@@ -170,6 +195,7 @@ const test = async () => {
       testMintTo,
       testTransfer,
       testAddOwner,
+      testVectorAttack,
     ];
 
     for (let test of tests) {
