@@ -163,7 +163,7 @@ function depositImp(var store: store): return is
             }
         end; 
 
-        // Increment exchangeRate
+        // Increment exchangeRatio
         const elapsedBlocks: int = now - store.exchangeRatio.blockTimestamp;
         incrementExchangeRatio(elapsedBlocks, store);
 
@@ -186,60 +186,64 @@ function depositImp(var store: store): return is
   } with(operations, store)
 
 function withdrawImp(var amountToWithdraw: nat; var store: store): return is
-  block {    
-    const senderAddress: address = getSender(False);
-
+  block {  
     var operations: list(operation) := nil;
-        
-    var depositsMap: big_map(address, balanceInfo) := store.deposits;    
-    var senderbalanceInfo: option(balanceInfo) := depositsMap[senderAddress];            
 
-    case senderbalanceInfo of 
-        | None -> failwith("Account doesn't exist!")
-        | Some(di) -> 
-          block {                 
-            const elapsedBlocks:int = now - di.blockTimestamp;
-            di.tezAmount := di.tezAmount + calculateInterest(elapsedBlocks, di.tezAmount, store);
-            di.blockTimestamp := now;
+    if amountToWithdraw = 0n
+      then failwith("No amount to withdraw!"); 
+      else block {   
+        const senderAddress: address = getSender(False);
+            
+        var depositsMap: big_map(address, balanceInfo) := store.deposits;    
+        var senderbalanceInfo: option(balanceInfo) := depositsMap[senderAddress];            
 
-            depositsMap[senderAddress] := di;            
-            store.deposits := depositsMap;              
-
-            // The amount redeemed must be less than the user's account liquidity 
-            // and the market's available liquidity.
-            if natToTz(amountToWithdraw) >= di.tezAmount or natToTz(amountToWithdraw) >= store.liquidity
-              then failwith("No tez available to withdraw!");
-              else block {
-                // Increment exchangeRate
-                const elapsedBlocks: int = now - store.exchangeRatio.blockTimestamp;
-                incrementExchangeRatio(elapsedBlocks, store);
-
-                // Calculate amount to burn
-                //TODO: if ratio is zero, failwith
-                const amountInTokensToBurn: nat = amountToWithdraw / store.exchangeRatio.ratio;
-
-                // Burn pTokens
-                const tokenProxyBurnToOperation: operation = tokenProxy(BurnTo(senderAddress, amountInTokensToBurn), store);
-
-                // Update user's balance
-                di.tezAmount := di.tezAmount - natToTz(amountToWithdraw);
+        case senderbalanceInfo of 
+            | None -> failwith("Account doesn't exist!")
+            | Some(di) -> 
+              block {                 
+                const elapsedBlocks:int = now - di.blockTimestamp;
+                di.tezAmount := di.tezAmount + calculateInterest(elapsedBlocks, di.tezAmount, store);
                 di.blockTimestamp := now;
 
                 depositsMap[senderAddress] := di;            
-                store.deposits := depositsMap;  
+                store.deposits := depositsMap;              
 
-                // Update liquidity
-                store.liquidity := store.liquidity - natToTz(amountToWithdraw);
+                // The amount redeemed must be less than the user's account liquidity 
+                // and the market's available liquidity.
+                if natToTz(amountToWithdraw) >= di.tezAmount or natToTz(amountToWithdraw) >= store.liquidity
+                  then failwith("No tez available to withdraw!");
+                  else block {
+                    // Increment exchangeRate
+                    const elapsedBlocks: int = now - store.exchangeRatio.blockTimestamp;
+                    incrementExchangeRatio(elapsedBlocks, store);
 
-                // Create the operation to transfer tez to sender
-                const receiver: contract(unit) = get_contract(senderAddress);
-                const payoutOperation: operation = Tezos.transaction(unit, natToTz(amountToWithdraw), receiver);
-                operations:= list 
-                  payoutOperation
-                end;
+                    // Calculate amount to burn
+                    //TODO: if ratio is zero, failwith
+                    const amountInTokensToBurn: nat = amountToWithdraw / store.exchangeRatio.ratio;
+
+                    // Burn pTokens
+                    const tokenProxyBurnToOperation: operation = tokenProxy(BurnTo(senderAddress, amountInTokensToBurn), store);
+
+                    // Update user's balance
+                    di.tezAmount := di.tezAmount - natToTz(amountToWithdraw);
+                    di.blockTimestamp := now;
+
+                    depositsMap[senderAddress] := di;            
+                    store.deposits := depositsMap;  
+
+                    // Update liquidity
+                    store.liquidity := store.liquidity - natToTz(amountToWithdraw);
+
+                    // Create the operation to transfer tez to sender
+                    const receiver: contract(unit) = get_contract(senderAddress);
+                    const payoutOperation: operation = Tezos.transaction(unit, natToTz(amountToWithdraw), receiver);
+                    operations:= list 
+                      payoutOperation
+                    end;
+                  }
               }
-          }
-    end;
+        end;
+      }
   } with(operations, store)
 
 function addLiquidity( var store : store) : return is
