@@ -66,8 +66,8 @@ const deployPoolContract = async () => {
 
     const storage = {
         owner,
-        supplyBalances: new MichelsonMap(),
-        borrowBalances: new MichelsonMap(),
+        deposits: new MichelsonMap(),
+        borrows: new MichelsonMap(),
         collateralRatio: 2,
         borrowInterest: 2,
         supplyInterest: 1,
