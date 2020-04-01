@@ -1,3 +1,6 @@
+[![CircleCI](https://circleci.com/gh/protofire/tezos-defi-dapp.svg?style=svg)](https://circleci.com/gh/protofire/tezos-defi-dapp)
+
+
 # Tezos defi dapp
 User interface with high level of deFi functionalities 
 
