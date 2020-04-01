@@ -105,7 +105,7 @@ const testTransfer =  async () => {
   const decimals = initialStorage.decimals;
   const symbol = initialStorage.symbol;
   const value = '2000000000000000000';
-  const allowedBN = initialStorage.accounts[accountFaucetA].allowances.get(accountFaucetB);
+  const allowedBN = initialStorage.accounts[accountFaucetA].allowances.get(accountFaucetB) || (new BigNumber(0));
   const allowed = allowedBN.toString();
   const valueBN = new BigNumber(value);
 
