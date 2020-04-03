@@ -274,7 +274,11 @@ function withdrawImp(var amountToWithdraw: nat; var store: store): return is
     store.liquidity := store.liquidity - amountToWithdrawInTz;
 
     // Create the operation to transfer tez to sender
-    const receiver: contract(unit) = get_contract(senderAddress);
+    const receiver : contract (unit) = 
+      case (Tezos.get_contract_opt (senderAddress): option(contract(unit))) of 
+        Some (contract) -> contract
+      | None -> (failwith ("Not a contract") : (contract(unit)))
+      end;
     const payoutOperation: operation = Tezos.transaction(unit, amountToWithdrawInTz, receiver);
     const operations : list (operation) = list [payoutOperation];
   } with(operations, store)
@@ -355,7 +359,12 @@ function borrow(var amountToBorrow: nat; var store: store): return is
     incrementBorrowInterest(store);
 
     // Payout transaction to the sender address, with the amount to borrow
-    const receiver: contract(unit) = get_contract(senderAddress);
+    const receiver : contract (unit) = 
+      case (Tezos.get_contract_opt (senderAddress): option(contract(unit))) of 
+        Some (contract) -> contract
+      | None -> (failwith ("Not a contract") : (contract(unit)))
+      end;
+
     const payoutOperation : operation = Tezos.transaction (unit, amountToBorrowInTz, receiver) ;
     const operations : list (operation) = list [payoutOperation];
   } with(operations, store)
