@@ -346,11 +346,11 @@ function borrow(var amountToBorrow: nat; var store: store): return is
       then failwith("Amount to borrow is greater than liquidity!");
       else skip;
 
-    // Setting the borrow to the sender
-    var borrowItem: balanceInfo := updateBorrow(senderAddress, amountToBorrowInTz, store);
-
     // Increment interest borrow
     incrementBorrowInterest(store);
+    
+    // Setting the borrow to the sender
+    var borrowItem: balanceInfo := updateBorrow(senderAddress, amountToBorrowInTz, store);
 
     // Update liquidity
     store.liquidity := store.liquidity - amountToBorrowInTz;
