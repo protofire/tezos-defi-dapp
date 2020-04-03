@@ -198,8 +198,6 @@ function updateBorrow(var senderAddress: address; var amountBorrow: tez; var sto
 
 function depositImp(var store: store): return is
   block {
-    var operations: list(operation) := nil;
-
     if amount = 0mutez
       then failwith("No tez transferred!");
       else skip;
@@ -230,16 +228,11 @@ function depositImp(var store: store): return is
     const amountToMint: nat = intToNat(amountInNatExchangeRate);
 
     const tokenProxyMintToOperation: operation = tokenProxy(MintTo(senderAddress, amountToMint), store);
-    operations := list
-      tokenProxyMintToOperation
-    end;
-
+    const operations : list (operation) = list [tokenProxyMintToOperation];
   } with(operations, store)
 
 function withdrawImp(var amountToWithdraw: nat; var store: store): return is
   block {  
-    var operations: list(operation) := nil;
-
     // If the amount is zero, failwith
     if amountToWithdraw = 0n
       then failwith("No amount to withdraw!"); 
@@ -283,10 +276,7 @@ function withdrawImp(var amountToWithdraw: nat; var store: store): return is
     // Create the operation to transfer tez to sender
     const receiver: contract(unit) = get_contract(senderAddress);
     const payoutOperation: operation = Tezos.transaction(unit, amountToWithdrawInTz, receiver);
-    operations:= list 
-      payoutOperation
-    end;
-
+    const operations : list (operation) = list [payoutOperation];
   } with(operations, store)
 
 function addLiquidity( var store : store) : return is
@@ -307,10 +297,8 @@ function getExchangeRatio (const callback : contract(exchangeRatioInformation); 
   block {
     var exchangeRatio: exchangeRatioInformation := store.exchangeRatio;
 
-    const exchangeRatioOperation: operation = Tezos.transaction(exchangeRatio, 0mutez, callback);
-    operations := list 
-        exchangeRatioOperation 
-    end;  
+    const exchangeRatioOperation: operation = Tezos.transaction(exchangeRatio, 0mutez, callback); 
+    const operations : list (operation) = list [exchangeRatioOperation];
 } with (operations, store);
 
 
@@ -326,9 +314,7 @@ function getBalanceOf (const accountAddress: address; const callback : contract(
         | Some(di) -> 
           block {
             const balanceOperation: operation = Tezos.transaction(di, 0mutez, callback);
-            operations := list 
-                balanceOperation 
-            end;   
+            operations :=  list [balanceOperation];
           }
       end; 
 } with (operations, store);
@@ -368,7 +354,11 @@ function borrow(var amountToBorrow: nat; var store: store): return is
     // Increment interest borrow
     incrementBorrowInterest(store);
 
-  } with(emptyOps, store)
+    // Payout transaction to the sender address, with the amount to borrow
+    const receiver: contract(unit) = get_contract(senderAddress);
+    const payoutOperation : operation = Tezos.transaction (unit, amountToBorrowInTz, receiver) ;
+    const operations : list (operation) = list [payoutOperation];
+  } with(operations, store)
 
 function main (const action: action; var store: store): return is
   block {
