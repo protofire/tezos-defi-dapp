@@ -21,6 +21,7 @@ type action is
 | Deposit of (unit)
 | Withdraw of (nat)
 | Borrow of (nat)
+| RepayBorrow of (unit)
 | AddLiquidity of (unit)
 | UpdateExchangeRatio of (nat)
 | UpdateCollateralRatio of (nat)
@@ -329,11 +330,6 @@ function borrow(var amountToBorrow: nat; var store: store): return is
       then failwith("No amount to borrow!"); 
       else skip;
 
-    // If ratio is zero, failwith
-    if store.exchangeRatio.ratio = 0n
-      then failwith("Exchange ratio must not be zero!");
-      else skip;
-
     const senderAddress: address = getSender(False);
     var depositItem: balanceInfo := updateDeposit(senderAddress, 0tez, store);
 
@@ -341,7 +337,7 @@ function borrow(var amountToBorrow: nat; var store: store): return is
     const depositBalanceInNat: nat = tezToNatWithTz(depositItem.tezAmount);
     const amountOfCollateralAvailable: nat = depositBalanceInNat * store.collateralRatio / 100n;
     const amountToBorrowInTz: tez = natToTz(amountToBorrow);
-    if amountToBorrow >= amountOfCollateralAvailable or amountToBorrowInTz >= store.liquidity
+    if amountToBorrow >= amountOfCollateralAvailable
       then failwith("Amount to borrow is greater than collateral ratio!");
       else skip;
 
@@ -350,13 +346,14 @@ function borrow(var amountToBorrow: nat; var store: store): return is
       then failwith("Amount to borrow is greater than liquidity!");
       else skip;
 
-    const senderAddress: address = getSender(False);
-
     // Setting the borrow to the sender
     var borrowItem: balanceInfo := updateBorrow(senderAddress, amountToBorrowInTz, store);
 
     // Increment interest borrow
     incrementBorrowInterest(store);
+
+    // Update liquidity
+    store.liquidity := store.liquidity - amountToBorrowInTz;
 
     // Payout transaction to the sender address, with the amount to borrow
     const receiver : contract (unit) = 
@@ -369,6 +366,36 @@ function borrow(var amountToBorrow: nat; var store: store): return is
     const operations : list (operation) = list [payoutOperation];
   } with(operations, store)
 
+function repayBorrow(var store: store): return is
+  block {  
+    if amount = 0mutez
+      then failwith("No tez transferred!");
+      else skip;
+
+    const senderAddress: address = getSender(False);
+    var depositItem: balanceInfo := updateDeposit(senderAddress, 0tez, store);
+    var borrowItem: balanceInfo := updateBorrow(senderAddress, 0tez, store);
+
+    // Check collateral ratio.
+    const borrowItemInNat: nat = tezToNatWithTz(borrowItem.tezAmount);
+    const borrowItemInTz: tez = natToTz(borrowItemInNat);
+    if amount >= borrowItemInTz
+      then failwith("Amount to pay is greater than existing borrow amount!");
+      else skip;
+
+    // Decrement interest borrow
+    decrementBorrowInterest(store);
+
+    // Update user's borrow balance
+    borrowItem.tezAmount := borrowItem.tezAmount - amount;
+    borrowItem.blockTimestamp := now;
+    store.borrows[senderAddress] := borrowItem;            
+
+    // Update liquidity
+    store.liquidity := store.liquidity + amount;
+
+  } with(emptyOps, store)
+
 function main (const action: action; var store: store): return is
   block {
     skip
@@ -376,6 +403,7 @@ function main (const action: action; var store: store): return is
     | Deposit(n) -> depositImp(store)
     | Withdraw(n) -> withdrawImp(n, store)
     | Borrow(n) -> borrow(n, store)
+    | RepayBorrow(n) -> repayBorrow(store)
     | UpdateExchangeRatio(n) -> updateExchangeRatio(n, store)
     | UpdateCollateralRatio(n) -> updateCollateralRatio(n, store)
     | AddLiquidity(n) ->  addLiquidity(store)
