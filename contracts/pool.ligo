@@ -45,14 +45,6 @@ const emptyOps: list(operation) = list end;
 
 type return is list(operation) * store
 
-function getSender(const mock: bool): address is
-  block {
-    var senderAddress: address := sender;  
-    if mock 
-      then senderAddress := ("tz1MZ4GPjAA2gZxKTozJt8Cu5Gvu6WU2ikZ4" : address);
-      else skip
-  } with(senderAddress)
-
 function calculateDepositInterest(const elapsedBlocks: int; const deposit: tez; var store: store): tez is
   block {
     const anualBlocks: int = 522119;
@@ -65,9 +57,9 @@ function calculateDepositInterest(const elapsedBlocks: int; const deposit: tez; 
 
     const interest: tez = natToMutez(abs(newDepositAsInt));
 
-  } with(interest)
+  } with interest
 
-function incrementExchangeRatio(var store: store): unit is
+function incrementExchangeRatio(var store: store): store is
   block {
     const elapsedBlocks: int = now - store.exchangeRatio.blockTimestamp;
     if (elapsedBlocks < 10000)
@@ -76,20 +68,24 @@ function incrementExchangeRatio(var store: store): unit is
         var ratioValue : nat := store.exchangeRatio.ratio + 1n;
         patch store.exchangeRatio with record [ ratio = ratioValue ]
       }
-  } with (unit)
+  } with store
 
-function incrementBorrowInterest(var store: store): unit is
+function incrementBorrowInterest(var store: store): store is
   block {
     var borrowInterest: nat := store.borrowInterest + 1n;
     store.borrowInterest := borrowInterest;
-  } with (unit)
+  } with store
 
-function decrementBorrowInterest(var store: store): unit is
+function decrementBorrowInterest(var store: store): store is
   block {
     // Subtraction of two nats yields an int
-    var borrowInterest: nat := intToNat(store.borrowInterest - 1n);
-    store.borrowInterest := borrowInterest;
-  } with (unit)
+    if store.borrowInterest > 0n 
+    then block {
+      var borrowInterest: nat := intToNat(store.borrowInterest - 1n);
+      store.borrowInterest := borrowInterest;
+    }
+    else skip;
+  } with store
 
 function updateExchangeRatio(const value : nat ; var store : store) : return is
  block {
@@ -141,20 +137,20 @@ function tokenProxy (const action : tokenAction; const store : store): operation
     const proxyOperation : operation = Tezos.transaction (action, 0mutez, tokenContract);
   } with proxyOperation
 
-function getDeposit(var senderAddress: address; var store: store): balanceInfo is 
+function getDeposit(var store: store): balanceInfo is 
   block {
     var depositsMap: big_map(address, balanceInfo) := store.deposits;
-    var deposit: option(balanceInfo) := depositsMap[senderAddress];
+    var deposit: option(balanceInfo) := depositsMap[sender];
   } with
   case deposit of          
     | Some(depositItem) -> depositItem
     | None -> record tezAmount = 0tez; blockTimestamp = now; end
   end;
 
-function getBorrow(var senderAddress: address; var store: store): balanceInfo is 
+function getBorrow(var store: store): balanceInfo is 
   block {
     var borrowsMap: big_map(address, balanceInfo) := store.borrows;
-    var borrow: option(balanceInfo) := borrowsMap[senderAddress];
+    var borrow: option(balanceInfo) := borrowsMap[sender];
   } with
   case borrow of          
     | Some(borrowItem) -> borrowItem
@@ -169,33 +165,36 @@ function calculateBorrowInterest(const borrow: tez; var store: store): tez is
 
     const interest: tez = natToMutez(newBorrowAsNat);
 
-  } with(interest)
+  } with interest
 
-function updateDeposit(var senderAddress: address; var amountDeposit: tez; var store: store): balanceInfo is 
+function updateDeposit(var amountDeposit: tez; var store: store): store is 
   block {
-    var depositItem: balanceInfo := getDeposit(senderAddress, store);
+    var depositItem: balanceInfo := getDeposit(store);
    
     // calculate interest             
     const elapsedBlocks:int = now - depositItem.blockTimestamp;
     depositItem.tezAmount := depositItem.tezAmount + calculateDepositInterest(elapsedBlocks, depositItem.tezAmount, store) + amountDeposit;
     depositItem.blockTimestamp := now;
 
-    store.deposits[senderAddress] := depositItem;
+    store.deposits[sender] := depositItem;
     store.liquidity := store.liquidity + amountDeposit;
-} with depositItem
+} with store
 
-function updateBorrow(var senderAddress: address; var amountBorrow: tez; var store: store): balanceInfo is 
+function updateBorrow(var amountBorrow: tez; var store: store): store is 
   block {
-    var borrowItem: balanceInfo := getBorrow(senderAddress, store);
+    var borrowItem: balanceInfo := getBorrow(store);
    
     // calculate interest             
     const elapsedBlocks:int = now - borrowItem.blockTimestamp;
     borrowItem.tezAmount := borrowItem.tezAmount + calculateBorrowInterest(borrowItem.tezAmount, store) + amountBorrow;
     borrowItem.blockTimestamp := now;
 
-    store.borrows[senderAddress] := borrowItem;
-    store.liquidity := store.liquidity - amountBorrow;
-} with borrowItem
+    store.borrows[sender] := borrowItem;
+    if (store.liquidity - amountBorrow) > 0tez 
+      then  store.liquidity := store.liquidity - amountBorrow;
+      else failwith("Not enough liquidity");
+   
+} with store
 
 function depositImp(var store: store): return is
   block {
@@ -208,16 +207,14 @@ function depositImp(var store: store): return is
       then failwith("Exchange ratio must not be zero!");
       else skip;
 
-    const senderAddress: address = getSender(False);
-
     // Setting the deposit to the sender
-    var depositItem: balanceInfo := updateDeposit(senderAddress, amount, store);
+    store := updateDeposit(amount, store);
 
     // Increment exchangeRatio
-    incrementExchangeRatio(store);
+    store := incrementExchangeRatio(store);
 
     // Decrement interest borrow
-    decrementBorrowInterest(store);
+    store := decrementBorrowInterest(store);
 
     // TODO: try to get the decimals property from the token contract
 
@@ -228,7 +225,7 @@ function depositImp(var store: store): return is
     const amountInNatExchangeRate: int = natToInt(amountInNat / store.exchangeRatio.ratio) * pow(10, natToInt(decimals));
     const amountToMint: nat = intToNat(amountInNatExchangeRate);
 
-    const tokenProxyMintToOperation: operation = tokenProxy(MintTo(senderAddress, amountToMint), store);
+    const tokenProxyMintToOperation: operation = tokenProxy(MintTo(sender, amountToMint), store);
     const operations : list (operation) = list [tokenProxyMintToOperation];
   } with(operations, store)
 
@@ -244,8 +241,8 @@ function withdrawImp(var amountToWithdraw: nat; var store: store): return is
       then failwith("Exchange ratio must not be zero!");
       else skip;
 
-    const senderAddress: address = getSender(False);
-    var depositItem: balanceInfo := updateDeposit(senderAddress, 0tez, store);
+    var depositItem: balanceInfo := getDeposit(store);
+    store := updateDeposit(0tez, store);
 
     // The amount to withdraw must be less than the user's account liquidity 
     // and the pool's available liquidity.
@@ -255,28 +252,30 @@ function withdrawImp(var amountToWithdraw: nat; var store: store): return is
       else skip;
 
     // Increment exchangeRate
-    incrementExchangeRatio(store);
+    store := incrementExchangeRatio(store);
 
-   // Increment interest borrow
-    incrementBorrowInterest(store);
+    // Increment interest borrow
+    store := incrementBorrowInterest(store);
 
     // Calculate amount to burn
     const amountInTokensToBurn: nat = amountToWithdraw / store.exchangeRatio.ratio;
 
     // Burn pTokens
-    const tokenProxyBurnToOperation: operation = tokenProxy(BurnTo(senderAddress, amountInTokensToBurn), store);
+    const tokenProxyBurnToOperation: operation = tokenProxy(BurnTo(sender, amountInTokensToBurn), store);
 
     // Update user's balance
     depositItem.tezAmount := depositItem.tezAmount - amountToWithdrawInTz;
     depositItem.blockTimestamp := now;
-    store.deposits[senderAddress] := depositItem;            
+    store.deposits[sender] := depositItem;            
 
     // Update liquidity
-    store.liquidity := store.liquidity - amountToWithdrawInTz;
+    if (store.liquidity - amountToWithdrawInTz) > 0tez 
+      then store.liquidity := store.liquidity - amountToWithdrawInTz;
+      else failwith("Not enough liquidity");
 
     // Create the operation to transfer tez to sender
     const receiver : contract (unit) = 
-      case (Tezos.get_contract_opt (senderAddress): option(contract(unit))) of 
+      case (Tezos.get_contract_opt (sender): option(contract(unit))) of 
         Some (contract) -> contract
       | None -> (failwith ("Not a contract") : (contract(unit)))
       end;
@@ -330,8 +329,8 @@ function borrow(var amountToBorrow: nat; var store: store): return is
       then failwith("No amount to borrow!"); 
       else skip;
 
-    const senderAddress: address = getSender(False);
-    var depositItem: balanceInfo := updateDeposit(senderAddress, 0tez, store);
+    var depositItem: balanceInfo := getDeposit(store);
+    store := updateDeposit(0tez, store);
 
     // Check collateral ratio.
     const depositBalanceInNat: nat = tezToNatWithTz(depositItem.tezAmount);
@@ -347,17 +346,14 @@ function borrow(var amountToBorrow: nat; var store: store): return is
       else skip;
 
     // Increment interest borrow
-    incrementBorrowInterest(store);
+    store := incrementBorrowInterest(store);
     
     // Setting the borrow to the sender
-    var borrowItem: balanceInfo := updateBorrow(senderAddress, amountToBorrowInTz, store);
-
-    // Update liquidity
-    store.liquidity := store.liquidity - amountToBorrowInTz;
+    store := updateBorrow(amountToBorrowInTz, store);
 
     // Payout transaction to the sender address, with the amount to borrow
     const receiver : contract (unit) = 
-      case (Tezos.get_contract_opt (senderAddress): option(contract(unit))) of 
+      case (Tezos.get_contract_opt (sender): option(contract(unit))) of 
         Some (contract) -> contract
       | None -> (failwith ("Not a contract") : (contract(unit)))
       end;
@@ -372,9 +368,10 @@ function repayBorrow(var store: store): return is
       then failwith("No tez transferred!");
       else skip;
 
-    const senderAddress: address = getSender(False);
-    var depositItem: balanceInfo := updateDeposit(senderAddress, 0tez, store);
-    var borrowItem: balanceInfo := updateBorrow(senderAddress, 0tez, store);
+    var borrowItem: balanceInfo := getBorrow(store);
+
+    store := updateDeposit(0tez, store);
+    store := updateBorrow(0tez, store);
 
     // Check collateral ratio.
     const borrowItemInNat: nat = tezToNatWithTz(borrowItem.tezAmount);
@@ -384,12 +381,12 @@ function repayBorrow(var store: store): return is
       else skip;
 
     // Decrement interest borrow
-    decrementBorrowInterest(store);
+    store := decrementBorrowInterest(store);
 
     // Update user's borrow balance
     borrowItem.tezAmount := borrowItem.tezAmount - amount;
     borrowItem.blockTimestamp := now;
-    store.borrows[senderAddress] := borrowItem;            
+    store.borrows[sender] := borrowItem;            
 
     // Update liquidity
     store.liquidity := store.liquidity + amount;

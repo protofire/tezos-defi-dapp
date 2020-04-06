@@ -69,8 +69,7 @@ const deployPoolContract = async () => {
         deposits: new MichelsonMap(),
         borrows: new MichelsonMap(),
         collateralRatio: 2,
-        borrowInterest: 2,
-        supplyInterest: 1,
+        borrowInterest: 5,
         liquidity: 0,
         token: {
             contractAddress: contractFa12Deploy.address,

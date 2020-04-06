@@ -22,15 +22,13 @@ const testDepositWithMint =  async () => {
   const contractPoolAddress = contractPoolDeploy.address;
   const contractTokenAddress = contractTokenDeploy.address;
 
-  Tezos.setProvider({ rpc, signer: signerFaucetA });
-
   const contractPool = await Tezos.contract.at(contractPoolAddress);
   const contractToken = await Tezos.contract.at(contractTokenAddress);
 
   const accountFaucetA = await signerFaucetA.publicKeyHash();
   const accountFaucetB = await signerFaucetB.publicKeyHash();
 
-  const value = 2; // Send 1 tez
+  const value = 10; // Send 1 tez
 
   const initialPoolStorage = await getPoolStorage(contractPoolAddress, [accountFaucetA, accountFaucetB]);
   const initialTokenStorage = await getTokenStorage(contractTokenAddress, [accountFaucetA, accountFaucetB]);
@@ -55,8 +53,8 @@ const testDepositWithMint =  async () => {
   const afterPoolBalance = poolStorageAfter.deposits[accountFaucetA].tezAmount;
   const afterTokenBalance = tokenStorageAfter.accounts[accountFaucetA].balance;
 
-  assert(afterTokenBalance.isGreaterThan(initialTokenBalance), 'Balance should be greater');
-  assert(afterPoolBalance.isGreaterThan(initialPoolBalance), 'Balance should be greater');
+  assert(afterTokenBalance.isGreaterThan(initialTokenBalance), 'Balance token should be greater');
+  assert(afterPoolBalance.isGreaterThan(initialPoolBalance), 'Balance pool should be greater');
 
   console.log(`[OK] Deposit: user made a deposit of ${value} tz. Minted ${tokenAmountInUnits(afterTokenBalance.minus(initialTokenBalance), decimals)} ${symbol}`)
 };

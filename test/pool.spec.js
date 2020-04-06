@@ -26,6 +26,8 @@ const testMethods = async () => {
     const methodsKeys = Object.keys(methods);
     const methodsThatMustExist = [
       'withdraw',
+      'borrow',
+      'repayBorrow',
       'updateTokenDecimals',
       'updateTokenAddress',
       'updateExchangeRatio',
