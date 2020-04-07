@@ -71,7 +71,7 @@ const testDeposit =  async () => {
   const accountFaucetA = await signerFaucetA.publicKeyHash();
   const accountFaucetB = await signerFaucetB.publicKeyHash();
 
-  const value = 1; // Send 1 tez
+  const value = 2; // Send 1 tez
 
   const initialPoolStorage = await getPoolStorage(contractPoolAddress, [accountFaucetA, accountFaucetB]);
 

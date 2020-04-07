@@ -210,10 +210,10 @@ function depositImp(var store: store): return is
     // Setting the deposit to the sender
     store := updateDeposit(amount, store);
 
-    // Increment exchangeRatio
+    // TODO, remove this
     store := incrementExchangeRatio(store);
 
-    // Decrement interest borrow
+    // TODO, remove this
     store := decrementBorrowInterest(store);
 
     // TODO: try to get the decimals property from the token contract
