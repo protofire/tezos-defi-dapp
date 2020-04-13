@@ -144,6 +144,7 @@ const testVectorAttack =  async () => {
     const operationAllow2 = await contract.methods.approve(accountFaucetB, '2000000000000000000').send();
     await operationAllow2.confirmation();
 
+    process.exit(1);
     // Then
   } catch (err) {
     console.log(`[OK] Check for vector attack, ${err.message}.`);
