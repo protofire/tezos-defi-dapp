@@ -18,9 +18,8 @@
     "deploy": "node ./scripts/deploy.js",
     "deploy:token": "node ./scripts/deploy.js fa12",
     "deploy:pool": "node ./scripts/deploy.js pool",
-    "test": "yarn test:token && yarn test:pool && yarn test:interaction",
+    "test": "yarn test:token && yarn test:pool",
     "test:token": "node ./test/fa12.spec.js",
-    "test:pool": "node ./test/pool.spec.js",
-    "test:interaction": "node test/interactions.spec.js"
+    "test:pool": "node ./test/pool.spec.js"
   }
 }

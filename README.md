@@ -71,10 +71,5 @@ To run the unit tests for the fa12.ligo contract, you must execute the following
 yarn test:token
 ```
 
-To run the unit tests for some interactions between contracts, you must execute the following command:
-```
-yarn test:interaction
-```
-
 ### Licensing
 MIT
