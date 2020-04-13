@@ -71,5 +71,11 @@ To run the unit tests for the fa12.ligo contract, you must execute the following
 yarn test:token
 ```
 
+
+To run the unit tests for the borrow methods, you must execute the following command:
+```
+yarn test:borrow
+```
+
 ### Licensing
 MIT
