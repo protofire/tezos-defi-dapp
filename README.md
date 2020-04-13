@@ -78,4 +78,4 @@ yarn test:borrow
 ```
 
 ### Licensing
-MIT
+[MIT](https://github.com/protofire/tezos-defi-dapp/blob/master/LICENSE)
