@@ -101,7 +101,7 @@ function tokenProxy (const action : tokenAction; const store : store): operation
   block {
     const tokenContract: contract (tokenAction) =
       case (Tezos.get_contract_opt (store.token.contractAddress) : option (contract (tokenAction))) of
-        Some (contract) -> contract
+        Some (contractAction) -> contractAction
       | None -> (failwith ("Contract not found.") : contract (tokenAction))
       end;
     const proxyOperation : operation = Tezos.transaction (action, 0mutez, tokenContract);
@@ -227,7 +227,7 @@ function withdrawImp(var amountToWithdraw: nat; var store: store): return is
     // Create the operation to transfer tez to sender
     const receiver : contract (unit) = 
       case (Tezos.get_contract_opt (sender): option(contract(unit))) of 
-        Some (contract) -> contract
+        Some (contractSender) -> contractSender
       | None -> (failwith ("Not a contract") : (contract(unit)))
       end;
     const payoutOperation: operation = Tezos.transaction(unit, amountToWithdrawInTz, receiver);
@@ -275,12 +275,13 @@ function borrow(var amountToBorrow: nat; var store: store): return is
     // Payout transaction to the sender address, with the amount to borrow
     const receiver : contract (unit) = 
       case (Tezos.get_contract_opt (sender): option(contract(unit))) of 
-        Some (contract) -> contract
+        Some (contractSender) -> contractSender
       | None -> (failwith ("Not a contract") : (contract(unit)))
       end;
 
-    const operations : list (operation) = list [Tezos.transaction (unit, amountToBorrowInTz, receiver)];
-  } with(operations, store); attributes ["inline"];
+    const operationTransfer: operation = Tezos.transaction(unit, amountToBorrowInTz, receiver);
+    const operations : list (operation) = list [operationTransfer];
+  } with(operations, store);
 
 function repayBorrow(var store: store): return is
   block {  
