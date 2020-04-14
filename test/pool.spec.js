@@ -151,7 +151,6 @@ const test = async () => {
 
     for (let test of tests) {
       await test();
-     // await new Promise(r => setTimeout(r, 5000));
     }
 };
   

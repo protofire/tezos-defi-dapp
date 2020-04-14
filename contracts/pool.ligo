@@ -182,8 +182,9 @@ function depositImp(var store: store): return is
     // TODO: try to get the decimals property from the token contract
 
     // The user receives a quantity of pTokens equal to the underlying tokens supplied, divided by the current Exchange Rate.
-    const amountToMintInNat: nat = intToNat(natToInt(tezToNatWithTz(amount) / getExchangeRateInternal(store)) * pow(10, natToInt(store.token.tokenDecimals)));
+    const amountToMint: int = natToInt(tezToNatWithTz(amount) / getExchangeRateInternal(store)) * pow(10, natToInt(store.token.tokenDecimals));
 
+    const amountToMintInNat: nat = intToNat(amountToMint);
     // Increment token supply
     const newTokenSupply :nat = store.token.tokenSupply + amountToMintInNat;
     patch store.token with record [tokenSupply = newTokenSupply];
@@ -207,7 +208,9 @@ function withdrawImp(var amountToWithdraw: nat; var store: store): return is
     checkAccountLiquidity(amountToWithdraw, store);
 
     // Calculate amount to burn
-    const amountToBurnInNat: nat = intToNat(natToInt(amountToWithdraw / getExchangeRateInternal(store)) * pow(10, natToInt(store.token.tokenDecimals)));
+    const amountToBurn: int = natToInt(amountToWithdraw / getExchangeRateInternal(store)) * pow(10, natToInt(store.token.tokenDecimals));
+
+    const amountToBurnInNat: nat = intToNat(amountToBurn);
 
     // Decrement token supply
     const newTokenSupply :nat = intToNat(store.token.tokenSupply - amountToBurnInNat);
