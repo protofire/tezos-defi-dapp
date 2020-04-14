@@ -186,7 +186,7 @@ function depositImp(var store: store): return is
 
     // Increment token supply
     const newTokenSupply :nat = store.token.tokenSupply + amountToMintInNat;
-    store.token.tokenSupply := newTokenSupply;
+    patch store.token with record [tokenSupply = newTokenSupply];
 
     // mintTo tokens to the senderAddress
     const tokenProxyMintToOperation: operation = tokenProxy(MintTo(sender, amountToMintInNat), store);
@@ -210,7 +210,8 @@ function withdrawImp(var amountToWithdraw: nat; var store: store): return is
     const amountToBurnInNat: nat = intToNat(natToInt(amountToWithdraw / getExchangeRateInternal(store)) * pow(10, natToInt(store.token.tokenDecimals)));
 
     // Decrement token supply
-    store.token.tokenSupply := intToNat(store.token.tokenSupply - amountToBurnInNat);
+    const newTokenSupply :nat = intToNat(store.token.tokenSupply - amountToBurnInNat);
+    patch store.token with record [tokenSupply = newTokenSupply];
 
     // Burn pTokens
     const tokenProxyBurnToOperation: operation = tokenProxy(BurnTo(sender, amountToBurnInNat), store);
