@@ -4,7 +4,8 @@ const fs = require("fs");
 
 const faucetA = require('../faucetA.json');
 
-const rpc = "https://api.tez.ie/rpc/carthagenet";
+//const rpc = "https://api.tez.ie/rpc/carthagenet";
+const rpc = "http://carthagenet.smartpy.io/";
 
 const signer = InMemorySigner.fromFundraiser(faucetA.email, faucetA.password, faucetA.mnemonic.join(' '));
 Tezos.setProvider({ rpc, signer });

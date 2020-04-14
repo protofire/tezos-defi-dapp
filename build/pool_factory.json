@@ -3529,7 +3529,7 @@
                                             "args": [ { "int": "20" } ] } ] ] },
                                   { "prim": "EXEC" }, { "prim": "DUP" },
                                   { "prim": "AMOUNT" },
-                                  { "prim": "COMPARE" }, { "prim": "GE" },
+                                  { "prim": "COMPARE" }, { "prim": "GT" },
                                   { "prim": "IF",
                                     "args":
                                       [ [ { "prim": "PUSH",

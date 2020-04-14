@@ -38,7 +38,7 @@ const emptyOps: list(operation) = list end;
 
 type return is list(operation) * store;
 
-function getExchangeRate(var store: store): nat is 
+function getExchangeRateInternal(var store: store): nat is 
   block {
     var exchangeRate :nat := 1n;
     if store.token.tokenSupply >= 1n 
@@ -182,7 +182,7 @@ function depositImp(var store: store): return is
     // TODO: try to get the decimals property from the token contract
 
     // The user receives a quantity of pTokens equal to the underlying tokens supplied, divided by the current Exchange Rate.
-    const amountToMintInNat: nat = intToNat(natToInt(tezToNatWithTz(amount) / getExchangeRate(store)) * pow(10, natToInt(store.token.tokenDecimals)));
+    const amountToMintInNat: nat = intToNat(natToInt(tezToNatWithTz(amount) / getExchangeRateInternal(store)) * pow(10, natToInt(store.token.tokenDecimals)));
 
     // Increment token supply
     store.token.tokenSupply := store.token.tokenSupply + amountToMintInNat;
@@ -206,7 +206,7 @@ function withdrawImp(var amountToWithdraw: nat; var store: store): return is
     checkAccountLiquidity(amountToWithdraw, store);
 
     // Calculate amount to burn
-    const amountToBurnInNat: nat = intToNat(natToInt(amountToWithdraw / getExchangeRate(store)) * pow(10, natToInt(store.token.tokenDecimals)));
+    const amountToBurnInNat: nat = intToNat(natToInt(amountToWithdraw / getExchangeRateInternal(store)) * pow(10, natToInt(store.token.tokenDecimals)));
 
     // Decrement token supply
     store.token.tokenSupply := intToNat(store.token.tokenSupply - amountToBurnInNat);
@@ -241,7 +241,7 @@ function addLiquidity( var store : store) : return is
     else store.liquidity := store.liquidity + amount;
 } with (emptyOps, store); attributes ["inline"];
 
-function getExchangeRate (const callback : contract(nat); var store : store) : return is ( list [Tezos.transaction(getExchangeRate(store), 0mutez, callback)], store);  attributes ["inline"];
+function getExchangeRate (const callback : contract(nat); var store : store) : return is ( list [Tezos.transaction(getExchangeRateInternal(store), 0mutez, callback)], store);  attributes ["inline"];
 
 function getBalanceOf (const accountAddress: address; const callback : contract(tez); var store : store) : return is
   block {
@@ -297,7 +297,7 @@ function repayBorrow(var store: store): return is
     // Check collateral ratio.
     const borrowItemInNat: nat = tezToNatWithTz(accountInfo.tezAmount);
     const borrowItemInTz: tez = natToTz(borrowItemInNat);
-    if amount >= borrowItemInTz
+    if amount > borrowItemInTz
       then failwith("Amount to pay is greater than existing borrow amount!");
       else skip;
 
