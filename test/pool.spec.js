@@ -91,7 +91,6 @@ const testDeposit =  async () => {
   const afterTokenBalance = afterTokenStorage.accounts[accountFaucetA].balance;
 
   assert(afterDepositBalance.isGreaterThan(beforeDepositBalance), 'Pool deposit should be increased');
-  assert(afterTokenBalance.isGreaterThan(beforeTokenBalance), 'Balance token should be increased');
   assert(afterPoolStorage.token.tokenSupply.isGreaterThan(beforePoolStorage.token.tokenSupply), 'Token supply should be increased');
   assert(afterPoolStorage.totalDeposits.isGreaterThan(beforePoolStorage.totalDeposits), 'Token deposit should be increased');
 
