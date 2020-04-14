@@ -1,4 +1,5 @@
 #include "./partials/tokenActions.ligo"
+#include "./utils/conversions.ligo"
 
 type account is record
   balance: nat;
@@ -242,7 +243,7 @@ function burnTo (const toAddress: address ; const value : nat ; var store : stor
     else skip;
 
     // Update balances and totalSupply
-    const newBalance :nat =  abs(toAccount.balance - value);
+    const newBalance :nat = intToNat(toAccount.balance - value);
     patch toAccount with record [balance = newBalance];
     store.accounts[toAddress] := toAccount;
 
