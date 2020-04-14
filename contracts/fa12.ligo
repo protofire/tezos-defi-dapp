@@ -83,6 +83,7 @@ function approve (const addressSpender : address; const value : nat; var store :
         // Changing allowance value from non-zero value to a non-zero value is forbidden to prevent the corresponding attack vector.
         if allowed =/= 0n then failwith("UnsafeAllowanceChange");
         else block {
+          // TODO: maybe this need a patch ?
           senderAccount.allowances[addressSpender] := value;
           store.accounts[sender] := senderAccount;
         }
@@ -111,11 +112,13 @@ function transfer (const addressFrom : address; const addressTo : address; const
       else skip;
 
       // Update balances
-      addressFromAccount.balance := abs(addressFromAccount.balance - value);  // ensure non negative
+      const newFromBalance :nat = abs(addressFromAccount.balance - value);  // ensure non negative
+      patch addressFromAccount with record [balance = newFromBalance];
       store.accounts[addressFrom] := addressFromAccount;
 
       const addressToAccount: account = getAccount(addressTo, store.accounts);
-      addressToAccount.balance := addressToAccount.balance + value;  // ensure non negative
+      const newToBalance :nat = addressToAccount.balance + value;  // ensure non negative
+      patch addressToAccount with record [balance = newToBalance];
       store.accounts[addressTo] := addressToAccount;
 
       // Update allowances
@@ -149,8 +152,10 @@ function mint (const value : nat ; var store : store) : return is
     end;
 
     // Update the owner balance and totalSupply
-    ownerAccount.balance := ownerAccount.balance + value;
+    const newBalance :nat = ownerAccount.balance + value;
+    patch ownerAccount with record [balance = newBalance];
     store.accounts[sender] := ownerAccount;
+
     store.totalSupply := store.totalSupply + value;
   }
  } with (emptyOps, store)
@@ -170,8 +175,10 @@ function mintTo (const toAddress: address; const value : nat ; var store : store
     end;
 
     // Update the balance and totalSupply
-    toAccount.balance := toAccount.balance + value;
+    const newBalance :nat = toAccount.balance + value;
+    patch toAccount with record [balance = newBalance];
     store.accounts[toAddress] := toAccount;
+
     store.totalSupply := store.totalSupply + value;
   }
  } with (emptyOps, store)
@@ -201,8 +208,10 @@ function burn (const value : nat ; var store : store) : return is
     else skip;
 
     // Update balances and totalSupply
-    ownerAccount.balance := abs(ownerAccount.balance - value);
+    const newBalance :nat =  abs(ownerAccount.balance - value);
+    patch ownerAccount with record [balance = newBalance];
     store.accounts[sender] := ownerAccount;
+
     store.totalSupply := abs(store.totalSupply - value);
   }
  } with (emptyOps, store)
@@ -233,8 +242,10 @@ function burnTo (const toAddress: address ; const value : nat ; var store : stor
     else skip;
 
     // Update balances and totalSupply
-    toAccount.balance := abs(toAccount.balance - value);
+    const newBalance :nat =  abs(toAccount.balance - value);
+    patch toAccount with record [balance = newBalance];
     store.accounts[toAddress] := toAccount;
+
     store.totalSupply := abs(store.totalSupply - value);
   }
  } with (emptyOps, store)
