@@ -90,6 +90,7 @@ const testDeposit =  async () => {
   const afterDepositBalance = afterPoolStorage.deposits[accountFaucetA].tezAmount;
   const afterTokenBalance = afterTokenStorage.accounts[accountFaucetA].balance;
 
+  assert(afterTokenBalance.isGreaterThan(beforeTokenBalance), 'Token balance should be increased');
   assert(afterDepositBalance.isGreaterThan(beforeDepositBalance), 'Pool deposit should be increased');
   assert(afterPoolStorage.token.tokenSupply.isGreaterThan(beforePoolStorage.token.tokenSupply), 'Token supply should be increased');
   assert(afterPoolStorage.totalDeposits.isGreaterThan(beforePoolStorage.totalDeposits), 'Token deposit should be increased');
@@ -133,6 +134,7 @@ const testWithdraw = async() => {
     const afterDepositBalance = afterPoolStorage.deposits[accountFaucetA].tezAmount;
     const afterTokenBalance = afterTokenStorage.accounts[accountFaucetA].balance;
 
+    assert(afterTokenBalance.isLessThan(beforeTokenBalance), 'Token balance should be decreased');
     assert(afterBalance.isGreaterThan(beforeBalance), 'Balance should be increased');
     assert(afterDepositBalance.isLessThan(beforeDepositBalance), 'Pool deposit should be decreased');
     assert(afterPoolStorage.token.tokenSupply.isLessThan(beforePoolStorage.token.tokenSupply), 'Token supply should be decreased');
