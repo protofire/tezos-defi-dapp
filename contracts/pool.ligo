@@ -185,7 +185,8 @@ function depositImp(var store: store): return is
     const amountToMintInNat: nat = intToNat(natToInt(tezToNatWithTz(amount) / getExchangeRateInternal(store)) * pow(10, natToInt(store.token.tokenDecimals)));
 
     // Increment token supply
-    store.token.tokenSupply := store.token.tokenSupply + amountToMintInNat;
+    const newTokenSupply :nat = store.token.tokenSupply + amountToMintInNat;
+    store.token.tokenSupply := newTokenSupply;
 
     // mintTo tokens to the senderAddress
     const tokenProxyMintToOperation: operation = tokenProxy(MintTo(sender, amountToMintInNat), store);
