@@ -37,7 +37,7 @@ const testBorrow =  async () => {
   const operationAddOwner = await contractToken.methods.addOwner(contractPoolAddress).send();
   await operationAddOwner.confirmation();
 
-  const operationDeposit = await contractPool.methods.deposit(UnitValue).send({ amount: 6 });
+  const operationDeposit = await contractPool.methods.deposit(UnitValue).send({ amount: 60 });
   await operationDeposit.confirmation();
 
   const operationBorrow = await contractPool.methods.borrow(value).send();
