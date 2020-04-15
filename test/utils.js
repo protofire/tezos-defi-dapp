@@ -32,8 +32,8 @@ exports.unitsInTokenAmount = (units, decimals) => {
     return new BigNumber(units).multipliedBy(decimalsPerToken);
 };
 
-exports.tokenSymbolToDisplayString = (symbol) => {
-    return symbol.toUpperCase();
+exports.tokenAmountInUnitsWithSymbol = (units, decimals, symbol) => {
+    return `${exports.tokenAmountInUnits(units, decimals)} ${symbol.toUpperCase()}`;
 };
 
 exports.getTokenStorage = async (address, keys) => {
