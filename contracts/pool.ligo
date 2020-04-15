@@ -161,7 +161,7 @@ function checkAccountLiquidity(var amountToValidate: nat; var store: store): uni
     const depositAmountInInt: int = natToInt(tezToNatWithTz(depositAccount.tezAmount));
     const borrowAmountInInt: int = natToInt(tezToNatWithTz(borrowAccount.tezAmount));
 
-    const amountOfCollateralAvailable: int = (depositAmountInInt * natToInt(store.collateralRate) / 100) - borrowAmountInInt + natToInt(amountToValidate);
+    const amountOfCollateralAvailable: int = (depositAmountInInt * natToInt(store.collateralRate) / 100) - borrowAmountInInt;
 
     const amountToValidateInTz: tez = natToTz(amountToValidate);
 

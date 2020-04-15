@@ -2829,26 +2829,6 @@
                                   { "prim": "SUB" },
                                   { "prim": "DIP",
                                     "args":
-                                      [ [ { "prim": "DIP",
-                                            "args":
-                                              [ { "int": "2" },
-                                                [ { "prim": "DUP" } ] ] },
-                                          { "prim": "DIG",
-                                            "args": [ { "int": "2" } ] },
-                                          { "prim": "CAR" },
-                                          { "prim": "DIP",
-                                            "args":
-                                              [ [ { "prim": "DIP",
-                                                    "args":
-                                                      [ { "int": "21" },
-                                                        [ { "prim": "DUP" } ] ] },
-                                                  { "prim": "DIG",
-                                                    "args":
-                                                      [ { "int": "21" } ] } ] ] },
-                                          { "prim": "EXEC" } ] ] },
-                                  { "prim": "ADD" },
-                                  { "prim": "DIP",
-                                    "args":
                                       [ { "int": "3" },
                                         [ { "prim": "DUP" } ] ] },
                                   { "prim": "DIG",
@@ -3908,26 +3888,6 @@
                                   { "prim": "DIP",
                                     "args": [ [ { "prim": "DUP" } ] ] },
                                   { "prim": "SUB" },
-                                  { "prim": "DIP",
-                                    "args":
-                                      [ [ { "prim": "DIP",
-                                            "args":
-                                              [ { "int": "2" },
-                                                [ { "prim": "DUP" } ] ] },
-                                          { "prim": "DIG",
-                                            "args": [ { "int": "2" } ] },
-                                          { "prim": "CAR" },
-                                          { "prim": "DIP",
-                                            "args":
-                                              [ [ { "prim": "DIP",
-                                                    "args":
-                                                      [ { "int": "21" },
-                                                        [ { "prim": "DUP" } ] ] },
-                                                  { "prim": "DIG",
-                                                    "args":
-                                                      [ { "int": "21" } ] } ] ] },
-                                          { "prim": "EXEC" } ] ] },
-                                  { "prim": "ADD" },
                                   { "prim": "DIP",
                                     "args":
                                       [ { "int": "3" },
