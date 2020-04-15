@@ -77,5 +77,31 @@ To run the unit tests for the borrow methods, you must execute the following com
 yarn test:borrow
 ```
 
+### Examples
+[Here are some examples](https://github.com/protofire/tezos-defi-dapp/blob/master/examples/):
+
+You can run the examples with the following commands:
+
+#### Deposit operation 
+
+```
+yarn example:deposit
+```
+
+![alt text][logo]
+
+[logo]: https://i.imgur.com/rCFkdmO.png "Deposit operation"
+
+#### Withdraw operation: 
+
+```
+yarn example:withdraw
+```
+
+![alt text][logo]
+
+[logo]: https://i.imgur.com/E1GDf26.png "Withdraw operation"
+
+
 ### Licensing
 [MIT](https://github.com/protofire/tezos-defi-dapp/blob/master/LICENSE)
