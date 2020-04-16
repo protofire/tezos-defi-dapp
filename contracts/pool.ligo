@@ -149,7 +149,7 @@ function updateBorrow(var amountToBorrow: tez; var store: store): store is
     store.liquidity := store.liquidity - amountToBorrow;
 } with store;
 
-function checkAccountLiquidity(var amountToValidate: nat; var store: store): unit is
+function checkAccountLiquidity(var amountToValidate: nat; var isWithdraw: bool; var store: store): unit is
   block {
     // account liquidity is defined as the total estimated tez value of an account's collateral
     // supply balances multiplied by the protocol collateral rate factor, 
@@ -161,7 +161,10 @@ function checkAccountLiquidity(var amountToValidate: nat; var store: store): uni
     const depositAmountInInt: int = natToInt(tezToNatWithTz(depositAccount.tezAmount));
     const borrowAmountInInt: int = natToInt(tezToNatWithTz(borrowAccount.tezAmount));
 
-    const amountOfCollateralAvailable: int = (depositAmountInInt * natToInt(store.collateralRate) / 100) - borrowAmountInInt;
+    var amountOfCollateralAvailable: int := 0;
+    if borrowAmountInInt = 0 and isWithdraw
+      then amountOfCollateralAvailable := depositAmountInInt - amountToValidate;
+      else amountOfCollateralAvailable := (depositAmountInInt * natToInt(store.collateralRate) / 100) - (borrowAmountInInt + amountToValidate);
 
     const amountToValidateInTz: tez = natToTz(amountToValidate);
 
@@ -205,7 +208,7 @@ function withdrawImp(var amountToWithdraw: nat; var store: store): return is
     store := updateBorrow(0tez, store);
 
     // Check account liquidity
-    checkAccountLiquidity(amountToWithdraw, store);
+    checkAccountLiquidity(amountToWithdraw, True, store);
 
     // Calculate amount to burn
     const amountToBurn: int = natToInt(amountToWithdraw / getExchangeRateInternal(store)) * pow(10, natToInt(store.token.tokenDecimals));
@@ -271,7 +274,7 @@ function borrow(var amountToBorrow: nat; var store: store): return is
     store := updateBorrow(0tez, store);
     
     // Check account liquidity
-    checkAccountLiquidity(amountToBorrow, store);
+    checkAccountLiquidity(amountToBorrow, False, store);
     
     // Setting the borrow to the sender
     const amountToBorrowInTz: tez = natToTz(amountToBorrow);
