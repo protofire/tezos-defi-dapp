@@ -24,7 +24,7 @@
     "test:pool": "node ./test/pool.spec.js",
     "test:borrow": "node ./test/borrow.spec.js",
     "example:deposit": "node ./examples/deposit.js",
-    "example:withdraw": "node ./examples/withdraw.js"
-
+    "example:withdraw": "node ./examples/withdraw.js",
+    "example:borrow": "node ./examples/borrow.js"
   }
 }
