@@ -88,9 +88,9 @@ You can run the examples with the following commands:
 yarn example:deposit
 ```
 
-![alt text][logo]
+![alt text][deposit]
 
-[logo]: https://i.imgur.com/rCFkdmO.png "Deposit operation"
+[deposit]: https://i.imgur.com/rCFkdmO.png "Deposit operation"
 
 #### Withdraw operation: 
 
@@ -98,10 +98,9 @@ yarn example:deposit
 yarn example:withdraw
 ```
 
-![alt text][logo]
+![alt text][withdraw]
 
-[logo]: https://i.imgur.com/E1GDf26.png "Withdraw operation"
-
+[withdraw]: https://i.imgur.com/E1GDf26.png "Withdraw operation"
 
 
 #### Borrow operation: 
@@ -110,9 +109,21 @@ yarn example:withdraw
 yarn example:borrow
 ```
 
-![alt text][logo]
+![alt text][borrow]
 
-[logo]: https://i.imgur.com/VQKdXUY.png "Borrow operation"
+[borrow]: https://i.imgur.com/VQKdXUY.png "Borrow operation"
+
+
+
+#### Repay Borrow operation: 
+
+```
+yarn example:repayborrow
+```
+
+![alt text][repayborrow]
+
+[repayborrow]: https://i.imgur.com/LVI10Cu.png "Repay borrow operation"
 
 
 
