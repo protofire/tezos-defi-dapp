@@ -1,4 +1,4 @@
-const { Tezos, UnitValue } = require('@taquito/taquito');
+const { Tezos } = require('@taquito/taquito');
 const { InMemorySigner } = require('@taquito/signer');
 let Table = require('cli-table');
 
