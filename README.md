@@ -103,5 +103,18 @@ yarn example:withdraw
 [logo]: https://i.imgur.com/E1GDf26.png "Withdraw operation"
 
 
+
+#### Borrow operation: 
+
+```
+yarn example:borrow
+```
+
+![alt text][logo]
+
+[logo]: https://i.imgur.com/VQKdXUY.png "Borrow operation"
+
+
+
 ### Licensing
 [MIT](https://github.com/protofire/tezos-defi-dapp/blob/master/LICENSE)
