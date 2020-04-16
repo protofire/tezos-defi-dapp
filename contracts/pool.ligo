@@ -63,39 +63,35 @@ function getDepositInterestRate(var store: store): nat is (getBorrowInterestRate
 
 function calculateBorrowInterest(const accountInfo: balanceInfo; var store: store): tez is 
   block {
-    const anualBlocks: int = 522119;
-    const dailyBlocks: int = anualBlocks / 365;
+    const dailyBlocks: int = 86400; // Seconds x day
 
     const elapsedBlocks :int = now - accountInfo.blockTimestamp;
 
-    const interestAmount :tez = 0tez;
+    const interest :tez = 0tez;
     if elapsedBlocks > dailyBlocks 
       then block {
         const elapsedDays :int = elapsedBlocks / dailyBlocks; 
         const interestRatePercentage :int = natToInt(getBorrowInterestRate(store) / 100n);
-        const powExp :int = elapsedDays / 365;
-        interestAmount := accountInfo.tezAmount * intToNat(pow((1 + interestRatePercentage), powExp));
+        interest := (accountInfo.tezAmount * intToNat(pow((1 + interestRatePercentage / 365), elapsedDays)) - accountInfo.tezAmount);
       }
       else skip;
-  } with interestAmount; attributes ["inline"];
+  } with interest; attributes ["inline"];
 
 function calculateDepositInterest(const accountInfo: balanceInfo; var store: store): tez is 
   block {
-    const anualBlocks: int = 522119;
-    const dailyBlocks: int = anualBlocks / 365;
+    const dailyBlocks: int = 86400; // Seconds x day
 
     const elapsedBlocks :int = now - accountInfo.blockTimestamp;
 
-    const interestAmount :tez = 0tez;
+    const interest :tez = 0tez;
     if elapsedBlocks > dailyBlocks 
       then block {
         const elapsedDays :int = elapsedBlocks / dailyBlocks; 
         const interestRatePercentage :int = natToInt(getDepositInterestRate(store) / 100n);
-        const powExp :int = elapsedDays / 365;
-        interestAmount := accountInfo.tezAmount * intToNat(pow((1 + interestRatePercentage), powExp));
+        interest := (accountInfo.tezAmount * intToNat(pow((1 + interestRatePercentage / 365), elapsedDays)) - accountInfo.tezAmount);
       }
       else skip;
-  } with interestAmount; attributes ["inline"];
+  } with interest; attributes ["inline"];
 
 function tokenProxy (const action : tokenAction; const store : store): operation is
   block {
