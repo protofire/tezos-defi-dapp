@@ -2,7 +2,7 @@ const { Tezos, UnitValue } = require('@taquito/taquito');
 const { InMemorySigner } = require('@taquito/signer');
 let Table = require('cli-table');
 
-const { tzFormatter, getPoolStorage, getTokenStorage, tokenAmountInUnitsWithSymbol } = require('../test/utils');
+const { tzFormatter, getPoolStorage } = require('../test/utils');
 
 const contractPoolDeploy = require('../deployed/pool_latest.json');
 
