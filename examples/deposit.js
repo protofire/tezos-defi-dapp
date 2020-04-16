@@ -20,8 +20,13 @@ const contractTokenAddress = contractTokenDeploy.address;
 Tezos.setProvider({ rpc, signer: signerFaucetA });
 
 let table = new Table({
-    head: ['Action', 'Account address', 'Personal account balance', 'Pool: deposit account balance', 'Pool: total deposits', 'Token: account balance' ],
-    colWidths: [20, 40, 28, 32, 25, 25],
+    head: ['Action', 
+    'Account address', 
+    'Account balance', 
+    'Pool: deposit account balance', 
+    'Pool: total deposits', 
+    'Token: account balance' ],
+    colWidths: [20, 40, 20, 32, 25, 25],
     style: {compact : true, 'padding-left' : 1, head: ['green']},
 });
 
@@ -32,7 +37,7 @@ const madeDeposit = async () => {
     const accountFaucetA = await signerFaucetA.publicKeyHash();
     const accountFaucetB = await signerFaucetB.publicKeyHash();
 
-    const amount = 2;
+    const amount = 4;
   
     // Check storage before deposit
     const beforePoolStorage = await getPoolStorage(contractPoolAddress, [accountFaucetA, accountFaucetB]);
