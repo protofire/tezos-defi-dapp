@@ -37,7 +37,7 @@ const madeDeposit = async () => {
     const accountFaucetA = await signerFaucetA.publicKeyHash();
     const accountFaucetB = await signerFaucetB.publicKeyHash();
 
-    const amount = 4;
+    const amount = 10;
   
     // Check storage before deposit
     const beforePoolStorage = await getPoolStorage(contractPoolAddress, [accountFaucetA, accountFaucetB]);
