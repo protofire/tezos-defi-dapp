@@ -32,8 +32,8 @@ exports.unitsInTokenAmount = (units, decimals) => {
     return new BigNumber(units).multipliedBy(decimalsPerToken);
 };
 
-exports.tokenSymbolToDisplayString = (symbol) => {
-    return symbol.toUpperCase();
+exports.tokenAmountInUnitsWithSymbol = (units, decimals, symbol) => {
+    return `${exports.tokenAmountInUnits(units, decimals)} ${symbol.toUpperCase()}`;
 };
 
 exports.getTokenStorage = async (address, keys) => {
@@ -67,27 +67,50 @@ exports.getTokenStorage = async (address, keys) => {
 exports.getPoolStorage = async (address, keys) => {
   const contract = await Tezos.contract.at(address);
   const storage = await contract.storage();
+
   const deposits = await keys.reduce(async (prev, current) => {
     const value = await prev;
 
-    let entry = {
+    let deposit = {
       tezAmount: new BigNumber(0),
       blockTimestamp: null,
     };
 
     try {
-      entry = await storage.deposits.get(current);
+      deposit = await storage.deposits.get(current);
     } catch (err) {
       // Do nothing
     }
 
     return {
       ...value,
-      [current]: entry
+      [current]: deposit
     };
   }, Promise.resolve({}));
+  
+  const borrows = await keys.reduce(async (prev, current) => {
+    const value = await prev;
+
+    let borrow = {
+      tezAmount: new BigNumber(0),
+      blockTimestamp: null,
+    };
+
+    try {
+      borrow = await storage.borrows.get(current);
+    } catch (err) {
+      // Do nothing
+    }
+
+    return {
+      ...value,
+      [current]: borrow
+    };
+  }, Promise.resolve({}));
+
   return {
     ...storage,
-    deposits
+    deposits,
+    borrows,
   };
 };

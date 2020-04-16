@@ -4,7 +4,8 @@ const fs = require("fs");
 
 const faucetA = require('../faucetA.json');
 
-const rpc = "https://api.tez.ie/rpc/carthagenet";
+//const rpc = "https://api.tez.ie/rpc/carthagenet";
+const rpc = "http://carthagenet.smartpy.io/";
 
 const signer = InMemorySigner.fromFundraiser(faucetA.email, faucetA.password, faucetA.mnemonic.join(' '));
 Tezos.setProvider({ rpc, signer });
@@ -44,16 +45,11 @@ const deployFa12Contract = async () => {
     const owner = await Tezos.signer.publicKeyHash();
     const storage = {
         owners: [owner],
-        totalSupply: "1000000000000000000000000",
+        totalSupply: 0,
         decimals: "18",
         symbol: "pTez",
         name: "Pool Tezos coin",
-        accounts:  MichelsonMap.fromLiteral({
-            [owner]: {
-                balance: "1000000000000000000000000",
-                allowances:  new MichelsonMap(),
-            },
-        }),
+        accounts: new MichelsonMap(),
     };
 
     await deployer({storage, file: 'fa12', owner});
@@ -68,17 +64,14 @@ const deployPoolContract = async () => {
         owner,
         deposits: new MichelsonMap(),
         borrows: new MichelsonMap(),
-        collateralRatio: 2,
-        borrowInterest: 2,
-        supplyInterest: 1,
+        totalDeposits: 0,
+        totalBorrows: 0,
+        collateralRate: 80,
         liquidity: 0,
         token: {
             contractAddress: contractFa12Deploy.address,
             tokenDecimals: 18,
-        },
-        exchangeRatio: {
-            ratio: 1,
-            blockTimestamp: "2019-06-21T09:11:37Z"
+            tokenSupply: 0,
         },
     }
 

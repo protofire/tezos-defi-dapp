@@ -71,10 +71,61 @@ To run the unit tests for the fa12.ligo contract, you must execute the following
 yarn test:token
 ```
 
-To run the unit tests for some interactions between contracts, you must execute the following command:
+
+To run the unit tests for the borrow methods, you must execute the following command:
 ```
-yarn test:interaction
+yarn test:borrow
 ```
 
+### Examples
+[Here are some examples](https://github.com/protofire/tezos-defi-dapp/blob/master/examples/):
+
+You can run the examples with the following commands:
+
+#### Deposit operation 
+
+```
+yarn example:deposit
+```
+
+![alt text][deposit]
+
+[deposit]: https://i.imgur.com/rCFkdmO.png "Deposit operation"
+
+#### Withdraw operation: 
+
+```
+yarn example:withdraw
+```
+
+![alt text][withdraw]
+
+[withdraw]: https://i.imgur.com/E1GDf26.png "Withdraw operation"
+
+
+#### Borrow operation: 
+
+```
+yarn example:borrow
+```
+
+![alt text][borrow]
+
+[borrow]: https://i.imgur.com/VQKdXUY.png "Borrow operation"
+
+
+
+#### Repay Borrow operation: 
+
+```
+yarn example:repayborrow
+```
+
+![alt text][repayborrow]
+
+[repayborrow]: https://i.imgur.com/LVI10Cu.png "Repay borrow operation"
+
+
+
 ### Licensing
-MIT
+[MIT](https://github.com/protofire/tezos-defi-dapp/blob/master/LICENSE)

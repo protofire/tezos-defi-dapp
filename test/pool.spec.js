@@ -3,7 +3,7 @@ const { Tezos, UnitValue } = require('@taquito/taquito');
 const { InMemorySigner } = require('@taquito/signer');
 const BigNumber = require("bignumber.js");
 
-const { tzFormatter, getPoolStorage } = require('./utils');
+const { tzFormatter, getPoolStorage, getTokenStorage, tokenAmountInUnits } = require('./utils');
 
 const contractPoolDeploy = require('../deployed/pool_latest.json');
 const contractTokenDeploy = require('../deployed/fa12_latest.json');
@@ -25,15 +25,14 @@ const testMethods = async () => {
     // When
     const methodsKeys = Object.keys(methods);
     const methodsThatMustExist = [
-      'withdraw',
-      'updateTokenDecimals',
-      'updateTokenAddress',
-      'updateExchangeRatio',
-      'updateCollateralRatio',
-      'getExchangeRatio',
-      'getBalanceOf',
       'deposit',
-      'addLiquidity'
+      'withdraw',
+      'borrow',
+      'repayBorrow',
+      'updateCollateralRate',
+      'addLiquidity',
+      'getExchangeRate',
+      'getBalanceOf',
     ];
 
     //Then
@@ -69,11 +68,13 @@ const testDeposit =  async () => {
   const accountFaucetA = await signerFaucetA.publicKeyHash();
   const accountFaucetB = await signerFaucetB.publicKeyHash();
 
-  const value = 1; // Send 1 tez
+  const value = 2; // Send 1 tez
 
-  const initialPoolStorage = await getPoolStorage(contractPoolAddress, [accountFaucetA, accountFaucetB]);
+  const beforePoolStorage = await getPoolStorage(contractPoolAddress, [accountFaucetA, accountFaucetB]);
+  const beforeTokenStorage = await getTokenStorage(contractTokenAddress, [accountFaucetA, accountFaucetB]);
 
-  const initialDepositBalance = initialPoolStorage.deposits[accountFaucetA].tezAmount;
+  const beforeDepositBalance = beforePoolStorage.deposits[accountFaucetA].tezAmount;
+  const beforeTokenBalance = beforeTokenStorage.accounts[accountFaucetA].balance;
 
   // When
   const operationAddOwner = await contractToken.methods.addOwner(contractPoolAddress).send();
@@ -83,34 +84,61 @@ const testDeposit =  async () => {
   await operationDeposit.confirmation();
 
   // Then
-  const storageAfter = await getPoolStorage(contractPoolAddress, [accountFaucetA, accountFaucetB]);
-  const afterDepositBalance = storageAfter.deposits[accountFaucetA].tezAmount;
+  const afterPoolStorage = await getPoolStorage(contractPoolAddress, [accountFaucetA, accountFaucetB]);
+  const afterTokenStorage = await getTokenStorage(contractTokenAddress, [accountFaucetA, accountFaucetB]);
 
-  assert(afterDepositBalance.isGreaterThan(initialDepositBalance), 'Deposit should be updated');
-  console.log(`[OK] Deposit: user made a deposit of ${value} tz.`)
+  const afterDepositBalance = afterPoolStorage.deposits[accountFaucetA].tezAmount;
+  const afterTokenBalance = afterTokenStorage.accounts[accountFaucetA].balance;
+
+  assert(afterDepositBalance.isGreaterThan(beforeDepositBalance), 'Pool deposit should be increased');
+  assert(afterPoolStorage.token.tokenSupply.isGreaterThan(beforePoolStorage.token.tokenSupply), 'Token supply should be increased');
+  assert(afterPoolStorage.totalDeposits.isGreaterThan(beforePoolStorage.totalDeposits), 'Token deposit should be increased');
+
+  console.log(`[OK] Deposit: user made a deposit of ${value} tz. Minted an amount of ${tokenAmountInUnits(afterTokenBalance, afterTokenStorage.decimals.toString())} ${afterTokenStorage.symbol}`)
 };
 
 const testWithdraw = async() => {
     // Given
-    const contractAddress = contractPoolDeploy.address;
+    const contractPoolAddress = contractPoolDeploy.address;
+    const contractTokenAddress = contractTokenDeploy.address;
+  
     Tezos.setProvider({ rpc, signer: signerFaucetA });
   
-    const contract = await Tezos.contract.at(contractAddress);
+    const contractPool = await Tezos.contract.at(contractPoolAddress);
+    const contractToken = await Tezos.contract.at(contractTokenAddress);
+  
     const accountFaucetA = await signerFaucetA.publicKeyHash();
     const accountFaucetB = await signerFaucetB.publicKeyHash();
-    const accountFaucetAInitialBalance = await Tezos.tz.getBalance(accountFaucetA)
+    const beforeBalance = await Tezos.tz.getBalance(accountFaucetA);
     const amountToWithdraw = 1;
 
+    const beforePoolStorage = await getPoolStorage(contractPoolAddress, [accountFaucetA, accountFaucetB]);
+    const beforeTokenStorage = await getTokenStorage(contractTokenAddress, [accountFaucetA, accountFaucetB]);
+
+    const beforeDepositBalance = beforePoolStorage.deposits[accountFaucetA].tezAmount;
+    const beforeTokenBalance = beforeTokenStorage.accounts[accountFaucetA].balance;
+  
     // When
-    const operationWithdraw = await contract.methods.withdraw(amountToWithdraw).send();
+    const operationAddOwner = await contractToken.methods.addOwner(contractPoolAddress).send();
+    await operationAddOwner.confirmation();
+
+    const operationWithdraw = await contractPool.methods.withdraw(amountToWithdraw).send();
     await operationWithdraw.confirmation();
   
     // Then
-    const storageAfter = await getPoolStorage(contractAddress, [accountFaucetA, accountFaucetB]);
-    const accountFaucetAAfterBalance = await Tezos.tz.getBalance(accountFaucetA)
+    const afterPoolStorage = await getPoolStorage(contractPoolAddress, [accountFaucetA, accountFaucetB]);
+    const afterTokenStorage = await getTokenStorage(contractTokenAddress, [accountFaucetA, accountFaucetB]);
+    const afterBalance = await Tezos.tz.getBalance(accountFaucetA);
 
-    assert(accountFaucetAAfterBalance.isGreaterThan(accountFaucetAInitialBalance), 'Deposit should be updated');
-    console.log(`[OK] Withdraw: user made a withdraw and have ${tzFormatter(accountFaucetAAfterBalance, 'tz')}.`)
+    const afterDepositBalance = afterPoolStorage.deposits[accountFaucetA].tezAmount;
+    const afterTokenBalance = afterTokenStorage.accounts[accountFaucetA].balance;
+
+    assert(afterBalance.isGreaterThan(beforeBalance), 'Balance should be increased');
+    assert(afterDepositBalance.isLessThan(beforeDepositBalance), 'Pool deposit should be decreased');
+    assert(afterPoolStorage.token.tokenSupply.isLessThan(beforePoolStorage.token.tokenSupply), 'Token supply should be decreased');
+    assert(afterPoolStorage.totalDeposits.isLessThan(beforePoolStorage.totalDeposits), 'Token deposit should be decreased');
+  
+    console.log(`[OK] Withdraw: user made a withdraw and have ${tzFormatter(afterBalance, 'tz')}.`)
 }
 
 const test = async () => {
