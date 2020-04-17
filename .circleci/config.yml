@@ -3,7 +3,7 @@ orbs:
   node: circleci/node@1.1.6
 jobs:
   contracts:
-    working_directory: ~/tezos-defi-dapp/defi-contracts
+    working_directory: ~/defi-contracts
     executor:
       name: node/default
     steps:
