@@ -3,15 +3,18 @@ orbs:
   node: circleci/node@1.1.6
 jobs:
   contracts:
-    working_directory: ~/defi-contracts
     executor:
       name: node/default
     steps:
       - checkout
       - node/with-cache:
           steps:
-            - run: yarn install
-            - run: yarn test
+            - run:
+                working_directory: defi-contracts
+                command: yarn install
+            - run:
+                working_directory: defi-contracts
+                command: yarn test
 workflows:
     contracts:
       jobs:
