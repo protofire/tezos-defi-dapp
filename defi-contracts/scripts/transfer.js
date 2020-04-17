@@ -18,7 +18,7 @@ const transfer = async() => {
     await operation.confirmation()
 
     console.log(`Operation injected: https://carthagenet.tzstats.com/${operation.hash}`);
-}
+};
 
 (async () => {
     await transfer();
