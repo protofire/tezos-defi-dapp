@@ -32,5 +32,11 @@ You can check the [README](https://github.com/protofire/tezos-defi-dapp/blob/mas
 ### Application
 It was created with React, and it's in the folder [defi-dapp](https://github.com/protofire/tezos-defi-dapp/blob/master/defi-dapp) .
 
+## Blog posts
+We have written a series of blogpost that will guide you into some defi concepts with tezos.
+
+* [How to Integrate JavaScript with Smart Contracts and Run Unit Tests](https://medium.com/protofire-blog/tezos-part-4-how-to-integrate-javascript-with-smart-contracts-and-run-unit-tests-c36756149e9d)
+* [Token standars](https://medium.com/protofire-blog/tezos-part-5-token-standards-28b8733a3ce5)
+
 ### Licensing
 [MIT](https://github.com/protofire/tezos-defi-dapp/blob/master/LICENSE)
