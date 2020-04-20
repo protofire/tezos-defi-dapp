@@ -1,5 +1,5 @@
 [![CircleCI](https://circleci.com/gh/protofire/tezos-defi-dapp.svg?style=svg)](https://circleci.com/gh/protofire/tezos-defi-dapp)
-
+[![Netlify Status](https://api.netlify.com/api/v1/badges/3faddc9d-aa40-48f2-a98d-1862bac37c30/deploy-status)](https://app.netlify.com/sites/cranky-yalow-bea934/deploys)
 
 # Tezos defi dapp
 User interface with high level of deFi functionalities 
