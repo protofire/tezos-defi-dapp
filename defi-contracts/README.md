@@ -1,6 +1,8 @@
+## Tezos defi contracts
+You will find some examples, such as a pool contract, and a contract with the Tezos specification fa1.2.
 
 ### Getting faucet
-You can download faucet from `https://faucet.tzalpha.net/` 
+We are going to need some faucet to be able to interact with the contracts. You can download faucet from `https://faucet.tzalpha.net/` 
 Replace the content of the faucetA and faucetB files with some faucet downloaded from the previous url.
 This is in case the accounts run out of balance.
 

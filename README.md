@@ -11,9 +11,10 @@ A quick introduction of the minimal setup you need to get Tezos defi dapp up & r
 
 ### Prerequisites
 What is needed to set up the dev environment, click in the link to see installation instructions.
-- [Node.js](https://nodejs.org/es/download/) , version >= v12.13.0
+- [Node.js](https://nodejs.org/es/download/) , version >= v10.20.1
 - [Ligo](https://ligolang.org/docs/intro/installation) , latest version
 - [Yarn](https://classic.yarnpkg.com/en/docs/install#debian-stable) , version ^1.12.3
+- [React](https://reactjs.org) , version ^16.13.1
 
 
 ### Setting up Dev
@@ -24,6 +25,12 @@ cd tezos-defi-dapp/
 yarn install
 ```
 
+### Contracts
+The contracts are located in the folder [defi-contracts](https://github.com/protofire/tezos-defi-dapp/blob/master/defi-contracts) .
+You can check the [README](https://github.com/protofire/tezos-defi-dapp/blob/master/defi-contracts/README) file of the contracts for more help.
+
+### Application
+It was created with React, and it's in the folder [defi-dapp](https://github.com/protofire/tezos-defi-dapp/blob/master/defi-dapp) .
 
 ### Licensing
 [MIT](https://github.com/protofire/tezos-defi-dapp/blob/master/LICENSE)
