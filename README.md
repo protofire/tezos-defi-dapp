@@ -1,5 +1,5 @@
 [![CircleCI](https://circleci.com/gh/protofire/tezos-defi-dapp.svg?style=svg)](https://circleci.com/gh/protofire/tezos-defi-dapp)
-
+[![Netlify Status](https://api.netlify.com/api/v1/badges/3faddc9d-aa40-48f2-a98d-1862bac37c30/deploy-status)](https://app.netlify.com/sites/tezosdefidapp/deploys)
 
 # Tezos defi dapp
 User interface with high level of deFi functionalities 
@@ -11,9 +11,10 @@ A quick introduction of the minimal setup you need to get Tezos defi dapp up & r
 
 ### Prerequisites
 What is needed to set up the dev environment, click in the link to see installation instructions.
-- [Node.js](https://nodejs.org/es/download/) , version >= v12.13.0
+- [Node.js](https://nodejs.org/es/download/) , version >= v10.20.1
 - [Ligo](https://ligolang.org/docs/intro/installation) , latest version
 - [Yarn](https://classic.yarnpkg.com/en/docs/install#debian-stable) , version ^1.12.3
+- [React](https://reactjs.org) , version ^16.13.1
 
 
 ### Setting up Dev
@@ -24,108 +25,18 @@ cd tezos-defi-dapp/
 yarn install
 ```
 
-### Getting faucet
-You can download faucet from `https://faucet.tzalpha.net/` 
-Replace the content of the faucetA and faucetB files with some faucet downloaded from the previous url.
-This is in case the accounts run out of balance.
+### Contracts
+The contracts are located in the folder [defi-contracts](https://github.com/protofire/tezos-defi-dapp/blob/master/defi-contracts) .
+You can check the [README](https://github.com/protofire/tezos-defi-dapp/blob/master/defi-contracts/README) file of the contracts for more help.
 
-### Activating faucets
-In case your faucet is new, you can activate it executing this command. If is already activate it the script will throw an error.
-```
-yarn activate
-```
+### Application
+It was created with React, and it's in the folder [defi-dapp](https://github.com/protofire/tezos-defi-dapp/blob/master/defi-dapp) .
 
-### Building
-You can build the existing contracts, ligo.pool and fa12.ligo.
+## Blog posts
+We have written a series of blogpost that will guide you into some defi concepts with tezos.
 
-```shell
-yarn build
-
-// Only pool
-yarn build:pool
-
-// Only fa12
-yarn build:token
-```
-
-### Deploying
-You can deploy the existing contracts, ligo.pool and fa12.ligo, to the carthagenet network executing the following commands. Also the faucets files are going to be activated with this script.
-```shell
-yarn deploy
-
-// Only pool
-yarn deploy:pool
-
-// Only fa12
-yarn deploy:token
-```
-
-### Tests
-To run the unit tests for the pool.ligo contract, you must execute the following command:
-```
-yarn test:pool
-```
-
-To run the unit tests for the fa12.ligo contract, you must execute the following command:
-```
-yarn test:token
-```
-
-
-To run the unit tests for the borrow methods, you must execute the following command:
-```
-yarn test:borrow
-```
-
-### Examples
-[Here are some examples](https://github.com/protofire/tezos-defi-dapp/blob/master/examples/):
-
-You can run the examples with the following commands:
-
-#### Deposit operation 
-
-```
-yarn example:deposit
-```
-
-![alt text][deposit]
-
-[deposit]: https://i.imgur.com/rCFkdmO.png "Deposit operation"
-
-#### Withdraw operation: 
-
-```
-yarn example:withdraw
-```
-
-![alt text][withdraw]
-
-[withdraw]: https://i.imgur.com/E1GDf26.png "Withdraw operation"
-
-
-#### Borrow operation: 
-
-```
-yarn example:borrow
-```
-
-![alt text][borrow]
-
-[borrow]: https://i.imgur.com/VQKdXUY.png "Borrow operation"
-
-
-
-#### Repay Borrow operation: 
-
-```
-yarn example:repayborrow
-```
-
-![alt text][repayborrow]
-
-[repayborrow]: https://i.imgur.com/LVI10Cu.png "Repay borrow operation"
-
-
+* [How to Integrate JavaScript with Smart Contracts and Run Unit Tests](https://medium.com/protofire-blog/tezos-part-4-how-to-integrate-javascript-with-smart-contracts-and-run-unit-tests-c36756149e9d)
+* [Token standars](https://medium.com/protofire-blog/tezos-part-5-token-standards-28b8733a3ce5)
 
 ### Licensing
 [MIT](https://github.com/protofire/tezos-defi-dapp/blob/master/LICENSE)

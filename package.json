@@ -1,32 +1,4 @@
 {
-  "name": "tezos-defi-dapp",
-  "version": "0.1.0",
   "private": true,
-  "engines": {
-    "node": ">=v12.13.0",
-    "yarn": "^1.12.3"
-  },
-  "dependencies": {
-    "@taquito/taquito": "^6.1.0-beta.0",
-    "cli-table": "^0.3.1",
-    "typescript": "~3.7.2"
-  },
-  "scripts": {
-    "activate": "node ./scripts/activateAccounts.js",
-    "build": "node ./scripts/build.js",
-    "build:token": "node ./scripts/build.js fa12",
-    "build:pool": "node ./scripts/build.js pool",
-    "deploy": "node ./scripts/deploy.js",
-    "deploy:token": "node ./scripts/deploy.js fa12",
-    "deploy:pool": "node ./scripts/deploy.js pool",
-    "test": "yarn test:token && yarn test:pool && yarn test:borrow",
-    "test:token": "node ./test/fa12.spec.js",
-    "test:pool": "node ./test/pool.spec.js",
-    "test:borrow": "node ./test/borrow.spec.js",
-    "example:deposit": "node ./examples/deposit.js",
-    "example:withdraw": "node ./examples/withdraw.js",
-    "example:borrow": "node ./examples/borrow.js",
-    "example:repayborrow": "node ./examples/repayBorrow.js"
-
-  }
+  "workspaces": ["defi-contracts", "defi-dapp"]
 }
