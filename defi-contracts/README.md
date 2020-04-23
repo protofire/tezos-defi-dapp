@@ -100,5 +100,5 @@ yarn example:repayborrow
 
 ![Repay borrow operation image][repayborrow]
 
-[repayborrow]: https://github.com/protofire/tezos-defi-dapp/blob/master/defi-contracts/examples/images/repayBorrow.png "Repay borrow operation"
+[repayborrow]: https://github.com/protofire/tezos-defi-dapp/blob/master/defi-contracts/examples/images/repayborrow.png "Repay borrow operation"
 
