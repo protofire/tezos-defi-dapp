@@ -27,7 +27,7 @@ yarn install
 
 ### Contracts
 The contracts are located in the folder [defi-contracts](https://github.com/protofire/tezos-defi-dapp/blob/master/defi-contracts) .
-You can check the [README](https://github.com/protofire/tezos-defi-dapp/blob/master/defi-contracts/README) file of the contracts for more help.
+You can check the [README](https://github.com/protofire/tezos-defi-dapp/blob/master/defi-contracts/README.md) file of the contracts for more help.
 
 ### Application
 It was created with React, and it's in the folder [defi-dapp](https://github.com/protofire/tezos-defi-dapp/blob/master/defi-dapp) .
