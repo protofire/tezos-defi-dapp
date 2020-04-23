@@ -14,7 +14,6 @@ type action is
 | Borrow of (nat)
 | RepayBorrow of (unit)
 | AddLiquidity of (unit)
-| UpdateCollateralRate of (nat)
 | GetExchangeRate of (unit * contract(nat))
 | GetBalanceOf of (address * contract(tez))
 
@@ -34,9 +33,9 @@ type store is record
   token: tokenInformation;
 end
 
-const emptyOps: list(operation) = list end;
+const emptyOps: list(operation) = list end
 
-type return is list(operation) * store;
+type return is list(operation) * store
 
 function getExchangeRateInternal(var store: store): nat is 
   block {
@@ -72,7 +71,9 @@ function calculateBorrowInterest(const accountInfo: balanceInfo; var store: stor
       then block {
         const elapsedDays :int = elapsedBlocks / dailyBlocks; 
         const interestRatePercentage :int = natToInt(getBorrowInterestRate(store) / 100n);
-        interest := (accountInfo.tezAmount * intToNat(pow((1 + interestRatePercentage / 365), elapsedDays)) - accountInfo.tezAmount);
+        const amountInInt :int = natToInt(tezToNatWithTz(accountInfo.tezAmount));
+        const interestInInt :int = (amountInInt * pow((1 + interestRatePercentage), elapsedDays)) - amountInInt;
+        interest := natToTz(intToNat(interestInInt));
       }
       else skip;
   } with interest; attributes ["inline"];
@@ -88,7 +89,9 @@ function calculateDepositInterest(const accountInfo: balanceInfo; var store: sto
       then block {
         const elapsedDays :int = elapsedBlocks / dailyBlocks; 
         const interestRatePercentage :int = natToInt(getDepositInterestRate(store) / 100n);
-        interest := (accountInfo.tezAmount * intToNat(pow((1 + interestRatePercentage / 365), elapsedDays)) - accountInfo.tezAmount);
+        const amountInInt :int = natToInt(tezToNatWithTz(accountInfo.tezAmount));
+        const interestInInt :int = (amountInInt * pow((1 + interestRatePercentage), elapsedDays)) - amountInInt;
+        interest := natToTz(intToNat(interestInInt));
       }
       else skip;
   } with interest; attributes ["inline"];
@@ -101,24 +104,16 @@ function tokenProxy (const action : tokenAction; const store : store): operation
       | None -> (failwith ("Contract not found.") : contract (tokenAction))
       end;
     const proxyOperation : operation = Tezos.transaction (action, 0mutez, tokenContract);
-  } with proxyOperation;
+  } with proxyOperation; attributes ["inline"];
 
-function getBorrow(var store: store): balanceInfo is 
-  block {
-    var borrowsMap: big_map(address, balanceInfo) := store.borrows;
-    var borrow: option(balanceInfo) := borrowsMap[sender];
-  } with
-  case borrow of          
+function getBorrow(var store: store): balanceInfo is
+  case store.borrows[sender] of          
     | Some(borrowItem) -> borrowItem
     | None -> record tezAmount = 0tez; blockTimestamp = now; end
   end; attributes ["inline"];
 
-function getDeposit(var store: store): balanceInfo is 
-  block {
-    var depositsMap: big_map(address, balanceInfo) := store.deposits;
-    var deposit: option(balanceInfo) := depositsMap[sender];
-  } with
-  case deposit of          
+function getDeposit(var store: store): balanceInfo is
+  case store.deposits[sender] of          
     | Some(depositItem) -> depositItem
     | None -> record tezAmount = 0tez; blockTimestamp = now; end
   end; attributes ["inline"];
@@ -314,14 +309,6 @@ function repayBorrow(var store: store): return is
 
   } with(emptyOps, store);
 
- function updateCollateralRate(const value : nat ; var store : store) : return is
-  block {
-    // Fail if is not the owner
-    if (sender =/= store.owner) 
-      then failwith("You must be the owner of the contract to update the collateral ratio");
-      else store.collateralRate := value;
-  } with (emptyOps, store); attributes ["inline"];
-
 function main (const action: action; var store: store): return is
   block {
     skip
@@ -330,7 +317,6 @@ function main (const action: action; var store: store): return is
     | Withdraw(n) -> withdrawImp(n, store)
     | Borrow(n) -> borrow(n, store)
     | RepayBorrow(n) -> repayBorrow(store)
-    | UpdateCollateralRate(n) -> updateCollateralRate(n, store)
     | AddLiquidity(n) ->  addLiquidity(store)
     | GetExchangeRate(n) -> getExchangeRate(n.1, store)
     | GetBalanceOf(n) -> getBalanceOf(n.0, n.1, store)

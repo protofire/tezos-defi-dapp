@@ -65,9 +65,9 @@ You can run the examples with the following commands:
 yarn example:deposit
 ```
 
-![alt text][deposit]
+![Deposit operation image][deposit]
 
-[deposit]: https://i.imgur.com/rCFkdmO.png "Deposit operation"
+[deposit]: https://github.com/protofire/tezos-defi-dapp/blob/master/defi-contracts/examples/images/deposit.png "Deposit operation"
 
 #### Withdraw operation: 
 
@@ -75,9 +75,9 @@ yarn example:deposit
 yarn example:withdraw
 ```
 
-![alt text][withdraw]
+![Withdraw operation image][withdraw]
 
-[withdraw]: https://i.imgur.com/E1GDf26.png "Withdraw operation"
+[withdraw]: https://github.com/protofire/tezos-defi-dapp/blob/master/defi-contracts/examples/images/withdraw.png "Withdraw operation"
 
 
 #### Borrow operation: 
@@ -86,9 +86,9 @@ yarn example:withdraw
 yarn example:borrow
 ```
 
-![alt text][borrow]
+![Borrow operation image][borrow]
 
-[borrow]: https://i.imgur.com/VQKdXUY.png "Borrow operation"
+[borrow]: https://github.com/protofire/tezos-defi-dapp/blob/master/defi-contracts/examples/images/borrow.png "Borrow operation"
 
 
 
@@ -98,7 +98,7 @@ yarn example:borrow
 yarn example:repayborrow
 ```
 
-![alt text][repayborrow]
+![Repay borrow operation image][repayborrow]
 
-[repayborrow]: https://i.imgur.com/LVI10Cu.png "Repay borrow operation"
+[repayborrow]: https://github.com/protofire/tezos-defi-dapp/blob/master/defi-contracts/examples/images/repayBorrow.png "Repay borrow operation"
 

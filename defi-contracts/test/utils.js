@@ -33,7 +33,7 @@ exports.unitsInTokenAmount = (units, decimals) => {
 };
 
 exports.tokenAmountInUnitsWithSymbol = (units, decimals, symbol) => {
-    return `${exports.tokenAmountInUnits(units, decimals)} ${symbol.toUpperCase()}`;
+    return `${exports.tokenAmountInUnits(units, decimals)} ${symbol.toLowerCase()}`;
 };
 
 exports.getTokenStorage = async (address, keys) => {
