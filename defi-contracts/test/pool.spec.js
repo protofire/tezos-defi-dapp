@@ -29,7 +29,6 @@ const testMethods = async () => {
       'withdraw',
       'borrow',
       'repayBorrow',
-      'updateCollateralRate',
       'addLiquidity',
       'getExchangeRate',
       'getBalanceOf',
