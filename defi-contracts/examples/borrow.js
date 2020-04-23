@@ -19,14 +19,15 @@ Tezos.setProvider({ rpc, signer: signerFaucetA });
 
 let table = new Table({
     head: ['Action', 
-    'Account address', 
-    'Account balance', 
-    'Pool: deposit balance', 
-    'Pool: borrow balance', 
-    'Pool: total deposits', 
-    'Pool: total borrows' 
+        'Account address', 
+        'Account balance', 
+        'Fee',
+        'Pool: deposit balance', 
+        'Pool: borrow balance', 
+        'Pool: total deposits', 
+        'Pool: total borrows' 
     ],
-    colWidths: [20, 40, 20, 25, 25, 25, 25],
+    colWidths: [20, 38, 18, 13, 20, 20, 20, 20],
     style: {compact : true, 'padding-left' : 1, head: ['green']},
 });
 
@@ -49,6 +50,7 @@ const madeBorrow = async () => {
     table.push([`Before borrow ${amount} ꜩ`, 
         accountFaucetA, 
         tzFormatter(beforeAccountBalance, 'tz'), 
+        tzFormatter(0, 'tz'),
         tzFormatter(beforeDepositBalance, 'tz'), 
         tzFormatter(beforeBorrowBalance, 'tz'), 
         tzFormatter(beforePoolStorage.totalDeposits, 'tz'), 
@@ -71,6 +73,7 @@ const madeBorrow = async () => {
     table.push([`After borrow ${amount} ꜩ`, 
         accountFaucetA, 
         tzFormatter(afterAccountBalance, 'tz'),
+        tzFormatter(operationBorrow.params.fee, 'tz'),
         tzFormatter(afterDepositBalance, 'tz'), 
         tzFormatter(afterBorrowBalance, 'tz'), 
         tzFormatter(afterPoolStorage.totalDeposits, 'tz'), 

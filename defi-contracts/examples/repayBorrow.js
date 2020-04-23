@@ -18,15 +18,17 @@ const contractPoolAddress = contractPoolDeploy.address;
 Tezos.setProvider({ rpc, signer: signerFaucetA });
 
 let table = new Table({
-    head: ['Action', 
-    'Account address', 
-    'Account balance', 
-    'Pool: deposit balance', 
-    'Pool: borrow balance', 
-    'Pool: total deposits', 
-    'Pool: total borrows' 
+    head: [
+        'Action', 
+        'Account address', 
+        'Account balance', 
+        'Fee',
+        'Pool: deposit balance', 
+        'Pool: borrow balance', 
+        'Pool: total deposits', 
+        'Pool: total borrows' 
     ],
-    colWidths: [30, 40, 20, 25, 25, 25, 25],
+    colWidths: [20, 38, 18, 13, 20, 20, 20, 20],
     style: {compact : true, 'padding-left' : 1, head: ['green']},
 });
 
@@ -49,15 +51,16 @@ const madeRepayBorrow = async () => {
     table.push([`Before repay borrow ${amount} ꜩ`, 
         accountFaucetA, 
         tzFormatter(beforeAccountBalance, 'tz'), 
+        tzFormatter(0, 'tz'),
         tzFormatter(beforeDepositBalance, 'tz'), 
         tzFormatter(beforeBorrowBalance, 'tz'), 
         tzFormatter(beforePoolStorage.totalDeposits, 'tz'), 
         tzFormatter(beforePoolStorage.totalBorrows, 'tz'), 
     ]);
 
-    // Execute borrow
-    const operationBorrow = await contractPool.methods.repayBorrow(UnitValue).send({ amount });
-    await operationBorrow.confirmation();
+    // Execute repay borrow
+    const operationRepayBorrow = await contractPool.methods.repayBorrow(UnitValue).send({ amount });
+    await operationRepayBorrow.confirmation();
 
     // Check storage after repay borrow
     const afterPoolStorage = await getPoolStorage(contractPoolAddress, [accountFaucetA, accountFaucetB]);
@@ -71,6 +74,7 @@ const madeRepayBorrow = async () => {
     table.push([`After repay borrow ${amount} ꜩ`, 
         accountFaucetA, 
         tzFormatter(afterAccountBalance, 'tz'),
+        tzFormatter(operationRepayBorrow.params.fee, 'tz'),
         tzFormatter(afterDepositBalance, 'tz'), 
         tzFormatter(afterBorrowBalance, 'tz'), 
         tzFormatter(afterPoolStorage.totalDeposits, 'tz'), 

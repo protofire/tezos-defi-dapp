@@ -23,10 +23,11 @@ let table = new Table({
     head: ['Action', 
     'Account address', 
     'Account balance', 
+    'Fee',
     'Pool: deposit account balance', 
     'Pool: total deposits', 
     'Token: account balance' ],
-    colWidths: [20, 40, 20, 32, 25, 25],
+    colWidths: [20, 38, 18, 13, 30, 20, 20],
     style: {compact : true, 'padding-left' : 1, head: ['green']},
 });
 
@@ -48,7 +49,15 @@ const madeDeposit = async () => {
     const beforeAccountBalance = await Tezos.tz.getBalance(accountFaucetA);
 
     // Add values to table
-    table.push([`Before deposit ${amount} ꜩ`, accountFaucetA, tzFormatter(beforeAccountBalance, 'tz'), tzFormatter(beforeDepositBalance, 'tz'), tzFormatter(beforePoolStorage.totalDeposits, 'tz'), tokenAmountInUnitsWithSymbol(beforeTokenBalance, 18, beforeTokenStorage.symbol)]);
+    table.push([
+        `Before deposit ${amount} ꜩ`, 
+        accountFaucetA, 
+        tzFormatter(beforeAccountBalance, 'tz'),
+        tzFormatter(0, 'tz'), 
+        tzFormatter(beforeDepositBalance, 'tz'), 
+        tzFormatter(beforePoolStorage.totalDeposits, 'tz'), 
+        tokenAmountInUnitsWithSymbol(beforeTokenBalance, 18, beforeTokenStorage.symbol)
+    ]);
 
     // Execute deposit
     const operationAddOwner = await contractToken.methods.addOwner(contractPoolAddress).send();
@@ -67,7 +76,15 @@ const madeDeposit = async () => {
 
     // Add values to table
     table.push([]);
-    table.push([`After deposit ${amount} ꜩ`, accountFaucetA, tzFormatter(afterAccountBalance, 'tz'), tzFormatter(afterDepositBalance, 'tz'), tzFormatter(afterPoolStorage.totalDeposits, 'tz'), tokenAmountInUnitsWithSymbol(afterTokenBalance, 18, beforeTokenStorage.symbol)]);
+    table.push([
+        `After deposit ${amount} ꜩ`, 
+        accountFaucetA, 
+        tzFormatter(afterAccountBalance, 'tz'), 
+        tzFormatter(operationDeposit.params.fee, 'tz'),
+        tzFormatter(afterDepositBalance, 'tz'), 
+        tzFormatter(afterPoolStorage.totalDeposits, 'tz'), 
+        tokenAmountInUnitsWithSymbol(afterTokenBalance, 18, beforeTokenStorage.symbol)
+    ]);
 
     console.log(table.toString());
 
