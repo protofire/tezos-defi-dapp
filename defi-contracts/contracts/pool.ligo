@@ -1,37 +1,8 @@
 #include "./utils/conversions.ligo"
 #include "./utils/math.ligo"
 #include "./partials/tokenActions.ligo"
-
-type tokenInformation is record
-  contractAddress: address;
-  tokenDecimals: nat;
-  tokenSupply: nat;
-end
-
-type action is
-| Deposit of (unit)
-| Withdraw of (nat)
-| Borrow of (nat)
-| RepayBorrow of (unit)
-| AddLiquidity of (unit)
-| GetExchangeRate of (unit * contract(nat))
-| GetBalanceOf of (address * contract(tez))
-
-type balanceInfo is record
-  tezAmount: tez;
-  blockTimestamp: timestamp;
-end
-
-type store is record  
-  owner: address;
-  deposits: big_map(address, balanceInfo);
-  borrows: big_map(address, balanceInfo);
-  totalDeposits: tez;
-  totalBorrows: tez;
-  collateralRate: nat; // The collateral ratio that borrows must maintain (e.g. 2 implies 2:1), this represents the percentage of supplied value that can be actively borrowed at any given time.
-  liquidity: tez;
-  token: tokenInformation;
-end
+#include "./partials/poolActions.ligo"
+#include "./partials/poolTypes.ligo"
 
 const emptyOps: list(operation) = list end
 
@@ -62,17 +33,17 @@ function getDepositInterestRate(var store: store): nat is (getBorrowInterestRate
 
 function calculateBorrowInterest(const accountInfo: balanceInfo; var store: store): tez is 
   block {
-    const dailyBlocks: int = 86400; // Seconds x day
+    const hourlyBlocks: int = 3600; // Seconds x hour
 
     const elapsedBlocks :int = now - accountInfo.blockTimestamp;
 
     const interest :tez = 0tez;
-    if elapsedBlocks > dailyBlocks 
+    if elapsedBlocks > hourlyBlocks 
       then block {
-        const elapsedDays :int = elapsedBlocks / dailyBlocks; 
+        const elapsedHours :int = elapsedBlocks / hourlyBlocks; 
         const interestRatePercentage :int = natToInt(getBorrowInterestRate(store) / 100n);
         const amountInInt :int = natToInt(tezToNatWithTz(accountInfo.tezAmount));
-        const interestInInt :int = (amountInInt * pow((1 + interestRatePercentage), elapsedDays)) - amountInInt;
+        const interestInInt :int = amountInInt * pow((1 + interestRatePercentage / (365 * 24)), 365 * elapsedHours) - amountInInt;
         interest := natToTz(intToNat(interestInInt));
       }
       else skip;
@@ -80,17 +51,17 @@ function calculateBorrowInterest(const accountInfo: balanceInfo; var store: stor
 
 function calculateDepositInterest(const accountInfo: balanceInfo; var store: store): tez is 
   block {
-    const dailyBlocks: int = 86400; // Seconds x day
+    const hourlyBlocks: int = 3600; // Seconds x hour
 
     const elapsedBlocks :int = now - accountInfo.blockTimestamp;
 
     const interest :tez = 0tez;
-    if elapsedBlocks > dailyBlocks 
+    if elapsedBlocks > hourlyBlocks 
       then block {
-        const elapsedDays :int = elapsedBlocks / dailyBlocks; 
+        const elapsedHours :int = elapsedBlocks / hourlyBlocks; 
         const interestRatePercentage :int = natToInt(getDepositInterestRate(store) / 100n);
         const amountInInt :int = natToInt(tezToNatWithTz(accountInfo.tezAmount));
-        const interestInInt :int = (amountInInt * pow((1 + interestRatePercentage), elapsedDays)) - amountInInt;
+        const interestInInt :int = amountInInt * pow((1 + interestRatePercentage / (365 * 24)), 365 * elapsedHours) - amountInInt;
         interest := natToTz(intToNat(interestInInt));
       }
       else skip;
