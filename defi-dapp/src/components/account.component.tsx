@@ -4,7 +4,7 @@ import { accountContext } from '../state/account.context'
 import { truncateStringInTheMiddle } from '../utils/tool'
 
 export const Account = () => {
-  const { account } = React.useContext(accountContext)
+  const { account, clearCurrentAccount } = React.useContext(accountContext)
 
   if (!account) {
     return null
@@ -12,6 +12,7 @@ export const Account = () => {
 
   const handleClick = () => {
     window.location.reload(false)
+    clearCurrentAccount()
   }
 
   return (

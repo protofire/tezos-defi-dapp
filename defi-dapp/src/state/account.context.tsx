@@ -12,11 +12,13 @@ export interface Account {
 export interface AccountContext {
   account: Maybe<Account>
   setCurrentAccount: (account: Account) => void
+  clearCurrentAccount: () => void
 }
 
 export const ACCOUNT_CONTEXT_DEFAULT_VALUE = {
   account: null,
   setCurrentAccount: () => {},
+  clearCurrentAccount: () => {},
 }
 
 export const accountContext = React.createContext<AccountContext>(ACCOUNT_CONTEXT_DEFAULT_VALUE)
