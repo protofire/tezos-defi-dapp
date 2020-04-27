@@ -32,22 +32,18 @@ export const Table = (props: Props) => {
         <tbody>
           <tr>
             {Object.values(values).map((value: any, key: number) => {
-              const inputProps: Maybe<{
+              const inputProps: {
                 key: number
                 onClick?: () => void
                 style?: { cursor: string }
-              }> = null
+              } = { key: key }
 
               if (validTHtoClick.includes(key)) {
                 inputProps.onClick = onClickRow
                 inputProps.style = { cursor: 'pointer' }
               }
-
-              return (
-                <th key={key} {...inputProps}>
-                  {value}
-                </th>
-              )
+              // eslint-disable-next-line
+              return <th {...inputProps}>{value}</th>
             })}
           </tr>
         </tbody>

@@ -25,6 +25,7 @@ export const ModalSupply = (props: Props) => {
         </header>
         <div className="row is-center">
           <nav className="tabs">
+            {/*eslint-disable-next-line*/}
             <a
               style={{ cursor: 'pointer' }}
               onClick={() => setModalAction(ModalAction.Supply)}
@@ -32,6 +33,7 @@ export const ModalSupply = (props: Props) => {
             >
               {ModalAction.Supply}
             </a>
+            {/*eslint-disable-next-line*/}
             <a
               style={{ cursor: 'pointer' }}
               onClick={() => setModalAction(ModalAction.Withdraw)}

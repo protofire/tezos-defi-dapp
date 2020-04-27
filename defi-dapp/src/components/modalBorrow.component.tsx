@@ -25,13 +25,16 @@ export const ModalBorrow = (props: Props) => {
         </header>
         <div className="row is-center">
           <nav className="tabs">
+            {/*eslint-disable-next-line*/}
             <a
+              href=""
               style={{ cursor: 'pointer' }}
               onClick={() => setModalAction(ModalAction.Borrow)}
               className={`${modalAction === ModalAction.Borrow ? 'active' : ''}`}
             >
               {ModalAction.Borrow}
             </a>
+            {/*eslint-disable-next-line*/}
             <a
               style={{ cursor: 'pointer' }}
               onClick={() => setModalAction(ModalAction.Repay)}
