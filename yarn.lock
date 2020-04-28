@@ -1373,6 +1373,19 @@
     pbkdf2 "^3.0.17"
     typedarray-to-buffer "^3.1.5"
 
+"@taquito/signer@^6.2.0-beta.0":
+  version "6.2.0-beta.0"
+  resolved "https://registry.yarnpkg.com/@taquito/signer/-/signer-6.2.0-beta.0.tgz#40fbc38564d8245a5e5a61565b80d1c67371fe75"
+  integrity sha512-tcam0EQV7m/MZSSnYQK2HPtNY0mFo/oousbC0PmS4RdxhvldLAYaE7psq5eUKn80SPh/zobR4mWMkh8FOoyzVQ==
+  dependencies:
+    "@taquito/utils" "^6.2.0-beta.0"
+    bignumber.js "^9.0.0"
+    bip39 "^3.0.2"
+    elliptic "^6.5.1"
+    libsodium-wrappers "^0.7.5"
+    pbkdf2 "^3.0.17"
+    typedarray-to-buffer "^3.1.5"
+
 "@taquito/taquito@^6.1.0-beta.0":
   version "6.1.0-beta.0"
   resolved "https://registry.yarnpkg.com/@taquito/taquito/-/taquito-6.1.0-beta.0.tgz#f7497979170019f888b32f290012ce1005cd0c7a"
@@ -1389,6 +1402,15 @@
   version "6.1.0-beta.0"
   resolved "https://registry.yarnpkg.com/@taquito/utils/-/utils-6.1.0-beta.0.tgz#11e8887379738cae10d7a696c7b6cc0cec9eeab0"
   integrity sha512-RaqVw1F7tR9RV71wuDs2Qn1DSH5qwcVVQc/JZMwQS92YUGyFGM5Sp3d+TivBaMhcjgESJNPUNijKj2xNCLd1aQ==
+  dependencies:
+    blakejs "^1.1.0"
+    bs58check "^2.1.2"
+    buffer "^5.2.1"
+
+"@taquito/utils@^6.2.0-beta.0":
+  version "6.2.0-beta.0"
+  resolved "https://registry.yarnpkg.com/@taquito/utils/-/utils-6.2.0-beta.0.tgz#4acd230919b15b79af123cfec7b2889ca219445d"
+  integrity sha512-YBC3C/9n7zmC4LHMpF99h50H75ENC7vUR0JCvTSJK0iHWIQ+G/6hJQGRCkXFSa7fp3bkWB/F+Zas4wejLLVjLQ==
   dependencies:
     blakejs "^1.1.0"
     bs58check "^2.1.2"
@@ -10573,6 +10595,11 @@ url@^0.11.0:
   dependencies:
     punycode "1.3.2"
     querystring "0.2.0"
+
+use-async-memo@^1.2.2:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/use-async-memo/-/use-async-memo-1.2.2.tgz#6549579335c00afc0fff6f18eafc4a9d29596ece"
+  integrity sha512-xJ6a+yE7l8rtCKYDEhIS4S1lQF5mNPHF5nD2bLFVh9eTePuWuOCMHZBNv5S8Jy0Mj9mYVBJWUzBiIoKNBE71eA==
 
 use@^3.1.0:
   version "3.1.1"
