@@ -1,5 +1,9 @@
 import BigNumber from 'bignumber.js'
 import { Tezos } from '@taquito/taquito'
+import { InMemorySigner } from '@taquito/signer'
+
+import { Account } from '../state/account.context'
+import { TEZOS_RPC as rpc } from '../config/constants'
 
 export const truncateStringInTheMiddle = (
   str: string,
@@ -28,5 +32,17 @@ export const tzFormatter = (amount: any, format: any) => {
     return `${Tezos.format('mutez', 'mtz', amount)} mꜩ`
   } else {
     return bigNum.toString()
+  }
+}
+
+export const activateAccount = async (account: Account) => {
+  try {
+    const { email, password, mnemonic, pkh, secret } = account
+    const signer = InMemorySigner.fromFundraiser(email, password, mnemonic.join(' '))
+    Tezos.setProvider({ rpc, signer })
+    const operation = await Tezos.tz.activate(pkh, secret)
+    await operation.confirmation()
+  } catch (err) {
+    console.error(err.message)
   }
 }
