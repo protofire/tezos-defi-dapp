@@ -1,9 +1,12 @@
 import React from 'react'
+import { useToasts } from 'react-toast-notifications'
 
 import { accountContext, Account } from '../state/account.context'
+import { activateAccount } from '../utils/tool'
 
 export const LoadFaucet = () => {
   const { setCurrentAccount } = React.useContext(accountContext)
+  const { addToast } = useToasts()
 
   const fileInput = React.useRef<HTMLInputElement>(null)
 
@@ -18,7 +21,15 @@ export const LoadFaucet = () => {
 
     reader.onload = (event: any) => {
       const account = JSON.parse(event.target.result)
+
+      // Activate account
+      activateAccount(account as Account)
+
+      // Set account state
       setCurrentAccount(account as Account)
+
+      // Send notification
+      addToast('Account load successfully', { appearance: 'success', autoDismiss: true })
     }
 
     reader.readAsText(event.target.files[0])
