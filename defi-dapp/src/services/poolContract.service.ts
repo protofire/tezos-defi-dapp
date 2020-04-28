@@ -31,6 +31,16 @@ class PoolService {
     return storage.totalBorrows
   }
 
+  getLiquidity = async (): Promise<BigNumber> => {
+    const storage = await this.getStorage()
+    return storage.liquidity
+  }
+
+  getCollateralRate = async (): Promise<BigNumber> => {
+    const storage = await this.getStorage()
+    return storage.collateralRate
+  }
+
   getMyDeposit = async (address: string): Promise<BigNumber> => {
     const storage = await this.getStorage()
 

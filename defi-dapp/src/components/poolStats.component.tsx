@@ -9,15 +9,17 @@ export const PoolStats = () => {
   const context = React.useContext(accountContext)
   const { poolService } = useContracts(context)
 
-  const initialValues = { deposits: 0, borrows: 0 }
-  const { deposits, borrows } = useAsyncMemo(
+  const initialValues = { deposits: 0, borrows: 0, liquidity: 0, collateralRate: 0 }
+  const { deposits, borrows, liquidity, collateralRate } = useAsyncMemo(
     async () => {
       if (!poolService) {
         return initialValues
       }
       const deposits = await poolService.getDeposits()
       const borrows = await poolService.getBorrows()
-      return { deposits, borrows }
+      const liquidity = await poolService.getLiquidity()
+      const collateralRate = await poolService.getCollateralRate()
+      return { deposits, borrows, liquidity, collateralRate }
     },
     [poolService],
     initialValues,
@@ -37,6 +39,14 @@ export const PoolStats = () => {
           <div className="row">
             <div className="col">Borrows:</div>
             <div className="col is-right">{tzFormatter(borrows, 'tz')}</div>
+          </div>
+          <div className="row">
+            <div className="col">Liquidity:</div>
+            <div className="col is-right">{tzFormatter(liquidity, 'tz')}</div>
+          </div>
+          <div className="row">
+            <div className="col">Collateral rate:</div>
+            <div className="col is-right">{collateralRate.toString()} %</div>
           </div>
         </footer>
       </div>

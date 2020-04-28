@@ -5,7 +5,7 @@ import { PoolStats } from './poolStats.component'
 
 export const Balances = () => {
   return (
-    <div className="row is-center is-vertical-align">
+    <div className="row">
       <div className="col-6 is-right">
         <PoolStats />
       </div>
