@@ -1,15 +1,16 @@
 import React from 'react'
 
-import { CardBalance } from './cardBalance.component'
+import { PoolAccountBalance } from './poolAccountBalance.component'
+import { PoolStats } from './poolStats.component'
 
 export const Balances = () => {
   return (
     <div className="row is-center is-vertical-align">
       <div className="col-6 is-right">
-        <CardBalance title="My supply balance" value={10000} symbol="tez" />
+        <PoolStats />
       </div>
       <div className="col-6">
-        <CardBalance title="My borrow balance" value={10000} symbol="tez" />
+        <PoolAccountBalance />
       </div>
     </div>
   )
