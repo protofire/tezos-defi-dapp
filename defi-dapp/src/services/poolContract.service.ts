@@ -31,14 +31,30 @@ class PoolService {
     return storage.totalBorrows
   }
 
-  getMyDeposit = async (address: string): Promise<number> => {
+  getMyDeposit = async (address: string): Promise<BigNumber> => {
     const storage = await this.getStorage()
-    return await storage.deposits.get(address)
+
+    let deposit = new BigNumber(0)
+    try {
+      deposit = (await storage.deposits.get(address)).tezAmount
+    } catch (err) {
+      // Do nothing
+    }
+
+    return deposit
   }
 
-  getMyBorrow = async (address: string): Promise<number> => {
+  getMyBorrow = async (address: string): Promise<BigNumber> => {
     const storage = await this.getStorage()
-    return await storage.borrows.get(address)
+
+    let borrow = new BigNumber(0)
+    try {
+      borrow = (await storage.borrows.get(address)).tezAmount
+    } catch (err) {
+      // Do nothing
+    }
+
+    return borrow
   }
 
   getStorage = async () => {
