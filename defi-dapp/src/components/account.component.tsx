@@ -1,10 +1,10 @@
 import React from 'react'
 
-import { accountContext } from '../state/account.context'
+import { useConnectedContext } from '../state/connected.context'
 import { truncateStringInTheMiddle } from '../utils/tool'
 
 export const Account = () => {
-  const { account, clearCurrentAccount } = React.useContext(accountContext)
+  const { account, clearCurrentAccount } = useConnectedContext()
 
   if (!account) {
     return null

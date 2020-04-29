@@ -2,17 +2,32 @@ import React from 'react'
 import { useAsyncMemo } from 'use-async-memo'
 import Loader from 'react-loader-spinner'
 import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css'
+import BigNumber from 'bignumber.js'
 
-import { accountContext } from '../state/account.context'
+import { useConnectedContext } from '../state/connected.context'
 import { useContracts } from '../hooks/contracts.hook'
 import { tzFormatter } from '../utils/tool'
 
+interface PoolStats {
+    deposits: BigNumber,
+    borrows: BigNumber,
+    liquidity: BigNumber,
+    collateralRate: BigNumber,
+    loading: boolean
+}
+
 export const PoolStats = () => {
-  const context = React.useContext(accountContext)
+  const context = useConnectedContext()
   const { poolService } = useContracts(context)
 
-  const initialValues = { deposits: 0, borrows: 0, liquidity: 0, collateralRate: 0, loading: true }
-  const { deposits, borrows, liquidity, collateralRate, loading } = useAsyncMemo(
+  const initialValues = {
+      deposits: new BigNumber(0),
+      borrows: new BigNumber(0),
+      liquidity: new BigNumber(0),
+      collateralRate: new BigNumber(0),
+      loading: true
+  }
+  const { deposits, borrows, liquidity, collateralRate, loading } : PoolStats = useAsyncMemo(
     async () => {
       if (!poolService) {
         return initialValues
@@ -21,8 +36,7 @@ export const PoolStats = () => {
       const borrows = await poolService.getBorrows()
       const liquidity = await poolService.getLiquidity()
       const collateralRate = await poolService.getCollateralRate()
-      const loading = false
-      return { deposits, borrows, liquidity, collateralRate, loading }
+      return { deposits, borrows, liquidity, collateralRate, loading: false }
     },
     [poolService],
     initialValues,

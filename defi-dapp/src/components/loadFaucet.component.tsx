@@ -1,11 +1,11 @@
 import React from 'react'
 import { useToasts } from 'react-toast-notifications'
 
-import { accountContext, Account } from '../state/account.context'
+import { useConnectedContext, Account } from '../state/connected.context'
 import { activateAccount } from '../utils/tool'
 
 export const LoadFaucet = () => {
-  const { setCurrentAccount } = React.useContext(accountContext)
+  const { setCurrentAccount } = useConnectedContext()
   const { addToast } = useToasts()
 
   const fileInput = React.useRef<HTMLInputElement>(null)

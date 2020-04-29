@@ -3,10 +3,10 @@ import React from 'react'
 import { LoadFaucet } from './loadFaucet.component'
 import { NetworkWarning } from './networkWarning.component'
 import { Account } from './account.component'
-import { accountContext } from '../state/account.context'
+import { useConnectedContext } from '../state/connected.context'
 
 export const Header = () => {
-  const { account } = React.useContext(accountContext)
+  const { account } = useConnectedContext()
 
   return (
     <>

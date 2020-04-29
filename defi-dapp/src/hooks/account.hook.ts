@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { Account } from '../state/account.context'
+import { Account } from '../state/connected.context'
 
 interface UseAccountValue {
   account: Maybe<Account>

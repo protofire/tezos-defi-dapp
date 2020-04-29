@@ -5,22 +5,32 @@ import Loader from 'react-loader-spinner'
 import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css'
 import BigNumber from 'bignumber.js'
 
-import { accountContext } from '../state/account.context'
+import { useConnectedContext } from '../state/connected.context'
 import { useContracts } from '../hooks/contracts.hook'
 import { tzFormatter } from '../utils/tool'
 
+interface AccountBalance {
+    deposit: BigNumber,
+    borrow: BigNumber,
+    loading: boolean
+}
+
 export const PoolAccountBalance = () => {
-  const context = React.useContext(accountContext)
+  const context = useConnectedContext()
   const { poolService } = useContracts(context)
 
-  const initialValues = { deposit: 0, borrow: 0, loading: true }
-  const { deposit, borrow, loading } = useAsyncMemo(
+  const initialValues = {
+      deposit: new BigNumber(0),
+      borrow: new BigNumber(0),
+      loading: true
+  }
+  const { deposit, borrow, loading } : AccountBalance = useAsyncMemo(
     async () => {
-      if (!poolService) {
+      if (!poolService || !context) {
         return initialValues
       }
-      if (!context || !context.account) {
-        return initialValues
+      if (!context.account) {
+        return { ...initialValues, loading: false }
       }
 
       const { email, password, mnemonic } = context.account
@@ -35,8 +45,7 @@ export const PoolAccountBalance = () => {
       } catch (err) {
         console.error(err)
       }
-      const loading = false
-      return { deposit, borrow, loading }
+      return { deposit, borrow, loading: false }
     },
     [poolService, context],
     initialValues,

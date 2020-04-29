@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js'
 import { Tezos } from '@taquito/taquito'
 import { InMemorySigner } from '@taquito/signer'
 
-import { Account } from '../state/account.context'
+import { Account } from '../state/connected.context'
 import { TEZOS_RPC as rpc } from '../config/constants'
 
 export const truncateStringInTheMiddle = (
