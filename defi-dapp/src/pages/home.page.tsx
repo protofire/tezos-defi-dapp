@@ -12,7 +12,7 @@ export const HomePage = () => {
     <ToastProvider>
       <ConnectedNetwork>
         <Header />
-        <div className="container" style={{ marginTop: '60px' }}>
+        <div className="container" style={{ marginTop: '30px' }}>
           <Balances />
           <Markets />
         </div>
