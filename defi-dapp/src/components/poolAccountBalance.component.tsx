@@ -6,7 +6,7 @@ import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css'
 import BigNumber from 'bignumber.js'
 
 import { useConnectedContext } from '../state/connected.context'
-import { useContracts } from '../hooks/contracts.hook'
+import { usePoolContract } from '../hooks/poolContract.hook'
 import { tzFormatter } from '../utils/tool'
 
 interface AccountBalance {
@@ -17,7 +17,7 @@ interface AccountBalance {
 
 export const PoolAccountBalance = () => {
   const context = useConnectedContext()
-  const { poolService } = useContracts(context)
+  const { poolService } = usePoolContract(context)
 
   const initialValues = {
       deposit: new BigNumber(0),
@@ -47,7 +47,7 @@ export const PoolAccountBalance = () => {
       }
       return { deposit, borrow, loading: false }
     },
-    [poolService, context],
+    [context],
     initialValues,
   )
 
