@@ -8,7 +8,6 @@ import { Markets } from '../components/markets.component'
 import { ConnectedNetwork } from '../state/connected.context'
 
 export const HomePage = () => {
-
   return (
     <ToastProvider>
       <ConnectedNetwork>

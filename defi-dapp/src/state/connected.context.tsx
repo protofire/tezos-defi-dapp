@@ -1,7 +1,7 @@
 import React from 'react'
-import { useAccount } from "../hooks/account.hook"
-import {usePoolContract} from "../hooks/poolContract.hook";
-import {PoolService} from "../services/poolContract.service"
+import { useAccount } from '../hooks/account.hook'
+import { usePoolContract } from '../hooks/poolContract.hook'
+import { PoolService } from '../services/poolContract.service'
 
 export interface Account {
   amount: string
@@ -23,27 +23,27 @@ export const CONNECTED_CONTEXT_DEFAULT_VALUE = {
   account: null,
   setCurrentAccount: () => {},
   clearCurrentAccount: () => {},
-  poolService: null
+  poolService: null,
 }
 
 const ConnectedContext = React.createContext<ConnectedContext>(CONNECTED_CONTEXT_DEFAULT_VALUE)
 
 interface Props {
-    children: React.ReactNode
+  children: React.ReactNode
 }
 
 export const ConnectedNetwork = (props: Props) => {
-    const useAccountValue = useAccount()
-    const { poolService } = usePoolContract(useAccountValue.account)
+  const useAccountValue = useAccount()
+  const { poolService } = usePoolContract(useAccountValue.account)
 
-    const value = {
-        ...useAccountValue,
-        poolService
-    }
+  const value = {
+    ...useAccountValue,
+    poolService,
+  }
 
-    return <ConnectedContext.Provider value={value}>{props.children}</ConnectedContext.Provider>
+  return <ConnectedContext.Provider value={value}>{props.children}</ConnectedContext.Provider>
 }
 
 export const useConnectedContext = (): ConnectedContext => {
-    return React.useContext(ConnectedContext)
+  return React.useContext(ConnectedContext)
 }
