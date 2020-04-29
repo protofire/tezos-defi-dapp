@@ -2,27 +2,22 @@ import React, { useState } from 'react'
 
 import { Table } from './table.component'
 import { AssetTezImage } from './assetTezImage.component'
-import { ToggleButton } from './toggleButton/toggleButton.component'
 import { ModalSupply } from './modalSupply.component'
-import { ModalAllow } from './modalAllow.component'
+import { useConnectedContext } from '../state/connected.context'
+import { PoolService } from '../services/poolContract.service'
 
-export const MarketSupply = () => {
+interface Props {
+  poolService: PoolService
+}
+
+const supplyHeaders = ['Asset', 'APY', 'Wallet']
+
+const MarketSupplyConnected = (props: Props) => {
+  const { poolService } = props
+
   const [isModalSupplyOpen, setModalSupplyState] = useState(false)
-  const [isModalAllowOpen, setModalAllowState] = useState(false)
 
-  // TODO: Move this to a  hook
-  const customSupply = (
-    <ToggleButton
-      onChange={() => {
-        setModalAllowState(true)
-      }}
-      id="Allowed"
-      text={['Yes', 'No']}
-      name="Allowed"
-    />
-  )
-  const supplyHeaders = ['Asset', 'APY', 'Wallet', 'Collateral']
-  const supplyValues = { asset: <AssetTezImage />, apy: '10%', wallet: 20, custom: customSupply }
+  const supplyValues = { asset: <AssetTezImage />, apy: '10%', wallet: 20 }
 
   return (
     <>
@@ -31,14 +26,35 @@ export const MarketSupply = () => {
           title="Supply"
           headers={supplyHeaders}
           values={supplyValues}
-          validTHtoClick={[0, 1, 2]}
           onClickRow={() => {
             setModalSupplyState(true)
           }}
+          loading={false}
         />
       </div>
       <ModalSupply isOpen={isModalSupplyOpen} onClose={() => setModalSupplyState(false)} />
-      <ModalAllow isOpen={isModalAllowOpen} onClose={() => setModalAllowState(false)} />
+    </>
+  )
+}
+
+const MarketSupplyDisconnected = () => {
+  return (
+    <div className="col-6">
+      <Table title="Supply" headers={supplyHeaders} loading={true} />
+    </div>
+  )
+}
+
+export const MarketSupply = () => {
+  const { poolService } = useConnectedContext()
+
+  return (
+    <>
+      {poolService ? (
+        <MarketSupplyConnected poolService={poolService} />
+      ) : (
+        <MarketSupplyDisconnected />
+      )}
     </>
   )
 }
