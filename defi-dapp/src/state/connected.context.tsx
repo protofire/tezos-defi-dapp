@@ -1,5 +1,7 @@
 import React from 'react'
 import { useAccount } from "../hooks/account.hook"
+import {usePoolContract} from "../hooks/poolContract.hook";
+import {PoolService} from "../services/poolContract.service"
 
 export interface Account {
   amount: string
@@ -14,12 +16,14 @@ export interface ConnectedContext {
   account: Maybe<Account>
   setCurrentAccount: (account: Account) => void
   clearCurrentAccount: () => void
+  poolService: Maybe<PoolService>
 }
 
 export const CONNECTED_CONTEXT_DEFAULT_VALUE = {
   account: null,
   setCurrentAccount: () => {},
   clearCurrentAccount: () => {},
+  poolService: null
 }
 
 const ConnectedContext = React.createContext<ConnectedContext>(CONNECTED_CONTEXT_DEFAULT_VALUE)
@@ -29,21 +33,17 @@ interface Props {
 }
 
 export const ConnectedNetwork = (props: Props) => {
-    const account = useAccount()
+    const useAccountValue = useAccount()
+    const { poolService } = usePoolContract(useAccountValue.account)
 
     const value = {
-        ...account
+        ...useAccountValue,
+        poolService
     }
 
     return <ConnectedContext.Provider value={value}>{props.children}</ConnectedContext.Provider>
 }
 
-export const useConnectedContext = () => {
-    const context = React.useContext(ConnectedContext)
-
-    if (!context) {
-        throw new Error('Component rendered outside the provider tree')
-    }
-
-    return context
+export const useConnectedContext = (): ConnectedContext => {
+    return React.useContext(ConnectedContext)
 }

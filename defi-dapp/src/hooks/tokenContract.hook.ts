@@ -3,15 +3,13 @@ import { InMemorySigner } from '@taquito/signer'
 
 import { useAsyncMemo } from 'use-async-memo'
 import { TokenService } from '../services/tokenContract.service'
-import { ConnectedContext } from '../state/connected.context'
+import { Account } from '../state/connected.context'
 import {
   TOKEN_CONTRACT_ADDRESS as tokenContractAddress,
   TEZOS_RPC as rpc,
 } from '../config/constants'
 
-export const useTokenContract = (context: ConnectedContext) => {
-  const { account } = context
-
+export const useTokenContract = (account: Account) => {
   const signer = account
     ? InMemorySigner.fromFundraiser(account.email, account.password, account.mnemonic.join(' '))
     : undefined
