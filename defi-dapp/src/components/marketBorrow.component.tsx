@@ -17,7 +17,11 @@ interface Props {
 interface MarketBorrow {
   apy: BigNumber
   wallet: BigNumber
-  percentageToBorrow: BigNumber
+  percentageToBorrow: {
+    percentage: BigNumber
+    totalAllowed: BigNumber
+    used: BigNumber
+  }
   loading: boolean
 }
 
@@ -31,7 +35,11 @@ const MarketBorrowConnected = (props: Props) => {
   const initialValues: MarketBorrow = {
     apy: new BigNumber(0),
     wallet: new BigNumber(0),
-    percentageToBorrow: new BigNumber(0),
+    percentageToBorrow: {
+      percentage: new BigNumber(0),
+      totalAllowed: new BigNumber(0),
+      used: new BigNumber(0),
+    },
     loading: true,
   }
   const marketBorrow: MarketBorrow = useAsyncMemo(
@@ -40,10 +48,10 @@ const MarketBorrowConnected = (props: Props) => {
       const wallet = account ? await poolService.getTezosBalance(account.pkh) : new BigNumber(0)
       const percentageToBorrow = account
         ? await poolService.getPercentageToBorrow(account.pkh)
-        : new BigNumber(0)
+        : { percentage: new BigNumber(0), totalAllowed: new BigNumber(0), used: new BigNumber(0) }
       return { apy, wallet, percentageToBorrow, loading: false }
     },
-    [],
+    [account],
     initialValues,
   )
 
@@ -51,7 +59,7 @@ const MarketBorrowConnected = (props: Props) => {
     asset: <AssetTezImage />,
     apy: percentageFormatter(marketBorrow.apy),
     wallet: tzFormatter(marketBorrow.wallet, 'tz'),
-    custom: percentageFormatter(marketBorrow.percentageToBorrow.multipliedBy(100)),
+    custom: percentageFormatter(marketBorrow.percentageToBorrow.percentage.multipliedBy(100)),
   }
 
   return (
