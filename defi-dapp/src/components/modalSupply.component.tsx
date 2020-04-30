@@ -120,6 +120,17 @@ export const ModalSupply = (props: Props) => {
     initialValues,
   )
 
+  const setMax = async () => {
+    if (account) {
+      const { email, password, mnemonic, pkh } = account
+      const signer = InMemorySigner.fromFundraiser(email, password, mnemonic.join(' '))
+      const accountAddress = await signer.publicKeyHash()
+
+      const accountBalance = await poolService.getTezosBalance(accountAddress)
+      setAmount(accountBalance)
+    }
+  }
+
   return (
     <ModalWrapper isOpen={isOpen} onRequestClose={onClose}>
       <div className="card">
@@ -150,9 +161,14 @@ export const ModalSupply = (props: Props) => {
               }
               value={amount ? amount.toString() : ''}
             />
-            <div className="button primary" style={{ marginLeft: '10px' }}>
+            <button
+              className="button primary"
+              disabled={!account}
+              onClick={setMax}
+              style={{ marginLeft: '10px' }}
+            >
               Max
-            </div>
+            </button>
           </div>
         </div>
         <div className="row" style={{ marginTop: '30px' }}>
