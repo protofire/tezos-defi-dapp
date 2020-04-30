@@ -38,7 +38,7 @@ const MarketSupplyConnected = (props: Props) => {
       const wallet = account ? await poolService.getTezosBalance(account.pkh) : new BigNumber(0)
       return { apy, wallet, loading: false }
     },
-    [],
+    [account],
     initialValues,
   )
 
@@ -61,7 +61,12 @@ const MarketSupplyConnected = (props: Props) => {
           loading={marketSupply.loading}
         />
       </div>
-      <ModalSupply isOpen={isModalSupplyOpen} onClose={() => setModalSupplyState(false)} />
+      <ModalSupply
+        poolService={poolService}
+        account={account}
+        isOpen={isModalSupplyOpen}
+        onClose={() => setModalSupplyState(false)}
+      />
     </>
   )
 }
