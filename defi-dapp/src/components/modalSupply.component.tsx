@@ -1,10 +1,20 @@
 import React, { HTMLAttributes, useState } from 'react'
+import { InMemorySigner } from '@taquito/signer'
+import { useAsyncMemo } from 'use-async-memo'
+import { BigNumberInput } from 'big-number-input'
+import BigNumber from 'bignumber.js'
 
 import { ModalWrapper } from './modalWrapper.component'
+import { PoolService } from '../services/poolContract.service'
+import { Account } from '../state/connected.context'
+import { tzFormatter } from '../utils/tool'
+import Loader from 'react-loader-spinner'
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   isOpen: boolean
   onClose: () => void
+  poolService: PoolService
+  account: Maybe<Account>
 }
 
 enum ModalAction {
@@ -12,10 +22,56 @@ enum ModalAction {
   Withdraw = 'Withdraw',
 }
 
-export const ModalSupply = (props: Props) => {
-  const { onClose, isOpen } = props
+interface SupplyBalance {
+  supply: BigNumber
+  borrowLimit: BigNumber
+  borrowLimitWithAmount: BigNumber
+}
 
+export const ModalSupply = (props: Props) => {
+  const { onClose, isOpen, poolService, account } = props
+
+  const [amount, setAmount] = useState<Maybe<BigNumber>>(null)
+  const [loading, setLoading] = useState<boolean>(false)
   const [modalAction, setModalAction] = useState<ModalAction>(ModalAction.Supply)
+
+  const initialValues = {
+    supply: new BigNumber(0),
+    borrowLimit: new BigNumber(0),
+    borrowLimitWithAmount: new BigNumber(0),
+  }
+
+  const { supply, borrowLimit, borrowLimitWithAmount }: SupplyBalance = useAsyncMemo(
+    async () => {
+      if (!account) {
+        return { ...initialValues }
+      }
+      setLoading(true)
+
+      const { email, password, mnemonic, pkh } = account
+      const signer = InMemorySigner.fromFundraiser(email, password, mnemonic.join(' '))
+      const accountAddress = await signer.publicKeyHash()
+
+      const [supply, borrow] = await Promise.all([
+        poolService.getMyDeposit(accountAddress),
+        poolService.getMyBorrow(accountAddress),
+      ])
+      const [borrowAllowed, borrowAllowedWithAmount] = await Promise.all([
+        poolService.getPercentageToBorrow(pkh),
+        poolService.getPercentageToBorrow(pkh, amount),
+      ])
+
+      setLoading(false)
+
+      return {
+        supply,
+        borrowLimit: borrowAllowed.totalAllowed.minus(borrow),
+        borrowLimitWithAmount: borrowAllowedWithAmount.totalAllowed.minus(borrow),
+      }
+    },
+    [account, amount],
+    initialValues,
+  )
 
   return (
     <ModalWrapper isOpen={isOpen} onRequestClose={onClose}>
@@ -45,7 +101,14 @@ export const ModalSupply = (props: Props) => {
         </div>
         <div className="row" style={{ marginTop: '30px' }}>
           <div className="is-center">
-            <input />
+            <BigNumberInput
+              autofocus={true}
+              decimals={6}
+              onChange={newValue =>
+                newValue ? setAmount(new BigNumber(newValue)) : setAmount(null)
+              }
+              value={amount ? amount.toString() : ''}
+            />
             <div className="button primary" style={{ marginLeft: '10px' }}>
               Max
             </div>
@@ -56,7 +119,22 @@ export const ModalSupply = (props: Props) => {
             <label>Supply balance</label>
           </div>
           <div className="col is-right">
-            <label>0 tez</label>
+            {loading && (
+              <Loader visible={true} type="ThreeDots" color="#14854f" height={18} width={18} />
+            )}
+            {!loading && (!amount || amount.isZero()) && <label>{tzFormatter(supply, 'tz')}</label>}
+            {!loading && amount && !amount.isZero() && (
+              <>
+                <label>{tzFormatter(supply, 'tz')}</label>
+                &nbsp;
+                <img
+                  src="https://icongr.am/feather/arrow-right.svg?size=16&amp;color=14854f"
+                  alt="icon"
+                />
+                &nbsp;
+                <label>{tzFormatter(supply.plus(amount), 'tz')}</label>
+              </>
+            )}
           </div>
         </div>
         <div className="row" style={{ marginTop: '5px' }}>
@@ -64,14 +142,33 @@ export const ModalSupply = (props: Props) => {
             <label>Borrow limit</label>
           </div>
           <div className="col is-right">
-            <label>0 tez</label>
+            {loading && (
+              <Loader visible={true} type="ThreeDots" color="#14854f" height={18} width={18} />
+            )}
+            {!loading && (!amount || amount.isZero()) && (
+              <label>{tzFormatter(borrowLimit, 'tz')}</label>
+            )}
+            {!loading && amount && !amount.isZero() && (
+              <>
+                <label>{tzFormatter(borrowLimit, 'tz')}</label>
+                &nbsp;
+                <img
+                  src="https://icongr.am/feather/arrow-right.svg?size=16&amp;color=14854f"
+                  alt="icon"
+                />
+                &nbsp;
+                <label>{tzFormatter(borrowLimitWithAmount, 'tz')}</label>
+              </>
+            )}
           </div>
         </div>
         <footer className="row is-right" style={{ marginTop: '30px' }}>
-          <div className="button primary">{modalAction}</div>
-          <div onClick={onClose} className="button">
+          <button className="button primary" disabled={!account || !amount || (amount && amount.isZero())}>
+            {account ? modalAction : 'Please connect to your account'}
+          </button>
+          <button onClick={onClose} className="button">
             Cancel
-          </div>
+          </button>
         </footer>
       </div>
     </ModalWrapper>
