@@ -67,6 +67,48 @@ class PoolService {
     return borrow
   }
 
+  getCoefficientInterest = async (): Promise<BigNumber> => {
+    const storage = await this.getStorage()
+    const { totalBorrows, totalDeposits } = storage
+    let coefficientInterest = new BigNumber(1)
+    const total: BigNumber = totalDeposits.plus(totalBorrows)
+    if (total.isGreaterThan(0)) {
+      coefficientInterest = totalBorrows.div(total)
+    }
+    return coefficientInterest
+  }
+
+  getBorrowInterestRate = async (): Promise<BigNumber> => {
+    const coefficientInterest = await this.getCoefficientInterest()
+
+    const firstCoefficient = new BigNumber(2)
+    const thirdCoefficient = new BigNumber(20)
+    return firstCoefficient.plus(coefficientInterest.multipliedBy(thirdCoefficient))
+  }
+
+  getSupplyInterestRate = async (): Promise<BigNumber> => {
+    const borrowInterest = await this.getBorrowInterestRate()
+    const coefficientInterest = await this.getCoefficientInterest()
+    return borrowInterest.multipliedBy(coefficientInterest)
+  }
+
+  getTezosBalance = async (address: string): Promise<BigNumber> => {
+    Tezos.setProvider({ rpc: this.rpc, signer: this.signer })
+    return await Tezos.tz.getBalance(address)
+  }
+
+  getPercentageToBorrow = async (address: string) => {
+    const myBorrow = await this.getMyBorrow(address)
+    const myDeposit = await this.getMyDeposit(address)
+    const collateralRate = await this.getCollateralRate()
+    const totalAllowed = myDeposit.multipliedBy(collateralRate.div(100))
+
+    if (totalAllowed.isZero()) return new BigNumber(0)
+
+    const used = totalAllowed.minus(myBorrow)
+    return used.div(totalAllowed)
+  }
+
   getStorage = async () => {
     return await this.contract.storage()
   }

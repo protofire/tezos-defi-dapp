@@ -35,6 +35,15 @@ export const tzFormatter = (amount: any, format: any) => {
   }
 }
 
+export const percentageFormatter = (amount: any) => {
+  const bigNum = new BigNumber(amount)
+  if (bigNum.isNaN()) {
+    return amount
+  }
+
+  return `${bigNum.toFixed(4)} %`
+}
+
 export const activateAccount = async (account: Account) => {
   try {
     const { email, password, mnemonic, pkh, secret } = account

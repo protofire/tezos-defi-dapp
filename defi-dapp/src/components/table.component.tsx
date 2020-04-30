@@ -7,7 +7,7 @@ interface Props {
   values?: {
     asset: any
     apy: string
-    wallet: number
+    wallet: string
     custom?: any
   }
   onClickRow?: () => void

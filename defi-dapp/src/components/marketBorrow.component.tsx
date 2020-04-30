@@ -1,24 +1,58 @@
 import React, { useState } from 'react'
+import BigNumber from 'bignumber.js'
 
 import { Table } from './table.component'
 import { AssetTezImage } from './assetTezImage.component'
 import { ModalBorrow } from './modalBorrow.component'
 import { PoolService } from '../services/poolContract.service'
-import { useConnectedContext } from '../state/connected.context'
+import { Account, useConnectedContext } from '../state/connected.context'
+import { useAsyncMemo } from 'use-async-memo'
+import { tzFormatter, percentageFormatter } from '../utils/tool'
 
 interface Props {
   poolService: PoolService
+  account: Maybe<Account>
+}
+
+interface MarketBorrow {
+  apy: BigNumber
+  wallet: BigNumber
+  percentageToBorrow: BigNumber
+  loading: boolean
 }
 
 const borrowHeaders = ['Asset', 'APY', 'Wallet', '% of limit']
 
 const MarketBorrowConnected = (props: Props) => {
-  const { poolService } = props
+  const { poolService, account } = props
 
   const [isModalBorrowOpen, setModalBorrowState] = useState(false)
 
-  // TODO: Move this to a  hook
-  const borrowValues = { asset: <AssetTezImage />, apy: '10%', wallet: 20, custom: '0%' }
+  const initialValues: MarketBorrow = {
+    apy: new BigNumber(0),
+    wallet: new BigNumber(0),
+    percentageToBorrow: new BigNumber(0),
+    loading: true,
+  }
+  const marketBorrow: MarketBorrow = useAsyncMemo(
+    async () => {
+      const apy = await poolService.getBorrowInterestRate()
+      const wallet = account ? await poolService.getTezosBalance(account.pkh) : new BigNumber(0)
+      const percentageToBorrow = account
+        ? await poolService.getPercentageToBorrow(account.pkh)
+        : new BigNumber(0)
+      return { apy, wallet, percentageToBorrow, loading: false }
+    },
+    [],
+    initialValues,
+  )
+
+  const borrowValues = {
+    asset: <AssetTezImage />,
+    apy: percentageFormatter(marketBorrow.apy),
+    wallet: tzFormatter(marketBorrow.wallet, 'tz'),
+    custom: percentageFormatter(marketBorrow.percentageToBorrow.multipliedBy(100)),
+  }
 
   return (
     <>
@@ -30,7 +64,7 @@ const MarketBorrowConnected = (props: Props) => {
           onClickRow={() => {
             setModalBorrowState(true)
           }}
-          loading={false}
+          loading={marketBorrow.loading}
         />
       </div>
       <ModalBorrow isOpen={isModalBorrowOpen} onClose={() => setModalBorrowState(false)} />
@@ -47,12 +81,12 @@ const MarketBorrowDisconnected = () => {
 }
 
 export const MarketBorrow = () => {
-  const { poolService } = useConnectedContext()
+  const { poolService, account } = useConnectedContext()
 
   return (
     <>
       {poolService ? (
-        <MarketBorrowConnected poolService={poolService} />
+        <MarketBorrowConnected poolService={poolService} account={account} />
       ) : (
         <MarketBorrowDisconnected />
       )}
