@@ -97,21 +97,32 @@ class PoolService {
     return await Tezos.tz.getBalance(address)
   }
 
-  getPercentageToBorrow = async (address: string) => {
+  getPercentageToBorrow = async (address: string, withAmount?: Maybe<BigNumber>) => {
     const myBorrow = await this.getMyBorrow(address)
     const myDeposit = await this.getMyDeposit(address)
     const collateralRate = await this.getCollateralRate()
-    const totalAllowed = myDeposit.multipliedBy(collateralRate.div(100))
 
-    if (totalAllowed.isZero()) return new BigNumber(0)
+    const totalAllowed = withAmount
+      ? myDeposit.plus(withAmount).multipliedBy(collateralRate.div(100))
+      : myDeposit.multipliedBy(collateralRate.div(100))
+
+    if (totalAllowed.isZero()) {
+      return {
+        percentage: new BigNumber(0),
+        totalAllowed: new BigNumber(0),
+        used: new BigNumber(0),
+      }
+    }
 
     const used = totalAllowed.minus(myBorrow)
-    return used.div(totalAllowed)
+    return {
+      percentage: used.div(totalAllowed),
+      totalAllowed,
+      used,
+    }
   }
 
-  getStorage = async () => {
-    return await this.contract.storage()
-  }
+  getStorage = async () => await this.contract.storage()
 }
 
 export { PoolService }
