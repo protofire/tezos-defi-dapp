@@ -28,6 +28,53 @@ interface SupplyBalance {
   borrowLimitWithAmount: BigNumber
 }
 
+interface SupplyBalanceItemProps {
+  amount: Maybe<BigNumber>
+  supply: BigNumber
+  supplyWithAmount: BigNumber
+}
+
+const SupplyBalanceItem = (props: SupplyBalanceItemProps) => {
+  const { amount, supply, supplyWithAmount } = props
+  return (
+    <>
+      {(!amount || amount.isZero()) && <label>{tzFormatter(supply, 'tz')}</label>}
+      {amount && !amount.isZero() && (
+        <>
+          <label>{tzFormatter(supply, 'tz')}</label>
+          &nbsp;
+          <img
+            src="https://icongr.am/feather/arrow-right.svg?size=16&amp;color=14854f"
+            alt="icon"
+          />
+          &nbsp;
+          <label>{tzFormatter(supplyWithAmount, 'tz')}</label>
+        </>
+      )}
+    </>
+  )
+}
+
+interface SupplyTabProps {
+  callback: () => any
+  action: ModalAction
+  active: boolean
+}
+
+const SupplyTab = (props: SupplyTabProps) => {
+  const { callback, action, active } = props
+  return (
+    // eslint-disable-next-line
+    <a
+      style={{ cursor: 'pointer' }}
+      onClick={callback}
+      className={`${active ? 'active' : ''}`}
+    >
+      {action}
+    </a>
+  )
+}
+
 export const ModalSupply = (props: Props) => {
   const { onClose, isOpen, poolService, account } = props
 
@@ -81,22 +128,16 @@ export const ModalSupply = (props: Props) => {
         </header>
         <div className="row is-center">
           <nav className="tabs">
-            {/*eslint-disable-next-line*/}
-            <a
-              style={{ cursor: 'pointer' }}
-              onClick={() => setModalAction(ModalAction.Supply)}
-              className={`${modalAction === ModalAction.Supply ? 'active' : ''}`}
-            >
-              {ModalAction.Supply}
-            </a>
-            {/*eslint-disable-next-line*/}
-            <a
-              style={{ cursor: 'pointer' }}
-              onClick={() => setModalAction(ModalAction.Withdraw)}
-              className={`${modalAction === ModalAction.Withdraw ? 'active' : ''}`}
-            >
-              {ModalAction.Withdraw}
-            </a>
+            <SupplyTab
+              action={ModalAction.Supply}
+              callback={() => setModalAction(ModalAction.Supply)}
+              active={modalAction === ModalAction.Supply}
+            />
+            <SupplyTab
+              action={ModalAction.Withdraw}
+              callback={() => setModalAction(ModalAction.Withdraw)}
+              active={modalAction === ModalAction.Withdraw}
+            />
           </nav>
         </div>
         <div className="row" style={{ marginTop: '30px' }}>
@@ -122,18 +163,12 @@ export const ModalSupply = (props: Props) => {
             {loading && (
               <Loader visible={true} type="ThreeDots" color="#14854f" height={18} width={18} />
             )}
-            {!loading && (!amount || amount.isZero()) && <label>{tzFormatter(supply, 'tz')}</label>}
-            {!loading && amount && !amount.isZero() && (
-              <>
-                <label>{tzFormatter(supply, 'tz')}</label>
-                &nbsp;
-                <img
-                  src="https://icongr.am/feather/arrow-right.svg?size=16&amp;color=14854f"
-                  alt="icon"
-                />
-                &nbsp;
-                <label>{tzFormatter(supply.plus(amount), 'tz')}</label>
-              </>
+            {!loading && (
+              <SupplyBalanceItem
+                amount={amount}
+                supply={supply}
+                supplyWithAmount={supply.plus(amount || new BigNumber(0))}
+              />
             )}
           </div>
         </div>
@@ -145,25 +180,20 @@ export const ModalSupply = (props: Props) => {
             {loading && (
               <Loader visible={true} type="ThreeDots" color="#14854f" height={18} width={18} />
             )}
-            {!loading && (!amount || amount.isZero()) && (
-              <label>{tzFormatter(borrowLimit, 'tz')}</label>
-            )}
-            {!loading && amount && !amount.isZero() && (
-              <>
-                <label>{tzFormatter(borrowLimit, 'tz')}</label>
-                &nbsp;
-                <img
-                  src="https://icongr.am/feather/arrow-right.svg?size=16&amp;color=14854f"
-                  alt="icon"
-                />
-                &nbsp;
-                <label>{tzFormatter(borrowLimitWithAmount, 'tz')}</label>
-              </>
+            {!loading && (
+              <SupplyBalanceItem
+                amount={amount}
+                supply={borrowLimit}
+                supplyWithAmount={borrowLimitWithAmount}
+              />
             )}
           </div>
         </div>
         <footer className="row is-right" style={{ marginTop: '30px' }}>
-          <button className="button primary" disabled={!account || !amount || (amount && amount.isZero())}>
+          <button
+            className="button primary"
+            disabled={!account || !amount || (amount && amount.isZero())}
+          >
             {account ? modalAction : 'Please connect to your account'}
           </button>
           <button onClick={onClose} className="button">
