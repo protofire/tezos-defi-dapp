@@ -1,4 +1,4 @@
-import { Tezos } from '@taquito/taquito'
+import { Tezos, UnitValue } from '@taquito/taquito'
 import { InMemorySigner } from '@taquito/signer'
 import BigNumber from 'bignumber.js'
 
@@ -123,6 +123,12 @@ class PoolService {
   }
 
   getStorage = async () => await this.contract.storage()
+
+  madeDeposit = async (amountToDeposit: BigNumber) => {
+    const amount = Tezos.format('mutez', 'tz', amountToDeposit) as BigNumber
+    const contractPool = await Tezos.contract.at(this.contractAddress)
+    return await contractPool.methods.deposit(UnitValue).send({ amount: amount.toNumber() })
+  }
 }
 
 export { PoolService }
