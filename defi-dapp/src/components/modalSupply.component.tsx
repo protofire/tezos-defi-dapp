@@ -25,9 +25,9 @@ enum ModalAction {
 }
 
 interface SupplyBalance {
-  supply: BigNumber
-  borrowLimit: BigNumber
-  borrowLimitWithAmount: BigNumber
+  mySupply: BigNumber
+  myBorrowLimit: BigNumber
+  myBorrowLimitWithAmount: BigNumber
 }
 
 interface SupplyBalanceItemProps {
@@ -85,42 +85,44 @@ export const ModalSupply = (props: Props) => {
   const { addToast } = useToasts()
 
   const [amount, setAmount] = useState<Maybe<BigNumber>>(null)
-  const [loadingData, setLoadingData] = useState<boolean>(false)
+  const [loadingBalanceInformation, setLoadingBalanceInformation] = useState<boolean>(false)
   const [loadingTransferTransaction, setLoadingTransferTransaction] = useState<boolean>(false)
   const [modalAction, setModalAction] = useState<ModalAction>(ModalAction.Supply)
 
   const initialValues = {
-    supply: new BigNumber(0),
-    borrowLimit: new BigNumber(0),
-    borrowLimitWithAmount: new BigNumber(0),
+    mySupply: new BigNumber(0),
+    myBorrowLimit: new BigNumber(0),
+    myBorrowLimitWithAmount: new BigNumber(0),
   }
 
-  const { supply, borrowLimit, borrowLimitWithAmount }: SupplyBalance = useAsyncMemo(
+  const { mySupply, myBorrowLimit, myBorrowLimitWithAmount }: SupplyBalance = useAsyncMemo(
     async () => {
       if (!account) {
         return { ...initialValues }
       }
-      setLoadingData(true)
+
+      setLoadingBalanceInformation(true)
 
       const { email, password, mnemonic, pkh } = account
       const signer = InMemorySigner.fromFundraiser(email, password, mnemonic.join(' '))
       const accountAddress = await signer.publicKeyHash()
 
-      const [supply, borrow] = await Promise.all([
+      const [mySupply, myBorrow] = await Promise.all([
         poolService.getMyDeposit(accountAddress),
         poolService.getMyBorrow(accountAddress),
       ])
-      const [borrowAllowed, borrowAllowedWithAmount] = await Promise.all([
+
+      const [myBorrowAllowed, myBorrowAllowedWithAmount] = await Promise.all([
         poolService.getPercentageToBorrow(pkh),
         poolService.getPercentageToBorrow(pkh, amount),
       ])
 
-      setLoadingData(false)
+      setLoadingBalanceInformation(false)
 
       return {
-        supply,
-        borrowLimit: borrowAllowed.totalAllowed.minus(borrow),
-        borrowLimitWithAmount: borrowAllowedWithAmount.totalAllowed.minus(borrow),
+        mySupply,
+        myBorrowLimit: myBorrowAllowed.totalAllowed.minus(myBorrow),
+        myBorrowLimitWithAmount: myBorrowAllowedWithAmount.totalAllowed.minus(myBorrow),
       }
     },
     [account, amount],
@@ -210,14 +212,14 @@ export const ModalSupply = (props: Props) => {
             <label>Supply balance</label>
           </div>
           <div className="col is-right">
-            {loadingData && (
+            {loadingBalanceInformation && (
               <Loader visible={true} type="ThreeDots" color="#14854f" height={18} width={18} />
             )}
-            {!loadingData && (
+            {!loadingBalanceInformation && (
               <SupplyBalanceItem
                 amount={amount}
-                supply={supply}
-                supplyWithAmount={supply.plus(amount || new BigNumber(0))}
+                supply={mySupply}
+                supplyWithAmount={mySupply.plus(amount || new BigNumber(0))}
               />
             )}
           </div>
@@ -227,14 +229,14 @@ export const ModalSupply = (props: Props) => {
             <label>Borrow limit</label>
           </div>
           <div className="col is-right">
-            {loadingData && (
+            {loadingBalanceInformation && (
               <Loader visible={true} type="ThreeDots" color="#14854f" height={18} width={18} />
             )}
-            {!loadingData && (
+            {!loadingBalanceInformation && (
               <SupplyBalanceItem
                 amount={amount}
-                supply={borrowLimit}
-                supplyWithAmount={borrowLimitWithAmount}
+                supply={myBorrowLimit}
+                supplyWithAmount={myBorrowLimitWithAmount}
               />
             )}
           </div>
