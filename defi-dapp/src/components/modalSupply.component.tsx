@@ -9,8 +9,11 @@ import Loader from 'react-loader-spinner'
 import { ModalWrapper } from './modalWrapper.component'
 import { PoolService } from '../services/poolContract.service'
 import { Account } from '../state/connected.context'
-import { tzFormatter } from '../utils/tool'
 import { BetterCallDevTransaction } from './betterCallDev.component'
+import { Tab } from './tab.component'
+import { BalanceVariationItem } from './balanceVariation.component'
+import { tzFormatter } from '../utils/tool'
+import { ModalAction } from '../utils/types'
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   isOpen: boolean
@@ -19,64 +22,10 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
   account: Maybe<Account>
 }
 
-enum ModalAction {
-  Supply = 'Supply',
-  Withdraw = 'Withdraw',
-}
-
 interface SupplyBalance {
   mySupply: BigNumber
   myBorrowLimit: BigNumber
   myBorrowLimitWithAmount: BigNumber
-}
-
-interface SupplyBalanceItemProps {
-  amount: Maybe<BigNumber>
-  mySupply: BigNumber
-  mySupplyWithAmount: BigNumber
-}
-
-interface SupplyTabProps {
-  callback: () => any
-  action: ModalAction
-  active: boolean
-}
-
-// TODO: maybe move to a component
-const SupplyBalanceItem = (props: SupplyBalanceItemProps) => {
-  const { amount, mySupply, mySupplyWithAmount } = props
-  return (
-    <>
-      {(!amount || amount.isZero()) && <label>{tzFormatter(mySupply, 'tz')}</label>}
-      {amount && !amount.isZero() && (
-        <>
-          <label>{tzFormatter(mySupply, 'tz')}</label>
-          &nbsp;
-          <img
-            src="https://icongr.am/feather/arrow-right.svg?size=16&amp;color=14854f"
-            alt="icon"
-          />
-          &nbsp;
-          <label>{tzFormatter(mySupplyWithAmount, 'tz')}</label>
-        </>
-      )}
-    </>
-  )
-}
-
-// TODO: maybe move to a component
-const SupplyTab = (props: SupplyTabProps) => {
-  const { callback, action, active } = props
-  return (
-    // eslint-disable-next-line
-    <a
-      style={{ cursor: 'pointer' }}
-      onClick={callback}
-      className={`${active ? 'active' : ''}`}
-    >
-      {action}
-    </a>
-  )
 }
 
 export const ModalSupply = (props: Props) => {
@@ -130,42 +79,45 @@ export const ModalSupply = (props: Props) => {
   )
 
   const setMax = async () => {
-    if (account) {
-      const { email, password, mnemonic } = account
-      const signer = InMemorySigner.fromFundraiser(email, password, mnemonic.join(' '))
-      const accountAddress = await signer.publicKeyHash()
+    if (!account) return
 
-      const accountBalance = await poolService.getTezosBalance(accountAddress)
-      setAmount(accountBalance)
-    }
+    const { email, password, mnemonic } = account
+    const signer = InMemorySigner.fromFundraiser(email, password, mnemonic.join(' '))
+    const accountAddress = await signer.publicKeyHash()
+
+    const accountBalance = await poolService.getTezosBalance(accountAddress)
+    setAmount(accountBalance)
   }
 
   const submit = async () => {
+    if (!amount) return
+
     setLoadingTransferTransaction(true)
-    if (amount) {
-      let operation: any
-      try {
-        operation = await poolService.madeDeposit(amount)
-        await operation.confirmation()
+    let operation: any
+    try {
+      operation = await poolService.madeDeposit(amount)
+      await operation.confirmation()
 
-        const content = (
-          <>
-            <strong>Supply</strong>
-            <div>
-              Added deposit of {tzFormatter(amount, 'tz')} successfully. See transaction right{' '}
-              <BetterCallDevTransaction title={'here'} hash={operation.hash} />
-            </div>
-          </>
-        )
+      const content = (
+        <>
+          <strong>Supply</strong>
+          <div>
+            Added deposit of {tzFormatter(amount, 'tz')} successfully. See transaction right{' '}
+            <BetterCallDevTransaction title={'here'} hash={operation.hash} />
+          </div>
+        </>
+      )
 
-        addToast(content, { appearance: 'success', autoDismiss: true })
-      } catch (err) {
-        console.error(err.message)
-        addToast(`There is an error adding a deposit.`, { appearance: 'error', autoDismiss: true })
-      }
+      addToast(content, { appearance: 'success', autoDismiss: true })
+    } catch (err) {
+      console.error(err.message)
+      addToast(`There is an error adding a deposit.`, { appearance: 'error', autoDismiss: true })
     }
     setLoadingTransferTransaction(false)
+
   }
+
+  const disableButton = !account || !amount || (amount && amount.isZero()) || loadingTransferTransaction
 
   return (
     <ModalWrapper isOpen={isOpen} onRequestClose={onClose}>
@@ -175,12 +127,12 @@ export const ModalSupply = (props: Props) => {
         </header>
         <div className="row is-center">
           <nav className="tabs">
-            <SupplyTab
+            <Tab
               action={ModalAction.Supply}
               callback={() => setModalAction(ModalAction.Supply)}
               active={modalAction === ModalAction.Supply}
             />
-            <SupplyTab
+            <Tab
               action={ModalAction.Withdraw}
               callback={() => setModalAction(ModalAction.Withdraw)}
               active={modalAction === ModalAction.Withdraw}
@@ -216,10 +168,9 @@ export const ModalSupply = (props: Props) => {
               <Loader visible={true} type="ThreeDots" color="#14854f" height={18} width={18} />
             )}
             {!loadingBalanceInformation && (
-              <SupplyBalanceItem
-                amount={amount}
-                mySupply={mySupply}
-                mySupplyWithAmount={mySupply.plus(amount || new BigNumber(0))}
+              <BalanceVariationItem
+                  amountFrom={mySupply}
+                  amountTo={amount && mySupply.plus(amount)}
               />
             )}
           </div>
@@ -233,10 +184,9 @@ export const ModalSupply = (props: Props) => {
               <Loader visible={true} type="ThreeDots" color="#14854f" height={18} width={18} />
             )}
             {!loadingBalanceInformation && (
-              <SupplyBalanceItem
-                amount={amount}
-                mySupply={myBorrowLimit}
-                mySupplyWithAmount={myBorrowLimitWithAmount}
+              <BalanceVariationItem
+                amountFrom={myBorrowLimit}
+                amountTo={amount && myBorrowLimitWithAmount}
               />
             )}
           </div>
@@ -244,9 +194,7 @@ export const ModalSupply = (props: Props) => {
         <footer className="row is-right" style={{ marginTop: '30px' }}>
           <button
             className="button primary"
-            disabled={
-              !account || !amount || (amount && amount.isZero()) || loadingTransferTransaction
-            }
+            disabled={disableButton}
             onClick={submit}
           >
             {account && !loadingTransferTransaction && modalAction}
