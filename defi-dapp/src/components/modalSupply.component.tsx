@@ -32,8 +32,8 @@ interface SupplyBalance {
 
 interface SupplyBalanceItemProps {
   amount: Maybe<BigNumber>
-  supply: BigNumber
-  supplyWithAmount: BigNumber
+  mySupply: BigNumber
+  mySupplyWithAmount: BigNumber
 }
 
 interface SupplyTabProps {
@@ -44,20 +44,20 @@ interface SupplyTabProps {
 
 // TODO: maybe move to a component
 const SupplyBalanceItem = (props: SupplyBalanceItemProps) => {
-  const { amount, supply, supplyWithAmount } = props
+  const { amount, mySupply, mySupplyWithAmount } = props
   return (
     <>
-      {(!amount || amount.isZero()) && <label>{tzFormatter(supply, 'tz')}</label>}
+      {(!amount || amount.isZero()) && <label>{tzFormatter(mySupply, 'tz')}</label>}
       {amount && !amount.isZero() && (
         <>
-          <label>{tzFormatter(supply, 'tz')}</label>
+          <label>{tzFormatter(mySupply, 'tz')}</label>
           &nbsp;
           <img
             src="https://icongr.am/feather/arrow-right.svg?size=16&amp;color=14854f"
             alt="icon"
           />
           &nbsp;
-          <label>{tzFormatter(supplyWithAmount, 'tz')}</label>
+          <label>{tzFormatter(mySupplyWithAmount, 'tz')}</label>
         </>
       )}
     </>
@@ -218,8 +218,8 @@ export const ModalSupply = (props: Props) => {
             {!loadingBalanceInformation && (
               <SupplyBalanceItem
                 amount={amount}
-                supply={mySupply}
-                supplyWithAmount={mySupply.plus(amount || new BigNumber(0))}
+                mySupply={mySupply}
+                mySupplyWithAmount={mySupply.plus(amount || new BigNumber(0))}
               />
             )}
           </div>
@@ -235,8 +235,8 @@ export const ModalSupply = (props: Props) => {
             {!loadingBalanceInformation && (
               <SupplyBalanceItem
                 amount={amount}
-                supply={myBorrowLimit}
-                supplyWithAmount={myBorrowLimitWithAmount}
+                mySupply={myBorrowLimit}
+                mySupplyWithAmount={myBorrowLimitWithAmount}
               />
             )}
           </div>
