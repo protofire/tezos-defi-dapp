@@ -1,8 +1,9 @@
 import React from 'react'
 import { useToasts } from 'react-toast-notifications'
 
-import { useConnectedContext, Account } from '../state/connected.context'
+import { useConnectedContext } from '../state/connected.context'
 import { activateAccount } from '../utils/tool'
+import { Account } from '../utils/types'
 
 export const LoadFaucet = () => {
   const { setCurrentAccount } = useConnectedContext()
