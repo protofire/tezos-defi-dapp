@@ -115,6 +115,8 @@ export const ModalSupply = (props: Props) => {
     (modalAction === Action.Supply && !isAllowedToDeposit) ||
     (modalAction === Action.Withdraw && !isAllowedToWithdraw)
 
+  const errorAmountIsHigherThanBalance = amount && amount.isGreaterThan(amountAvailableToDeposit)
+
   return (
     <ModalWrapper isOpen={isOpen} onRequestClose={onClose}>
       <div className="card">
@@ -154,6 +156,9 @@ export const ModalSupply = (props: Props) => {
               Max
             </button>
           </div>
+        </div>
+        <div className={`row is-left ${errorAmountIsHigherThanBalance ? '' : 'is-hidden'}`}>
+          <span className="text-error">The amount to supply is higher than balance</span>
         </div>
         <div className="row" style={{ marginTop: '30px' }}>
           <div className="col">
