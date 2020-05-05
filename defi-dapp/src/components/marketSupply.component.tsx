@@ -1,13 +1,14 @@
 import React, { useState } from 'react'
+import { useAsyncMemo } from 'use-async-memo'
 import BigNumber from 'bignumber.js'
 
-import { Table } from './table.component'
+import { Table, TableProps } from './table.component'
 import { AssetTezImage } from './assetTezImage.component'
 import { ModalSupply } from './modalSupply.component'
-import { useConnectedContext, Account } from '../state/connected.context'
+import { useConnectedContext } from '../state/connected.context'
 import { PoolService } from '../services/poolContract.service'
-import { useAsyncMemo } from 'use-async-memo'
 import { tzFormatter, percentageFormatter } from '../utils/tool'
+import { Account } from '../utils/types'
 
 interface Props {
   poolService: PoolService
@@ -32,6 +33,7 @@ const MarketSupplyConnected = (props: Props) => {
     wallet: new BigNumber(0),
     loading: true,
   }
+
   const marketSupply: MarketSupply = useAsyncMemo(
     async () => {
       const apy = await poolService.getSupplyInterestRate()
@@ -48,25 +50,32 @@ const MarketSupplyConnected = (props: Props) => {
     wallet: tzFormatter(marketSupply.wallet.toString(), 'tz'),
   }
 
+  const tableProps: TableProps = {
+    title: 'Supply',
+    headers: supplyHeaders,
+    values: supplyValues,
+    loading: marketSupply.loading,
+  }
+
+  if (account) {
+    tableProps.onClickRow = () => {
+      setModalSupplyState(true)
+    }
+  }
+
   return (
     <>
       <div className="col-6">
-        <Table
-          title="Supply"
-          headers={supplyHeaders}
-          values={supplyValues}
-          onClickRow={() => {
-            setModalSupplyState(true)
-          }}
-          loading={marketSupply.loading}
-        />
+        <Table {...tableProps} />
       </div>
-      <ModalSupply
-        poolService={poolService}
-        account={account}
-        isOpen={isModalSupplyOpen}
-        onClose={() => setModalSupplyState(false)}
-      />
+      {account && (
+        <ModalSupply
+          poolService={poolService}
+          account={account}
+          isOpen={isModalSupplyOpen}
+          onClose={() => setModalSupplyState(false)}
+        />
+      )}
     </>
   )
 }
