@@ -66,9 +66,9 @@ export const ModalSupply = (props: Props) => {
   )
 
   const gasEstimation = useGasEstimation(amount, account, modalAction, poolService)
-  let descriptionGasEstimation = "Gas limit: 0<br/>Storage limit: 0<br/>Suggested fee mutez: 0"
+  let descriptionGasEstimation = 'Gas limit: 0<br/>Storage limit: 0<br/>Suggested fee mutez: 0'
   if (gasEstimation) {
-    descriptionGasEstimation =  `Gas limit: ${gasEstimation.gasLimit}<br/> 
+    descriptionGasEstimation = `Gas limit: ${gasEstimation.gasLimit}<br/> 
       Storage limit: ${gasEstimation.storageLimit}<br/>  
       Suggested fee mutez: ${gasEstimation.suggestedFeeMutez}`
   }
@@ -215,7 +215,7 @@ export const ModalSupply = (props: Props) => {
             className="button primary"
             disabled={disableButton}
             onClick={submit}
-            style={{marginLeft: "1rem"}}
+            style={{ marginLeft: '1rem' }}
           >
             {account && !loadingTransferTransaction && modalAction}
             {!account && !loadingTransferTransaction && 'Please connect to your account'}

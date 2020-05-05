@@ -21,20 +21,20 @@ export const Tooltip = (props: Props) => {
 
   return (
     <>
-        <button
-          className="icon"
-          data-class="extraClass"
-          data-tip
-          data-for={id}
-          data-multiline={true}
-          data-html={true}
-        >
-          {iconType === IconType.Fuel && <IconFuel />}
-          {iconType === IconType.Info && <IconInfo />}
-        </button>
-        <ReactTooltip id={id} effect="solid" delayHide={1000} >
-            {description}
-        </ReactTooltip>
+      <button
+        className="icon"
+        data-class="extraClass"
+        data-tip
+        data-for={id}
+        data-multiline={true}
+        data-html={true}
+      >
+        {iconType === IconType.Fuel && <IconFuel />}
+        {iconType === IconType.Info && <IconInfo />}
+      </button>
+      <ReactTooltip id={id} effect="solid" delayHide={1000}>
+        {description}
+      </ReactTooltip>
     </>
   )
 }
