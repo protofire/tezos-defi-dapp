@@ -1,13 +1,14 @@
 import React, { useState } from 'react'
 import BigNumber from 'bignumber.js'
 
-import { Table } from './table.component'
+import { Table, TableProps } from './table.component'
 import { AssetTezImage } from './assetTezImage.component'
 import { ModalBorrow } from './modalBorrow.component'
 import { PoolService } from '../services/poolContract.service'
-import { Account, useConnectedContext } from '../state/connected.context'
+import { useConnectedContext } from '../state/connected.context'
 import { useAsyncMemo } from 'use-async-memo'
 import { tzFormatter, percentageFormatter } from '../utils/tool'
+import { Account } from '../utils/types'
 
 interface Props {
   poolService: PoolService
@@ -62,20 +63,27 @@ const MarketBorrowConnected = (props: Props) => {
     custom: percentageFormatter(marketBorrow.percentageToBorrow.percentage.multipliedBy(100)),
   }
 
+  const tableProps: TableProps = {
+    title: 'Available to borrow',
+    headers: borrowHeaders,
+    values: borrowValues,
+    loading: marketBorrow.loading,
+  }
+
+  if (account) {
+    tableProps.onClickRow = () => {
+      setModalBorrowState(true)
+    }
+  }
+
   return (
     <>
       <div className="col-6">
-        <Table
-          title="Available to borrow"
-          headers={borrowHeaders}
-          values={borrowValues}
-          onClickRow={() => {
-            setModalBorrowState(true)
-          }}
-          loading={marketBorrow.loading}
-        />
+        <Table {...tableProps} />
       </div>
-      <ModalBorrow isOpen={isModalBorrowOpen} onClose={() => setModalBorrowState(false)} />
+      {account && (
+        <ModalBorrow isOpen={isModalBorrowOpen} onClose={() => setModalBorrowState(false)} />
+      )}
     </>
   )
 }
