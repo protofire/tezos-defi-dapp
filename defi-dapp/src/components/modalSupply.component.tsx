@@ -1,6 +1,4 @@
 import React, { HTMLAttributes, useState } from 'react'
-import { InMemorySigner } from '@taquito/signer'
-import { useAsyncMemo } from 'use-async-memo'
 import { BigNumberInput } from 'big-number-input'
 import BigNumber from 'bignumber.js'
 import { useToasts } from 'react-toast-notifications'
@@ -8,24 +6,30 @@ import Loader from 'react-loader-spinner'
 
 import { ModalWrapper } from './modalWrapper.component'
 import { PoolService } from '../services/poolContract.service'
-import { Account } from '../state/connected.context'
 import { BetterCallDevTransaction } from './betterCallDev.component'
 import { Tab } from './tab.component'
 import { BalanceVariationItem } from './balanceVariation.component'
 import { tzFormatter } from '../utils/tool'
-import { ModalAction } from '../utils/types'
+import { Action, Account } from '../utils/types'
+import { useAccountLiquidity } from '../hooks/accountLiquidity.hook'
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   isOpen: boolean
   onClose: () => void
   poolService: PoolService
-  account: Maybe<Account>
+  account: Account
 }
 
-interface SupplyBalance {
-  mySupply: BigNumber
-  myBorrowLimit: BigNumber
-  myBorrowLimitWithAmount: BigNumber
+const DepositMessage = ({ hash, amount }: { hash: string; amount: BigNumber }) => {
+  return (
+    <>
+      <strong>Supply</strong>
+      <div>
+        Added deposit of {tzFormatter(amount, 'tz')} successfully. See transaction right{' '}
+        <BetterCallDevTransaction title={'here'} hash={hash} />
+      </div>
+    </>
+  )
 }
 
 export const ModalSupply = (props: Props) => {
@@ -34,90 +38,82 @@ export const ModalSupply = (props: Props) => {
   const { addToast } = useToasts()
 
   const [amount, setAmount] = useState<Maybe<BigNumber>>(null)
-  const [loadingBalanceInformation, setLoadingBalanceInformation] = useState<boolean>(false)
+  const [loadingAccountLiquidity, setLoadingAccountLiquidity] = useState<boolean>(false)
   const [loadingTransferTransaction, setLoadingTransferTransaction] = useState<boolean>(false)
-  const [modalAction, setModalAction] = useState<ModalAction>(ModalAction.Supply)
+  const [modalAction, setModalAction] = useState<Action>(Action.Supply)
 
-  const initialValues = {
-    mySupply: new BigNumber(0),
-    myBorrowLimit: new BigNumber(0),
-    myBorrowLimitWithAmount: new BigNumber(0),
-  }
-
-  const { mySupply, myBorrowLimit, myBorrowLimitWithAmount }: SupplyBalance = useAsyncMemo(
-    async () => {
-      if (!account) {
-        return { ...initialValues }
-      }
-
-      setLoadingBalanceInformation(true)
-
-      const { email, password, mnemonic, pkh } = account
-      const signer = InMemorySigner.fromFundraiser(email, password, mnemonic.join(' '))
-      const accountAddress = await signer.publicKeyHash()
-
-      const [mySupply, myBorrow] = await Promise.all([
-        poolService.getMyDeposit(accountAddress),
-        poolService.getMyBorrow(accountAddress),
-      ])
-
-      const [myBorrowAllowed, myBorrowAllowedWithAmount] = await Promise.all([
-        poolService.getPercentageToBorrow(pkh),
-        poolService.getPercentageToBorrow(pkh, amount),
-      ])
-
-      setLoadingBalanceInformation(false)
-
-      return {
-        mySupply,
-        myBorrowLimit: myBorrowAllowed.totalAllowed.minus(myBorrow),
-        myBorrowLimitWithAmount: myBorrowAllowedWithAmount.totalAllowed.minus(myBorrow),
-      }
+  const {
+    mySupply,
+    myBorrowLimit,
+    myBorrowLimitWithAmount,
+    isAllowedToDeposit,
+    amountAvailableToDeposit,
+    isAllowedToWithdraw,
+    amountAvailableToWithdraw,
+  } = useAccountLiquidity(
+    account,
+    poolService,
+    modalAction,
+    amount,
+    () => {
+      setLoadingAccountLiquidity(true)
     },
-    [account, amount],
-    initialValues,
+    () => {
+      setLoadingAccountLiquidity(false)
+    },
   )
 
   const setMax = async () => {
-    if (!account) return
-
-    const { email, password, mnemonic } = account
-    const signer = InMemorySigner.fromFundraiser(email, password, mnemonic.join(' '))
-    const accountAddress = await signer.publicKeyHash()
-
-    const accountBalance = await poolService.getTezosBalance(accountAddress)
-    setAmount(accountBalance)
+    if (modalAction === Action.Supply) {
+      setAmount(amountAvailableToDeposit)
+    } else {
+      setAmount(amountAvailableToWithdraw)
+    }
   }
 
   const submit = async () => {
     if (!amount) return
 
     setLoadingTransferTransaction(true)
-    let operation: any
-    try {
-      operation = await poolService.madeDeposit(amount)
-      await operation.confirmation()
+    if (modalAction === Action.Supply) {
+      let operation: any
+      try {
+        operation = await poolService.madeDeposit(amount)
+        await operation.confirmation()
 
-      const content = (
-        <>
-          <strong>Supply</strong>
-          <div>
-            Added deposit of {tzFormatter(amount, 'tz')} successfully. See transaction right{' '}
-            <BetterCallDevTransaction title={'here'} hash={operation.hash} />
-          </div>
-        </>
-      )
+        const content = <DepositMessage hash={operation.hash} amount={amount} />
 
-      addToast(content, { appearance: 'success', autoDismiss: true })
-    } catch (err) {
-      console.error(err.message)
-      addToast(`There is an error adding a deposit.`, { appearance: 'error', autoDismiss: true })
+        addToast(content, { appearance: 'success', autoDismiss: true })
+      } catch (err) {
+        // eslint-disable-next-line
+        console.error(err.message)
+        addToast(`There is an error adding a deposit.`, { appearance: 'error', autoDismiss: true })
+      }
     }
     setLoadingTransferTransaction(false)
-
   }
 
-  const disableButton = !account || !amount || (amount && amount.isZero()) || loadingTransferTransaction
+  const callbackSupply = () => {
+    setModalAction(Action.Supply)
+    if (amount) {
+      setAmount(null)
+    }
+  }
+
+  const callbackWithdraw = () => {
+    setModalAction(Action.Withdraw)
+    if (amount) {
+      setAmount(null)
+    }
+  }
+
+  const disableButton =
+    !amount ||
+    (amount && amount.isZero()) ||
+    loadingTransferTransaction ||
+    loadingAccountLiquidity ||
+    (modalAction === Action.Supply && !isAllowedToDeposit) ||
+    (modalAction === Action.Withdraw && !isAllowedToWithdraw)
 
   return (
     <ModalWrapper isOpen={isOpen} onRequestClose={onClose}>
@@ -128,14 +124,14 @@ export const ModalSupply = (props: Props) => {
         <div className="row is-center">
           <nav className="tabs">
             <Tab
-              action={ModalAction.Supply}
-              callback={() => setModalAction(ModalAction.Supply)}
-              active={modalAction === ModalAction.Supply}
+              action={Action.Supply}
+              callback={callbackSupply}
+              active={modalAction === Action.Supply}
             />
             <Tab
-              action={ModalAction.Withdraw}
-              callback={() => setModalAction(ModalAction.Withdraw)}
-              active={modalAction === ModalAction.Withdraw}
+              action={Action.Withdraw}
+              callback={callbackWithdraw}
+              active={modalAction === Action.Withdraw}
             />
           </nav>
         </div>
@@ -164,13 +160,16 @@ export const ModalSupply = (props: Props) => {
             <label>Supply balance</label>
           </div>
           <div className="col is-right">
-            {loadingBalanceInformation && (
+            {loadingAccountLiquidity && (
               <Loader visible={true} type="ThreeDots" color="#14854f" height={18} width={18} />
             )}
-            {!loadingBalanceInformation && (
+            {!loadingAccountLiquidity && (
               <BalanceVariationItem
-                  amountFrom={mySupply}
-                  amountTo={amount && mySupply.plus(amount)}
+                amountFrom={mySupply}
+                amountTo={
+                  amount &&
+                  (modalAction === Action.Withdraw ? mySupply.minus(amount) : mySupply.plus(amount))
+                }
               />
             )}
           </div>
@@ -180,10 +179,10 @@ export const ModalSupply = (props: Props) => {
             <label>Borrow limit</label>
           </div>
           <div className="col is-right">
-            {loadingBalanceInformation && (
+            {loadingAccountLiquidity && (
               <Loader visible={true} type="ThreeDots" color="#14854f" height={18} width={18} />
             )}
-            {!loadingBalanceInformation && (
+            {!loadingAccountLiquidity && (
               <BalanceVariationItem
                 amountFrom={myBorrowLimit}
                 amountTo={amount && myBorrowLimitWithAmount}
@@ -192,11 +191,7 @@ export const ModalSupply = (props: Props) => {
           </div>
         </div>
         <footer className="row is-right" style={{ marginTop: '30px' }}>
-          <button
-            className="button primary"
-            disabled={disableButton}
-            onClick={submit}
-          >
+          <button className="button primary" disabled={disableButton} onClick={submit}>
             {account && !loadingTransferTransaction && modalAction}
             {!account && !loadingTransferTransaction && 'Please connect to your account'}
             {loadingTransferTransaction && 'Waiting for transaction...'}
