@@ -67,6 +67,39 @@ class PoolService {
     return borrow
   }
 
+  getAccountLiquidityInformation = async (
+    address: string,
+  ): Promise<{
+    myBorrow: BigNumber
+    mySupply: BigNumber
+    collateralRate: BigNumber
+    liquidity: BigNumber
+  }> => {
+    const storage = await this.getStorage()
+    const { collateralRate, liquidity } = storage
+
+    let myBorrow = new BigNumber(0)
+    let mySupply = new BigNumber(0)
+
+    try {
+      myBorrow = (await storage.borrows.get(address)).tezAmount
+    } catch (err) {
+      // Do nothing
+    }
+    try {
+      mySupply = (await storage.deposits.get(address)).tezAmount
+    } catch (err) {
+      // Do nothing
+    }
+
+    return {
+      mySupply,
+      myBorrow,
+      collateralRate,
+      liquidity,
+    }
+  }
+
   getCoefficientInterest = async (): Promise<BigNumber> => {
     const storage = await this.getStorage()
     const { totalBorrows, totalDeposits } = storage
