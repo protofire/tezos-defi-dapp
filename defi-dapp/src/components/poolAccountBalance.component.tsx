@@ -1,12 +1,12 @@
 import React from 'react'
-import { InMemorySigner } from '@taquito/signer'
 import { useAsyncMemo } from 'use-async-memo'
 import Loader from 'react-loader-spinner'
 import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css'
 import BigNumber from 'bignumber.js'
 
-import { Account, useConnectedContext } from '../state/connected.context'
-import { tzFormatter } from '../utils/tool'
+import { useConnectedContext } from '../state/connected.context'
+import { getAddressFromAccount, tzFormatter } from '../utils/tool'
+import { Account } from '../utils/types'
 import { PoolService } from '../services/poolContract.service'
 
 interface AccountBalance {
@@ -33,9 +33,7 @@ const PoolAccountBalanceConnected = ({
         return { ...initialValues, loading: false }
       }
 
-      const { email, password, mnemonic } = account
-      const signer = InMemorySigner.fromFundraiser(email, password, mnemonic.join(' '))
-      const accountAddress = await signer.publicKeyHash()
+      const accountAddress = await getAddressFromAccount(account)
 
       let deposit = new BigNumber(0)
       let borrow = new BigNumber(0)
@@ -43,6 +41,7 @@ const PoolAccountBalanceConnected = ({
         deposit = await poolService.getMyDeposit(accountAddress)
         borrow = await poolService.getMyBorrow(accountAddress)
       } catch (err) {
+        // eslint-disable-next-line
         console.error(err)
       }
       return { deposit, borrow, loading: false }
