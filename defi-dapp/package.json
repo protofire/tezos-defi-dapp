@@ -27,6 +27,7 @@
     "react-modal": "^3.11.2",
     "react-scripts": "3.4.1",
     "react-toast-notifications": "^2.4.0",
+    "react-tooltip": "^4.2.5",
     "typescript": "~3.7.2",
     "use-async-memo": "^1.2.2"
   },
