@@ -12,6 +12,8 @@ import { BalanceVariationItem } from './balanceVariation.component'
 import { tzFormatter } from '../utils/tool'
 import { Action, Account } from '../utils/types'
 import { useAccountLiquidity } from '../hooks/accountLiquidity.hook'
+import { useGasEstimation } from '../hooks/gasEstimation.hook'
+import { IconType, Tooltip } from './tooltip/tooltip.component'
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   isOpen: boolean
@@ -62,6 +64,14 @@ export const ModalSupply = (props: Props) => {
       setLoadingAccountLiquidity(false)
     },
   )
+
+  const gasEstimation = useGasEstimation(amount, account, modalAction, poolService)
+  let descriptionGasEstimation = "Gas limit: 0<br/>Storage limit: 0<br/>Suggested fee mutez: 0"
+  if (gasEstimation) {
+    descriptionGasEstimation =  `Gas limit: ${gasEstimation.gasLimit}<br/> 
+      Storage limit: ${gasEstimation.storageLimit}<br/>  
+      Suggested fee mutez: ${gasEstimation.suggestedFeeMutez}`
+  }
 
   const setMax = async () => {
     if (modalAction === Action.Supply) {
@@ -196,7 +206,17 @@ export const ModalSupply = (props: Props) => {
           </div>
         </div>
         <footer className="row is-right" style={{ marginTop: '30px' }}>
-          <button className="button primary" disabled={disableButton} onClick={submit}>
+          <Tooltip
+            description={descriptionGasEstimation}
+            id="gasEstimation"
+            iconType={IconType.Fuel}
+          />
+          <button
+            className="button primary"
+            disabled={disableButton}
+            onClick={submit}
+            style={{marginLeft: "1rem"}}
+          >
             {account && !loadingTransferTransaction && modalAction}
             {!account && !loadingTransferTransaction && 'Please connect to your account'}
             {loadingTransferTransaction && 'Waiting for transaction...'}
