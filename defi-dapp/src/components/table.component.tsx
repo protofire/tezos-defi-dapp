@@ -1,7 +1,7 @@
 import React from 'react'
 import Loader from 'react-loader-spinner'
 
-interface Props {
+export interface TableProps {
   title: string
   headers: Array<string>
   values?: {
@@ -14,7 +14,7 @@ interface Props {
   loading: boolean
 }
 
-export const Table = (props: Props) => {
+export const Table = (props: TableProps) => {
   const { title, headers, values, onClickRow, loading } = props
 
   return (
@@ -47,7 +47,12 @@ export const Table = (props: Props) => {
                   key: number
                   onClick?: () => void
                   style?: { cursor: string }
-                } = { key: key, onClick: onClickRow, style: { cursor: 'pointer' } }
+                } = { key: key }
+
+                if (onClickRow) {
+                  inputProps.onClick = onClickRow
+                  inputProps.style = { cursor: 'pointer' }
+                }
 
                 // eslint-disable-next-line
                 return <th {...inputProps}>{value}</th>
