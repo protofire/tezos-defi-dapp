@@ -127,7 +127,7 @@ class PoolService {
 
   getTezosBalance = async (address: string): Promise<BigNumber> => {
     Tezos.setProvider({ rpc: this.rpc, signer: this.signer })
-    return await Tezos.tz.getBalance(address)
+    return Tezos.tz.getBalance(address)
   }
 
   getPercentageToBorrow = async (address: string, withAmount?: Maybe<BigNumber>) => {
@@ -155,12 +155,18 @@ class PoolService {
     }
   }
 
-  getStorage = async () => await this.contract.storage()
+  getStorage = async () => this.contract.storage()
 
   madeDeposit = async (amountToDeposit: BigNumber) => {
     const amount = Tezos.format('mutez', 'tz', amountToDeposit) as BigNumber
     const contractPool = await Tezos.contract.at(this.contractAddress)
     return await contractPool.methods.deposit(UnitValue).send({ amount: amount.toNumber() })
+  }
+
+  getGasEstimationForDeposit = async (amountToEstimate: BigNumber, addressAccount: string) => {
+    const amount = Tezos.format('mutez', 'tz', amountToEstimate) as number
+    Tezos.setProvider({ rpc: this.rpc, signer: this.signer })
+    return Tezos.estimate.transfer({ to: addressAccount, amount })
   }
 }
 
