@@ -3,7 +3,7 @@ import { InMemorySigner } from '@taquito/signer'
 
 import { useAsyncMemo } from 'use-async-memo'
 import { TokenService } from '../services/tokenContract.service'
-import { Account } from '../state/connected.context'
+import { Account } from '../utils/types'
 import {
   TOKEN_CONTRACT_ADDRESS as tokenContractAddress,
   TEZOS_RPC as rpc,
