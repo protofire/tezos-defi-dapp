@@ -1,16 +1,9 @@
 import React from 'react'
+
 import { useAccount } from '../hooks/account.hook'
 import { usePoolContract } from '../hooks/poolContract.hook'
 import { PoolService } from '../services/poolContract.service'
-
-export interface Account {
-  amount: string
-  email: string
-  mnemonic: Array<string>
-  password: string
-  pkh: string
-  secret: string
-}
+import { Account } from '../utils/types'
 
 export interface ConnectedContext {
   account: Maybe<Account>
