@@ -2,8 +2,8 @@ import BigNumber from 'bignumber.js'
 import { Tezos } from '@taquito/taquito'
 import { InMemorySigner } from '@taquito/signer'
 
-import { Account } from '../state/connected.context'
 import { TEZOS_RPC as rpc } from '../config/constants'
+import { Account } from '../utils/types'
 
 export const truncateStringInTheMiddle = (
   str: string,
@@ -52,6 +52,47 @@ export const activateAccount = async (account: Account) => {
     const operation = await Tezos.tz.activate(pkh, secret)
     await operation.confirmation()
   } catch (err) {
+    // eslint-disable-next-line
     console.error(err.message)
   }
+}
+
+interface AccountLiquidity {
+  amountToValidate: BigNumber
+  depositAmount: BigNumber
+  borrowAmount: BigNumber
+  collateralRate: BigNumber
+  liquidity: BigNumber
+}
+
+export const checkAccountLiquidity = async (accountLiquidity: AccountLiquidity) => {
+  const {
+    amountToValidate,
+    depositAmount,
+    borrowAmount,
+    collateralRate,
+    liquidity,
+  } = accountLiquidity
+
+  let amountOfCollateralAvailable = new BigNumber(0)
+  if (borrowAmount.isZero()) {
+    amountOfCollateralAvailable = depositAmount.minus(amountToValidate)
+  } else {
+    amountOfCollateralAvailable = depositAmount
+      .multipliedBy(collateralRate.dividedBy(100))
+      .minus(borrowAmount.plus(amountToValidate))
+  }
+
+  return {
+    isAllowed:
+      amountOfCollateralAvailable.isLessThan(0) ||
+      amountToValidate.isGreaterThanOrEqualTo(liquidity),
+    amountOfCollateralAvailable,
+  }
+}
+
+export const getAddressFromAccount = async (account: Account) => {
+  const { email, password, mnemonic } = account
+  const signer = InMemorySigner.fromFundraiser(email, password, mnemonic.join(' '))
+  return await signer.publicKeyHash()
 }
