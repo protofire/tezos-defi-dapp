@@ -18,9 +18,11 @@ interface AccountBalance {
 const PoolAccountBalanceConnected = ({
   poolService,
   account,
+  updateFlag,
 }: {
   poolService: PoolService
   account: Maybe<Account>
+  updateFlag: boolean
 }) => {
   const initialValues = {
     deposit: new BigNumber(0),
@@ -46,7 +48,7 @@ const PoolAccountBalanceConnected = ({
       }
       return { deposit, borrow, loading: false }
     },
-    [account],
+    [account, updateFlag],
     initialValues,
   )
 
@@ -91,12 +93,16 @@ const PoolAccountBalanceDisconnected = () => {
 
 export const PoolAccountBalance = () => {
   const context = useConnectedContext()
-  const { poolService, account } = context
+  const { poolService, account, updateFlag } = context
 
   return (
     <>
       {poolService ? (
-        <PoolAccountBalanceConnected poolService={poolService} account={account} />
+        <PoolAccountBalanceConnected
+          poolService={poolService}
+          account={account}
+          updateFlag={updateFlag}
+        />
       ) : (
         <PoolAccountBalanceDisconnected />
       )}

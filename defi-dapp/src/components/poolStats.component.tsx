@@ -16,7 +16,13 @@ interface PoolStats {
   loading: boolean
 }
 
-const PoolStatsConnected = ({ poolService }: { poolService: PoolService }) => {
+const PoolStatsConnected = ({
+  poolService,
+  updateFlag,
+}: {
+  poolService: PoolService
+  updateFlag: boolean
+}) => {
   const initialValues = {
     deposits: new BigNumber(0),
     borrows: new BigNumber(0),
@@ -32,7 +38,7 @@ const PoolStatsConnected = ({ poolService }: { poolService: PoolService }) => {
       const collateralRate = await poolService.getCollateralRate()
       return { deposits, borrows, liquidity, collateralRate, loading: false }
     },
-    [],
+    [updateFlag],
     initialValues,
   )
   return (
@@ -84,11 +90,15 @@ const PoolStatsDisconnected = () => {
 
 export const PoolStats = () => {
   const context = useConnectedContext()
-  const { poolService } = context
+  const { poolService, updateFlag } = context
 
   return (
     <>
-      {poolService ? <PoolStatsConnected poolService={poolService} /> : <PoolStatsDisconnected />}
+      {poolService ? (
+        <PoolStatsConnected poolService={poolService} updateFlag={updateFlag} />
+      ) : (
+        <PoolStatsDisconnected />
+      )}
     </>
   )
 }

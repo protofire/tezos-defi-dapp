@@ -94,6 +94,8 @@ export const ModalSupply = (props: Props) => {
         const content = <DepositMessage hash={operation.hash} amount={amount} />
 
         addToast(content, { appearance: 'success', autoDismiss: true })
+
+        onClose()
       } catch (err) {
         // eslint-disable-next-line
         console.error(err.message)

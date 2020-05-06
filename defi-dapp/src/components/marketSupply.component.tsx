@@ -13,6 +13,8 @@ import { Account } from '../utils/types'
 interface Props {
   poolService: PoolService
   account: Maybe<Account>
+  updateFlag: boolean
+  setUpdateFlag: (flag: boolean) => void
 }
 
 interface MarketSupply {
@@ -24,7 +26,7 @@ interface MarketSupply {
 const supplyHeaders = ['Asset', 'APY', 'Wallet']
 
 const MarketSupplyConnected = (props: Props) => {
-  const { poolService, account } = props
+  const { poolService, account, updateFlag, setUpdateFlag } = props
 
   const [isModalSupplyOpen, setModalSupplyState] = useState(false)
 
@@ -40,7 +42,7 @@ const MarketSupplyConnected = (props: Props) => {
       const wallet = account ? await poolService.getTezosBalance(account.pkh) : new BigNumber(0)
       return { apy, wallet, loading: false }
     },
-    [account],
+    [account, updateFlag],
     initialValues,
   )
 
@@ -73,7 +75,10 @@ const MarketSupplyConnected = (props: Props) => {
           poolService={poolService}
           account={account}
           isOpen={isModalSupplyOpen}
-          onClose={() => setModalSupplyState(false)}
+          onClose={() => {
+            setModalSupplyState(false)
+            setUpdateFlag(!updateFlag)
+          }}
         />
       )}
     </>
@@ -89,12 +94,17 @@ const MarketSupplyDisconnected = () => {
 }
 
 export const MarketSupply = () => {
-  const { poolService, account } = useConnectedContext()
+  const { poolService, account, updateFlag, setUpdateFlag } = useConnectedContext()
 
   return (
     <>
       {poolService ? (
-        <MarketSupplyConnected poolService={poolService} account={account} />
+        <MarketSupplyConnected
+          poolService={poolService}
+          account={account}
+          updateFlag={updateFlag}
+          setUpdateFlag={setUpdateFlag}
+        />
       ) : (
         <MarketSupplyDisconnected />
       )}

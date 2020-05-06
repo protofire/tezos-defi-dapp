@@ -13,6 +13,8 @@ import { Account } from '../utils/types'
 interface Props {
   poolService: PoolService
   account: Maybe<Account>
+  updateFlag: boolean
+  setUpdateFlag: (flag: boolean) => void
 }
 
 interface MarketBorrow {
@@ -29,7 +31,7 @@ interface MarketBorrow {
 const borrowHeaders = ['Asset', 'APY', 'Wallet', '% of limit']
 
 const MarketBorrowConnected = (props: Props) => {
-  const { poolService, account } = props
+  const { poolService, account, updateFlag } = props
 
   const [isModalBorrowOpen, setModalBorrowState] = useState(false)
 
@@ -52,7 +54,7 @@ const MarketBorrowConnected = (props: Props) => {
         : { percentage: new BigNumber(0), totalAllowed: new BigNumber(0), used: new BigNumber(0) }
       return { apy, wallet, percentageToBorrow, loading: false }
     },
-    [account],
+    [account, updateFlag],
     initialValues,
   )
 
@@ -97,12 +99,17 @@ const MarketBorrowDisconnected = () => {
 }
 
 export const MarketBorrow = () => {
-  const { poolService, account } = useConnectedContext()
+  const { poolService, account, updateFlag, setUpdateFlag } = useConnectedContext()
 
   return (
     <>
       {poolService ? (
-        <MarketBorrowConnected poolService={poolService} account={account} />
+        <MarketBorrowConnected
+          poolService={poolService}
+          account={account}
+          updateFlag={updateFlag}
+          setUpdateFlag={setUpdateFlag}
+        />
       ) : (
         <MarketBorrowDisconnected />
       )}
