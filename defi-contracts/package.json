@@ -8,7 +8,8 @@
   },
   "dependencies": {
     "@taquito/taquito": "^6.1.0-beta.0",
-    "cli-table": "^0.3.1"
+    "cli-table": "^0.3.1",
+    "bignumber.js": "^9.0.0"
   },
   "scripts": {
     "activate": "node ./scripts/activateAccounts.js",
