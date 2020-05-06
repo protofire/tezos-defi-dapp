@@ -30,7 +30,7 @@ export const LoadFaucet = () => {
       setCurrentAccount(account as Account)
 
       // Send notification
-      addToast('Account load successfully', { appearance: 'success', autoDismiss: true })
+      addToast('Wallet load successfully', { appearance: 'success', autoDismiss: true })
     }
 
     reader.readAsText(event.target.files[0])
@@ -39,7 +39,7 @@ export const LoadFaucet = () => {
   return (
     <>
       <div className="is-vertical-align">
-        You can download some faucet from&nbsp;
+        You can download a wallet from&nbsp;
         <a
           className="is-paddingless"
           target="_blank"
@@ -51,7 +51,7 @@ export const LoadFaucet = () => {
         </a>
       </div>
       <div className="button primary icon" onClick={handleClick} style={{ zIndex: 0 }}>
-        Load faucet&nbsp;
+        Load wallet&nbsp;
         <img src="https://icongr.am/clarity/upload.svg?size=16&amp;color=ffffff" alt="icon" />
       </div>
       <input
