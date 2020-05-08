@@ -1,24 +1,24 @@
 {
   "mnemonic": [
+    "gauge",
+    "skull",
+    "angry",
+    "have",
+    "invite",
+    "risk",
+    "praise",
     "beyond",
-    "fan",
-    "drastic",
-    "pink",
-    "daughter",
-    "brain",
-    "bachelor",
-    "butter",
-    "cheese",
-    "ski",
-    "brush",
-    "grocery",
-    "outside",
-    "snake",
-    "style"
+    "faint",
+    "armor",
+    "piano",
+    "stay",
+    "prosper",
+    "switch",
+    "glue"
   ],
-  "secret": "cea5735979af4723c85c8cca769648947ecab874",
-  "amount": "331868541",
-  "pkh": "tz1h87vXP6GgNXnSyJFZsFvWCaTJdicAd5d8",
-  "password": "ZMTLHWEFzB",
-  "email": "sbduwjzy.pujninbe@tezos.example.org"
+  "secret": "eb6275925c17b4f9459363feab10b15553a34f96",
+  "amount": "4486265019",
+  "pkh": "tz1W6WfeeMToACcy4iVoBrupZih4U38vjDBB",
+  "password": "UUvggjQWWA",
+  "email": "eieklrdx.vexlnexv@tezos.example.org"
 }
