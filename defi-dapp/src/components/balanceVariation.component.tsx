@@ -13,7 +13,7 @@ export const BalanceVariationItem = (props: BalanceVariationItem) => {
   return (
     <>
       {!amountTo && <label>{tzFormatter(amountFrom, 'tz')}</label>}
-      {amountTo && !amountTo.isZero() && (
+      {amountTo && (
         <div style={{ marginLeft: '-34px' }}>
           <label>{tzFormatter(amountFrom, 'tz')}</label>
           &nbsp;
@@ -22,7 +22,7 @@ export const BalanceVariationItem = (props: BalanceVariationItem) => {
             alt="icon"
           />
           &nbsp;
-          <label>{tzFormatter(amountTo, 'tz')}</label>
+          <label>{tzFormatter(amountTo.isNegative() ? new BigNumber(0) : amountTo, 'tz')}</label>
         </div>
       )}
     </>

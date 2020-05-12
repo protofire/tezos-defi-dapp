@@ -105,7 +105,7 @@ class PoolService {
     const { totalBorrows, totalDeposits } = storage
     let coefficientInterest = new BigNumber(1)
     const total: BigNumber = totalDeposits.plus(totalBorrows)
-    if (total.isGreaterThan(0)) {
+    if (total.isGreaterThan(new BigNumber(0))) {
       coefficientInterest = totalBorrows.div(total)
     }
     return coefficientInterest
@@ -163,11 +163,25 @@ class PoolService {
     return await contractPool.methods.deposit(UnitValue).send({ amount })
   }
 
+  madeWithdraw = async (amountToDeposit: BigNumber) => {
+    const amount = Tezos.format('mutez', 'tz', amountToDeposit) as number
+    const contractPool = await Tezos.contract.at(this.contractAddress)
+    return await contractPool.methods.withdraw(amount).send()
+  }
+
   getGasEstimationForDeposit = async (amountToEstimate: BigNumber) => {
     const amount = Tezos.format('mutez', 'tz', amountToEstimate) as number
     const contractPool = await Tezos.contract.at(this.contractAddress)
 
     const tx = contractPool.methods.deposit(UnitValue).toTransferParams({ amount })
+    return Tezos.estimate.transfer(tx)
+  }
+
+  getGasEstimationForWithdraw = async (amountToEstimate: BigNumber) => {
+    const amount = Tezos.format('mutez', 'tz', amountToEstimate) as number
+    const contractPool = await Tezos.contract.at(this.contractAddress)
+
+    const tx = contractPool.methods.withdraw(amount).toTransferParams()
     return Tezos.estimate.transfer(tx)
   }
 }

@@ -11,7 +11,7 @@ import { BalanceVariationItem } from './balanceVariation.component'
 import { PoolService } from '../services/poolContract.service'
 import { Action, Account } from '../utils/types'
 import { useAccountLiquidity } from '../hooks/accountLiquidity.hook'
-import { SupplyMessage } from './messages.component'
+import { SupplyMessage, WithdrawMessage } from './messages.component'
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   isOpen: boolean
@@ -28,7 +28,7 @@ export const ModalSupply = (props: Props) => {
   const [amount, setAmount] = useState<Maybe<BigNumber>>(null)
   const [loadingAccountLiquidity, setLoadingAccountLiquidity] = useState<boolean>(false)
   const [loadingTransferTransaction, setLoadingTransferTransaction] = useState<boolean>(false)
-  const [modalAction, setModalAction] = useState<Action>(Action.Supply)
+  const [transferAction, setTransferAction] = useState<Action>(Action.Supply)
 
   const {
     mySupply,
@@ -41,7 +41,7 @@ export const ModalSupply = (props: Props) => {
   } = useAccountLiquidity(
     account,
     poolService,
-    modalAction,
+    transferAction,
     amount,
     () => {
       setLoadingAccountLiquidity(true)
@@ -52,7 +52,7 @@ export const ModalSupply = (props: Props) => {
   )
 
   const setMax = async () => {
-    if (modalAction === Action.Supply) {
+    if (transferAction === Action.Supply) {
       setAmount(amountAvailableToDeposit)
     } else {
       setAmount(amountAvailableToWithdraw)
@@ -63,7 +63,7 @@ export const ModalSupply = (props: Props) => {
     if (!amount) return
 
     setLoadingTransferTransaction(true)
-    if (modalAction === Action.Supply) {
+    if (transferAction === Action.Supply) {
       let operation: any
       try {
         operation = await poolService.madeDeposit(amount)
@@ -79,19 +79,35 @@ export const ModalSupply = (props: Props) => {
         console.error(err.message)
         addToast(`There is an error adding a deposit.`, { appearance: 'error', autoDismiss: true })
       }
+    } else {
+      let operation: any
+      try {
+        operation = await poolService.madeWithdraw(amount)
+        await operation.confirmation()
+
+        const content = <WithdrawMessage hash={operation.hash} amount={amount} />
+
+        addToast(content, { appearance: 'success', autoDismiss: true })
+
+        onClose()
+      } catch (err) {
+        // eslint-disable-next-line
+            console.error(err.message)
+        addToast(`There is an error making a withdraw.`, { appearance: 'error', autoDismiss: true })
+      }
     }
     setLoadingTransferTransaction(false)
   }
 
   const callbackSupply = () => {
-    setModalAction(Action.Supply)
+    setTransferAction(Action.Supply)
     if (amount) {
       setAmount(null)
     }
   }
 
   const callbackWithdraw = () => {
-    setModalAction(Action.Withdraw)
+    setTransferAction(Action.Withdraw)
     if (amount) {
       setAmount(null)
     }
@@ -102,8 +118,8 @@ export const ModalSupply = (props: Props) => {
     (amount && amount.isZero()) ||
     loadingTransferTransaction ||
     loadingAccountLiquidity ||
-    (modalAction === Action.Supply && !isAllowedToDeposit) ||
-    (modalAction === Action.Withdraw && !isAllowedToWithdraw)
+    (transferAction === Action.Supply && !isAllowedToDeposit) ||
+    (transferAction === Action.Withdraw && !isAllowedToWithdraw)
 
   const errorAmountIsHigherThanBalance = amount && amount.isGreaterThan(amountAvailableToDeposit)
 
@@ -111,19 +127,19 @@ export const ModalSupply = (props: Props) => {
     <ModalWrapper isOpen={isOpen} onRequestClose={onClose}>
       <div className="card">
         <header className="is-center">
-          <h4>{modalAction}</h4>
+          <h4>{transferAction}</h4>
         </header>
         <div className="row is-center">
           <nav className="tabs">
             <Tab
               action={Action.Supply}
               callback={callbackSupply}
-              active={modalAction === Action.Supply}
+              active={transferAction === Action.Supply}
             />
             <Tab
               action={Action.Withdraw}
               callback={callbackWithdraw}
-              active={modalAction === Action.Withdraw}
+              active={transferAction === Action.Withdraw}
             />
           </nav>
         </div>
@@ -136,6 +152,11 @@ export const ModalSupply = (props: Props) => {
                 newValue ? setAmount(new BigNumber(newValue)) : setAmount(null)
               }
               value={amount ? amount.toString() : ''}
+              max={
+                transferAction === Action.Supply
+                  ? amountAvailableToDeposit.toString()
+                  : amountAvailableToWithdraw.toString()
+              }
             />
             <button
               className="button primary"
@@ -163,7 +184,9 @@ export const ModalSupply = (props: Props) => {
                 amountFrom={mySupply}
                 amountTo={
                   amount &&
-                  (modalAction === Action.Withdraw ? mySupply.minus(amount) : mySupply.plus(amount))
+                  (transferAction === Action.Withdraw
+                    ? mySupply.minus(amount)
+                    : mySupply.plus(amount))
                 }
               />
             )}
@@ -180,22 +203,27 @@ export const ModalSupply = (props: Props) => {
             {!loadingAccountLiquidity && (
               <BalanceVariationItem
                 amountFrom={myBorrowLimit}
-                amountTo={amount && myBorrowLimitWithAmount}
+                amountTo={
+                  amount &&
+                  (transferAction === Action.Withdraw
+                    ? myBorrowLimit.minus(amount)
+                    : myBorrowLimitWithAmount)
+                }
               />
             )}
           </div>
         </div>
         <footer className="row is-right" style={{ marginTop: '30px' }}>
-          <GasEstimation amount={amount} action={modalAction} poolService={poolService} />
+          <GasEstimation amount={amount} action={transferAction} poolService={poolService} />
           <button
             className="button primary"
             disabled={disableButton}
             onClick={submit}
             style={{ marginLeft: '1rem' }}
           >
-            {account && !loadingTransferTransaction && modalAction}
+            {account && !loadingTransferTransaction && transferAction}
             {!account && !loadingTransferTransaction && 'Please connect to your account'}
-            {loadingTransferTransaction && 'Waiting for transaction...'}
+            {loadingTransferTransaction && 'Waiting...'}
           </button>
           <button onClick={onClose} className="button">
             Cancel

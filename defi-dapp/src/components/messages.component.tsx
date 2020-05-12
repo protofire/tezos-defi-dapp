@@ -15,3 +15,15 @@ export const SupplyMessage = ({ hash, amount }: { hash: string; amount: BigNumbe
     </>
   )
 }
+
+export const WithdrawMessage = ({ hash, amount }: { hash: string; amount: BigNumber }) => {
+  return (
+    <>
+      <strong>Withdraw</strong>
+      <div>
+        The Withdraw of {tzFormatter(amount, 'tz')} was successfully. See transaction right{' '}
+        <BetterCallDevTransaction title={'here'} hash={hash} />
+      </div>
+    </>
+  )
+}

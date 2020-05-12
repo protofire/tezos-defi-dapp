@@ -53,8 +53,7 @@ export const useAccountLiquidity = (
         liquidity,
       } = await poolService.getAccountLiquidityInformation(accountAddress)
 
-      const withAmount =
-        action === Action.Withdraw && amount ? amount.multipliedBy(-1) : amount || new BigNumber(0)
+      amount = amount || new BigNumber(0)
 
       const [
         myBorrowAllowed,
@@ -63,13 +62,11 @@ export const useAccountLiquidity = (
         amountAvailableToDeposit,
       ] = await Promise.all([
         poolService.getPercentageToBorrow(accountAddress),
-        poolService.getPercentageToBorrow(accountAddress, withAmount),
+        poolService.getPercentageToBorrow(accountAddress, amount),
         checkAccountLiquidity({
-          amountToValidate: withAmount,
-          depositAmount: myBorrow,
-          borrowAmount: mySupply,
+          depositAmount: mySupply,
+          borrowAmount: myBorrow,
           collateralRate: collateralRate,
-          liquidity: liquidity,
         }),
         poolService.getTezosBalance(accountAddress),
       ])
@@ -77,7 +74,7 @@ export const useAccountLiquidity = (
       const myBorrowLimit = myBorrowAllowed.totalAllowed.minus(myBorrow)
       const myBorrowLimitWithAmount = myBorrowAllowedWithAmount.totalAllowed.minus(myBorrow)
 
-      const isAllowedToDeposit = withAmount.isLessThanOrEqualTo(amountAvailableToDeposit)
+      const isAllowedToDeposit = amount.isLessThanOrEqualTo(amountAvailableToDeposit)
 
       setSpinnerOff()
 
@@ -85,7 +82,7 @@ export const useAccountLiquidity = (
         mySupply,
         myBorrowLimit,
         myBorrowLimitWithAmount,
-        isAllowedToWithdraw: isAllowed,
+        isAllowedToWithdraw: isAllowed || amount.isLessThanOrEqualTo(liquidity),
         amountAvailableToWithdraw: amountOfCollateralAvailable,
         isAllowedToDeposit,
         amountAvailableToDeposit,

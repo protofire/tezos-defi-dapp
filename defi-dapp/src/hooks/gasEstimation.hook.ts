@@ -20,7 +20,14 @@ export const useGasEstimation = (
       let estimate: Maybe<any> = null
       if (!amount) return estimate
 
-      estimate = await poolService.getGasEstimationForDeposit(amount)
+      switch (action) {
+        case Action.Supply:
+          estimate = await poolService.getGasEstimationForDeposit(amount)
+          break
+        case Action.Withdraw:
+          estimate = await poolService.getGasEstimationForWithdraw(amount)
+          break
+      }
 
       return {
         gasLimit: estimate.gasLimit,

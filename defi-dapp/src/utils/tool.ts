@@ -58,35 +58,26 @@ export const activateAccount = async (account: Account) => {
 }
 
 interface AccountLiquidity {
-  amountToValidate: BigNumber
   depositAmount: BigNumber
   borrowAmount: BigNumber
   collateralRate: BigNumber
-  liquidity: BigNumber
 }
 
 export const checkAccountLiquidity = async (accountLiquidity: AccountLiquidity) => {
-  const {
-    amountToValidate,
-    depositAmount,
-    borrowAmount,
-    collateralRate,
-    liquidity,
-  } = accountLiquidity
+  const { depositAmount, borrowAmount, collateralRate } = accountLiquidity
 
   let amountOfCollateralAvailable = new BigNumber(0)
+
   if (borrowAmount.isZero()) {
-    amountOfCollateralAvailable = depositAmount.minus(amountToValidate)
+    amountOfCollateralAvailable = depositAmount
   } else {
     amountOfCollateralAvailable = depositAmount
       .multipliedBy(collateralRate.dividedBy(100))
-      .minus(borrowAmount.plus(amountToValidate))
+      .minus(borrowAmount)
   }
 
   return {
-    isAllowed:
-      amountOfCollateralAvailable.isLessThan(0) ||
-      amountToValidate.isGreaterThanOrEqualTo(liquidity),
+    isAllowed: amountOfCollateralAvailable.isLessThanOrEqualTo(new BigNumber(0)),
     amountOfCollateralAvailable,
   }
 }
