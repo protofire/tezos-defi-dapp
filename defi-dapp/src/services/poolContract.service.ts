@@ -158,15 +158,17 @@ class PoolService {
   getStorage = async () => this.contract.storage()
 
   madeDeposit = async (amountToDeposit: BigNumber) => {
-    const amount = Tezos.format('mutez', 'tz', amountToDeposit) as BigNumber
+    const amount = Tezos.format('mutez', 'tz', amountToDeposit) as number
     const contractPool = await Tezos.contract.at(this.contractAddress)
-    return await contractPool.methods.deposit(UnitValue).send({ amount: amount.toNumber() })
+    return await contractPool.methods.deposit(UnitValue).send({ amount })
   }
 
-  getGasEstimationForDeposit = async (amountToEstimate: BigNumber, addressAccount: string) => {
+  getGasEstimationForDeposit = async (amountToEstimate: BigNumber) => {
     const amount = Tezos.format('mutez', 'tz', amountToEstimate) as number
-    Tezos.setProvider({ rpc: this.rpc, signer: this.signer })
-    return Tezos.estimate.transfer({ to: addressAccount, amount })
+    const contractPool = await Tezos.contract.at(this.contractAddress)
+
+    const tx = contractPool.methods.deposit(UnitValue).toTransferParams({ amount })
+    return Tezos.estimate.transfer(tx)
   }
 }
 
