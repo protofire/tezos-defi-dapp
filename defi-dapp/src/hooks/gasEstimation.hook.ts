@@ -1,9 +1,8 @@
 import BigNumber from 'bignumber.js'
 import { useAsyncMemo } from 'use-async-memo'
 
-import { Action, Account } from '../utils/types'
+import { Action } from '../utils/types'
 import { PoolService } from '../services/poolContract.service'
-import { getAddressFromAccount } from '../utils/tool'
 
 interface GasEstimation {
   gasLimit: string
@@ -13,7 +12,6 @@ interface GasEstimation {
 
 export const useGasEstimation = (
   amount: Maybe<BigNumber>,
-  account: Account,
   action: Action,
   poolService: PoolService,
 ): Maybe<GasEstimation> => {
@@ -22,9 +20,7 @@ export const useGasEstimation = (
       let estimate: Maybe<any> = null
       if (!amount) return estimate
 
-      const addressAccount = await getAddressFromAccount(account)
-
-      estimate = await poolService.getGasEstimationForDeposit(amount, addressAccount)
+      estimate = await poolService.getGasEstimationForDeposit(amount)
 
       return {
         gasLimit: estimate.gasLimit,
@@ -32,7 +28,7 @@ export const useGasEstimation = (
         suggestedFeeMutez: estimate.suggestedFeeMutez,
       }
     },
-    [poolService, action, amount, account],
+    [poolService, action, amount],
     null,
   )
 
