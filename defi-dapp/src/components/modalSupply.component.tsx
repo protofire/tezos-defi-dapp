@@ -5,33 +5,19 @@ import { useToasts } from 'react-toast-notifications'
 import Loader from 'react-loader-spinner'
 
 import { ModalWrapper } from './modalWrapper.component'
-import { PoolService } from '../services/poolContract.service'
-import { BetterCallDevTransaction } from './betterCallDev.component'
+import { GasEstimation } from './gasEstimation.component'
 import { Tab } from './tab.component'
 import { BalanceVariationItem } from './balanceVariation.component'
-import { tzFormatter } from '../utils/tool'
+import { PoolService } from '../services/poolContract.service'
 import { Action, Account } from '../utils/types'
 import { useAccountLiquidity } from '../hooks/accountLiquidity.hook'
-import { useGasEstimation } from '../hooks/gasEstimation.hook'
-import { IconType, Tooltip } from './tooltip/tooltip.component'
+import { SupplyMessage } from './messages.component'
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   isOpen: boolean
   onClose: () => void
   poolService: PoolService
   account: Account
-}
-
-const DepositMessage = ({ hash, amount }: { hash: string; amount: BigNumber }) => {
-  return (
-    <>
-      <strong>Supply</strong>
-      <div>
-        Added deposit of {tzFormatter(amount, 'tz')} successfully. See transaction right{' '}
-        <BetterCallDevTransaction title={'here'} hash={hash} />
-      </div>
-    </>
-  )
 }
 
 export const ModalSupply = (props: Props) => {
@@ -65,14 +51,6 @@ export const ModalSupply = (props: Props) => {
     },
   )
 
-  const gasEstimation = useGasEstimation(amount, account, modalAction, poolService)
-  let descriptionGasEstimation = 'Gas limit: 0<br/>Storage limit: 0<br/>Suggested fee mutez: 0'
-  if (gasEstimation) {
-    descriptionGasEstimation = `Gas limit: ${gasEstimation.gasLimit}<br/> 
-      Storage limit: ${gasEstimation.storageLimit}<br/>  
-      Suggested fee mutez: ${gasEstimation.suggestedFeeMutez}`
-  }
-
   const setMax = async () => {
     if (modalAction === Action.Supply) {
       setAmount(amountAvailableToDeposit)
@@ -91,7 +69,7 @@ export const ModalSupply = (props: Props) => {
         operation = await poolService.madeDeposit(amount)
         await operation.confirmation()
 
-        const content = <DepositMessage hash={operation.hash} amount={amount} />
+        const content = <SupplyMessage hash={operation.hash} amount={amount} />
 
         addToast(content, { appearance: 'success', autoDismiss: true })
 
@@ -208,11 +186,7 @@ export const ModalSupply = (props: Props) => {
           </div>
         </div>
         <footer className="row is-right" style={{ marginTop: '30px' }}>
-          <Tooltip
-            description={descriptionGasEstimation}
-            id="gasEstimation"
-            iconType={IconType.Fuel}
-          />
+          <GasEstimation amount={amount} action={modalAction} poolService={poolService} />
           <button
             className="button primary"
             disabled={disableButton}
