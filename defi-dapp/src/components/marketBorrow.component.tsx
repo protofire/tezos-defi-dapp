@@ -50,7 +50,7 @@ const MarketBorrowConnected = (props: Props) => {
       const apy = await poolService.getBorrowInterestRate()
       const wallet = account ? await poolService.getTezosBalance(account.pkh) : new BigNumber(0)
       const percentageToBorrow = account
-        ? await poolService.getPercentageToBorrow(account.pkh)
+        ? await poolService.getBorrowValues(account.pkh)
         : { percentage: new BigNumber(0), totalAllowed: new BigNumber(0), used: new BigNumber(0) }
       return { apy, wallet, percentageToBorrow, loading: false }
     },

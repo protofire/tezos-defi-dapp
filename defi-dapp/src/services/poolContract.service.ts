@@ -130,7 +130,7 @@ class PoolService {
     return Tezos.tz.getBalance(address)
   }
 
-  getPercentageToBorrow = async (address: string, withAmount?: Maybe<BigNumber>) => {
+  getBorrowValues = async (address: string, withAmount?: Maybe<BigNumber>) => {
     const myBorrow = await this.getMyBorrow(address)
     const myDeposit = await this.getMyDeposit(address)
     const collateralRate = await this.getCollateralRate()

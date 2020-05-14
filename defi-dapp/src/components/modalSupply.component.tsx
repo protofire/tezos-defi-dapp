@@ -33,8 +33,8 @@ export const ModalSupply = (props: Props) => {
 
   const {
     mySupply,
-    myBorrowLimit,
-    myBorrowLimitWithAmount,
+    myBorrowAvailability,
+    myBorrowAvailabilityWithAmount,
     isAllowedToDeposit,
     amountAvailableToDeposit,
     isAllowedToWithdraw,
@@ -213,12 +213,12 @@ export const ModalSupply = (props: Props) => {
             )}
             {!loadingAccountLiquidity && (
               <BalanceVariationItem
-                amountFrom={myBorrowLimit}
+                amountFrom={myBorrowAvailability}
                 amountTo={
                   amount &&
                   (transferAction === Action.Withdraw
-                    ? myBorrowLimit.minus(amount)
-                    : myBorrowLimitWithAmount)
+                    ? myBorrowAvailability.minus(amount)
+                    : myBorrowAvailabilityWithAmount)
                 }
               />
             )}

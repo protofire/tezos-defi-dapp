@@ -7,12 +7,16 @@ import { Action, Account } from '../utils/types'
 
 interface AccountLiquidity {
   mySupply: BigNumber
-  myBorrowLimit: BigNumber
-  myBorrowLimitWithAmount: BigNumber
+  myBorrowAvailability: BigNumber
+  myBorrowAvailabilityWithAmount: BigNumber
   isAllowedToDeposit: boolean
   amountAvailableToDeposit: BigNumber
   isAllowedToWithdraw: boolean
   amountAvailableToWithdraw: BigNumber
+  isAllowedToBorrow: boolean
+  amountAvailableToBorrow: BigNumber
+  isAllowedToRepayBorrow: boolean
+  amountAvailableToRepayBorrow: BigNumber
 }
 
 export const useAccountLiquidity = (
@@ -25,23 +29,20 @@ export const useAccountLiquidity = (
 ): AccountLiquidity => {
   const initialValues = {
     mySupply: new BigNumber(0),
-    myBorrowLimit: new BigNumber(0),
-    myBorrowLimitWithAmount: new BigNumber(0),
+    myBorrow: new BigNumber(0),
+    myBorrowAvailability: new BigNumber(0),
+    myBorrowAvailabilityWithAmount: new BigNumber(0),
     isAllowedToDeposit: false,
     amountAvailableToDeposit: new BigNumber(0),
     isAllowedToWithdraw: false,
     amountAvailableToWithdraw: new BigNumber(0),
+    isAllowedToBorrow: false,
+    amountAvailableToBorrow: new BigNumber(0),
+    isAllowedToRepayBorrow: false,
+    amountAvailableToRepayBorrow: new BigNumber(0),
   }
 
-  const {
-    mySupply,
-    myBorrowLimit,
-    myBorrowLimitWithAmount,
-    isAllowedToDeposit,
-    amountAvailableToDeposit,
-    isAllowedToWithdraw,
-    amountAvailableToWithdraw,
-  }: AccountLiquidity = useAsyncMemo(
+  const accountLiquidity: AccountLiquidity = useAsyncMemo(
     async () => {
       setSpinnerOn()
       const accountAddress = await getAddressFromAccount(account)
@@ -56,13 +57,13 @@ export const useAccountLiquidity = (
       amount = amount || new BigNumber(0)
 
       const [
-        myBorrowAllowed,
-        myBorrowAllowedWithAmount,
-        { isAllowed, amountOfCollateralAvailable },
+        borrowValues,
+        borrowValuesWithAmount,
+        accountLiquidity,
         amountAvailableToDeposit,
       ] = await Promise.all([
-        poolService.getPercentageToBorrow(accountAddress),
-        poolService.getPercentageToBorrow(accountAddress, amount),
+        poolService.getBorrowValues(accountAddress),
+        poolService.getBorrowValues(accountAddress, amount),
         checkAccountLiquidity({
           depositAmount: mySupply,
           borrowAmount: myBorrow,
@@ -71,34 +72,29 @@ export const useAccountLiquidity = (
         poolService.getTezosBalance(accountAddress),
       ])
 
-      const myBorrowLimit = myBorrowAllowed.totalAllowed.minus(myBorrow)
-      const myBorrowLimitWithAmount = myBorrowAllowedWithAmount.totalAllowed.minus(myBorrow)
-
       const isAllowedToDeposit = amount.isLessThanOrEqualTo(amountAvailableToDeposit)
 
       setSpinnerOff()
 
       return {
         mySupply,
-        myBorrowLimit,
-        myBorrowLimitWithAmount,
-        isAllowedToWithdraw: isAllowed || amount.isLessThanOrEqualTo(liquidity),
-        amountAvailableToWithdraw: amountOfCollateralAvailable,
+        myBorrow,
+        myBorrowAvailability: borrowValues.used,
+        myBorrowAvailabilityWithAmount: borrowValuesWithAmount.used,
         isAllowedToDeposit,
         amountAvailableToDeposit,
+        isAllowedToWithdraw: accountLiquidity.isAllowed && amount.isLessThanOrEqualTo(liquidity),
+        amountAvailableToWithdraw: accountLiquidity.amountOfCollateralAvailable,
+        isAllowedToBorrow:
+          accountLiquidity.isAllowed && amount.isLessThanOrEqualTo(borrowValues.used),
+        amountAvailableToBorrow: borrowValues.used.minus(amount),
+        isAllowedToRepayBorrow: borrowValues.totalAllowed.isGreaterThanOrEqualTo(new BigNumber(0)),
+        amountAvailableToRepayBorrow: borrowValues.used,
       }
     },
     [account, amount, action],
     initialValues,
   )
 
-  return {
-    mySupply,
-    myBorrowLimit,
-    myBorrowLimitWithAmount,
-    isAllowedToDeposit,
-    amountAvailableToDeposit,
-    isAllowedToWithdraw,
-    amountAvailableToWithdraw,
-  }
+  return accountLiquidity
 }
