@@ -12,6 +12,7 @@ import { PoolService } from '../services/poolContract.service'
 import { Action, Account } from '../utils/types'
 import { useAccountLiquidity } from '../hooks/accountLiquidity.hook'
 import { SupplyMessage, WithdrawMessage } from './messages.component'
+import { tzFormatter } from '../utils/tool'
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   isOpen: boolean
@@ -113,13 +114,15 @@ export const ModalSupply = (props: Props) => {
     }
   }
 
-  const disableButton =
+  const disableButtonSubmit =
     !amount ||
     (amount && amount.isZero()) ||
     loadingTransferTransaction ||
     loadingAccountLiquidity ||
     (transferAction === Action.Supply && !isAllowedToDeposit) ||
     (transferAction === Action.Withdraw && !isAllowedToWithdraw)
+
+  const disableButtonCancel = loadingTransferTransaction
 
   const errorAmountIsHigherThanBalance = amount && amount.isGreaterThan(amountAvailableToDeposit)
 
@@ -167,6 +170,14 @@ export const ModalSupply = (props: Props) => {
               Max
             </button>
           </div>
+        </div>
+        <div className={`row is-left}`}>
+          <span className="text-grey">
+            Max amount allowed:{' '}
+            {transferAction === Action.Supply
+              ? tzFormatter(amountAvailableToDeposit, 'tz')
+              : tzFormatter(amountAvailableToWithdraw, 'tz')}
+          </span>
         </div>
         <div className={`row is-left ${errorAmountIsHigherThanBalance ? '' : 'is-hidden'}`}>
           <span className="text-error">The amount to supply is higher than balance</span>
@@ -217,7 +228,7 @@ export const ModalSupply = (props: Props) => {
           <GasEstimation amount={amount} action={transferAction} poolService={poolService} />
           <button
             className="button primary"
-            disabled={disableButton}
+            disabled={disableButtonSubmit}
             onClick={submit}
             style={{ marginLeft: '1rem' }}
           >
@@ -225,7 +236,7 @@ export const ModalSupply = (props: Props) => {
             {!account && !loadingTransferTransaction && 'Please connect to your account'}
             {loadingTransferTransaction && 'Waiting...'}
           </button>
-          <button onClick={onClose} className="button">
+          <button disabled={disableButtonCancel} onClick={onClose} className="button">
             Cancel
           </button>
         </footer>
