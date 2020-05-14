@@ -27,6 +27,12 @@ export const useGasEstimation = (
         case Action.Withdraw:
           estimate = await poolService.getGasEstimationForWithdraw(amount)
           break
+        case Action.Borrow:
+          estimate = await poolService.getGasEstimationForBorrow(amount)
+          break
+        case Action.RepayBorrow:
+          estimate = await poolService.getGasEstimationForRepayBorrow(amount)
+          break
       }
 
       return {

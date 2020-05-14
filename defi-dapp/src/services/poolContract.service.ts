@@ -163,8 +163,8 @@ class PoolService {
     return await contractPool.methods.deposit(UnitValue).send({ amount })
   }
 
-  madeWithdraw = async (amountToDeposit: BigNumber) => {
-    const amount = Tezos.format('mutez', 'tz', amountToDeposit) as number
+  madeWithdraw = async (amountToWithdraw: BigNumber) => {
+    const amount = Tezos.format('mutez', 'tz', amountToWithdraw) as number
     const contractPool = await Tezos.contract.at(this.contractAddress)
     return await contractPool.methods.withdraw(amount).send()
   }
@@ -182,6 +182,34 @@ class PoolService {
     const contractPool = await Tezos.contract.at(this.contractAddress)
 
     const tx = contractPool.methods.withdraw(amount).toTransferParams()
+    return Tezos.estimate.transfer(tx)
+  }
+
+  madeBorrow = async (amountToBorrow: BigNumber) => {
+    const amount = Tezos.format('mutez', 'tz', amountToBorrow) as number
+    const contractPool = await Tezos.contract.at(this.contractAddress)
+    return await contractPool.methods.borrow(amount).send()
+  }
+
+  madeRepayBorrow = async (amountToRepayBorrow: BigNumber) => {
+    const amount = Tezos.format('mutez', 'tz', amountToRepayBorrow) as number
+    const contractPool = await Tezos.contract.at(this.contractAddress)
+    return await contractPool.methods.repayBorrow(UnitValue).send({ amount })
+  }
+
+  getGasEstimationForBorrow = async (amountToEstimate: BigNumber) => {
+    const amount = Tezos.format('mutez', 'tz', amountToEstimate) as number
+    const contractPool = await Tezos.contract.at(this.contractAddress)
+
+    const tx = contractPool.methods.borrow(amount).toTransferParams()
+    return Tezos.estimate.transfer(tx)
+  }
+
+  getGasEstimationForRepayBorrow = async (amountToEstimate: BigNumber) => {
+    const amount = Tezos.format('mutez', 'tz', amountToEstimate) as number
+    const contractPool = await Tezos.contract.at(this.contractAddress)
+
+    const tx = contractPool.methods.repayBorrow(UnitValue).toTransferParams({ amount })
     return Tezos.estimate.transfer(tx)
   }
 }
