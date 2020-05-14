@@ -42,8 +42,12 @@ export const ModalBorrow = (props: Props) => {
 
     setLoadingTransferTransaction(true)
     if (transferAction === Action.Borrow) {
+      let operation: any
       try {
-        const content = <BorrowMessage hash={'COMPLETE'} amount={amount} />
+        operation = await poolService.madeBorrow(amount)
+        await operation.confirmation()
+
+        const content = <BorrowMessage hash={operation.hash} amount={amount} />
 
         addToast(content, { appearance: 'success', autoDismiss: true })
 
@@ -57,8 +61,11 @@ export const ModalBorrow = (props: Props) => {
         })
       }
     } else {
+      let operation: any
       try {
-        const content = <RepayBorrowMessage hash={'COMPLETE'} amount={amount} />
+        operation = await poolService.madeRepayBorrow(amount)
+        await operation.confirmation()
+        const content = <RepayBorrowMessage hash={operation.hash} amount={amount} />
 
         addToast(content, { appearance: 'success', autoDismiss: true })
 
@@ -66,7 +73,7 @@ export const ModalBorrow = (props: Props) => {
       } catch (err) {
         // eslint-disable-next-line
                 console.error(err.message)
-        addToast(`There is an error paying a borrow.`, { appearance: 'error', autoDismiss: true })
+        addToast(`There is an error paying the borrow.`, { appearance: 'error', autoDismiss: true })
       }
     }
     setLoadingTransferTransaction(false)
@@ -157,7 +164,9 @@ export const ModalBorrow = (props: Props) => {
             onClick={submit}
             style={{ marginLeft: '1rem' }}
           >
-            {transferAction}
+            {account && !loadingTransferTransaction && transferAction}
+            {!account && !loadingTransferTransaction && 'Please connect to your account'}
+            {loadingTransferTransaction && 'Waiting...'}
           </button>
           <button disabled={disableButtonCancel} onClick={onClose} className="button">
             Cancel
