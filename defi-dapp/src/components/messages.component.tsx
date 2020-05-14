@@ -27,3 +27,27 @@ export const WithdrawMessage = ({ hash, amount }: { hash: string; amount: BigNum
     </>
   )
 }
+
+export const BorrowMessage = ({ hash, amount }: { hash: string; amount: BigNumber }) => {
+  return (
+    <>
+      <strong>Borrow</strong>
+      <div>
+        The borrow of {tzFormatter(amount, 'tz')} was successfully. See transaction right{' '}
+        <BetterCallDevTransaction title={'here'} hash={hash} />
+      </div>
+    </>
+  )
+}
+
+export const RepayBorrowMessage = ({ hash, amount }: { hash: string; amount: BigNumber }) => {
+  return (
+    <>
+      <strong>Repay Borrow</strong>
+      <div>
+        The repay of {tzFormatter(amount, 'tz')} was successfully. See transaction right{' '}
+        <BetterCallDevTransaction title={'here'} hash={hash} />
+      </div>
+    </>
+  )
+}
