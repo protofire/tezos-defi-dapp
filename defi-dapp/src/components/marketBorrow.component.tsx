@@ -31,7 +31,7 @@ interface MarketBorrow {
 const borrowHeaders = ['Asset', 'APY', 'Wallet', '% of limit']
 
 const MarketBorrowConnected = (props: Props) => {
-  const { poolService, account, updateFlag } = props
+  const { poolService, account, updateFlag, setUpdateFlag } = props
 
   const [isModalBorrowOpen, setModalBorrowState] = useState(false)
 
@@ -84,7 +84,15 @@ const MarketBorrowConnected = (props: Props) => {
         <Table {...tableProps} />
       </div>
       {account && (
-        <ModalBorrow isOpen={isModalBorrowOpen} onClose={() => setModalBorrowState(false)} />
+        <ModalBorrow
+          poolService={poolService}
+          account={account}
+          isOpen={isModalBorrowOpen}
+          onClose={() => {
+            setModalBorrowState(false)
+            setUpdateFlag(!updateFlag)
+          }}
+        />
       )}
     </>
   )
