@@ -159,7 +159,7 @@ export const ModalBorrow = (props: Props) => {
           >
             {transferAction}
           </button>
-          <button disabled={disableButtonCancel} onClick={onClose} className="button" >
+          <button disabled={disableButtonCancel} onClick={onClose} className="button">
             Cancel
           </button>
         </footer>
