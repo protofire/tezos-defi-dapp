@@ -1,5 +1,7 @@
 const { Tezos, UnitValue } = require('@taquito/taquito');
 const { InMemorySigner } = require('@taquito/signer');
+const BigNumber = require('bignumber.js');
+
 let Table = require('cli-table');
 
 const { tzFormatter, getPoolStorage, getTokenStorage, tokenAmountInUnitsWithSymbol } = require('../test/utils');
@@ -44,8 +46,8 @@ const madeDeposit = async () => {
     const beforePoolStorage = await getPoolStorage(contractPoolAddress, [accountFaucetA, accountFaucetB]);
     const beforeTokenStorage = await getTokenStorage(contractTokenAddress, [accountFaucetA, accountFaucetB]);
   
-    const beforeDepositBalance = beforePoolStorage.deposits[accountFaucetA].tezAmount;
-    const beforeTokenBalance = beforeTokenStorage.accounts[accountFaucetA].balance;
+    const beforeDepositBalance = beforePoolStorage.deposits[accountFaucetA] ? beforePoolStorage.deposits[accountFaucetA].tezAmount: new BigNumber(0);
+    const beforeTokenBalance = beforeTokenStorage.accounts[accountFaucetA] ? beforeTokenStorage.accounts[accountFaucetA].balance: new BigNumber(0);
     const beforeAccountBalance = await Tezos.tz.getBalance(accountFaucetA);
 
     // Add values to table

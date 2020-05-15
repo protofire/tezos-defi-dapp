@@ -80,6 +80,13 @@ const deployPoolContract = async () => {
     // Send tez
     const operationAddLiquidity = await contractPool.methods.addLiquidity(UnitValue).send({ amount: 10 });
     await operationAddLiquidity.confirmation();
+
+    // Add owner to the token contract
+    const contractToken = await Tezos.contract.at(contractFa12Deploy.address);
+    const contractPoolDeploy = require('../deployed/pool_latest.json');
+
+    const operationAddOwner = await contractToken.methods.addOwner(contractPoolDeploy.address).send();
+    await operationAddOwner.confirmation();
 };
 
 (async () => {
