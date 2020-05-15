@@ -176,8 +176,8 @@ export const ModalBorrow = (props: Props) => {
           </div>
         </div>
         <div className={`row is-left}`}>
-          <span className="text-grey">
-            Max amount allowed:
+          <span className="text-grey is-horizontal-align">
+            Max amount allowed: &nbsp;
             {loadingAccountLiquidity && (
               <Loader visible={true} type="ThreeDots" color="#14854f" height={18} width={18} />
             )}

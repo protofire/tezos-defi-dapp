@@ -12,7 +12,7 @@ export const usePoolContract = (account: Maybe<Account>) => {
 
   const poolService = useAsyncMemo(
     async () => await PoolService.create(poolContractAddress, rpc, signer),
-    [poolContractAddress, rpc],
+    [],
     null,
   )
 

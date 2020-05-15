@@ -130,8 +130,6 @@ export const ModalSupply = (props: Props) => {
 
   const disableButtonCancel = loadingTransferTransaction
 
-  const errorAmountIsHigherThanBalance = amount && amount.isGreaterThan(amountAvailableToDeposit)
-
   return (
     <ModalWrapper isOpen={isOpen} onRequestClose={close}>
       <div className="card">
@@ -188,9 +186,6 @@ export const ModalSupply = (props: Props) => {
                 ? tzFormatter(amountAvailableToDeposit, 'tz')
                 : tzFormatter(amountAvailableToWithdraw, 'tz'))}
           </div>
-        </div>
-        <div className={`row is-left ${errorAmountIsHigherThanBalance ? '' : 'is-hidden'}`}>
-          <span className="text-error">The amount to supply is higher than balance</span>
         </div>
         <div className="row" style={{ marginTop: '30px' }}>
           <div className="col">
