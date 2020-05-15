@@ -59,6 +59,12 @@ export const ModalSupply = (props: Props) => {
       setAmount(amountAvailableToWithdraw)
     }
   }
+  const close = () => {
+    // Reset to initial state
+    setAmount(null)
+    setTransferAction(Action.Borrow)
+    onClose()
+  }
 
   const submit = async () => {
     if (!amount) return
@@ -74,7 +80,7 @@ export const ModalSupply = (props: Props) => {
 
         addToast(content, { appearance: 'success', autoDismiss: true })
 
-        onClose()
+        close()
       } catch (err) {
         // eslint-disable-next-line
         console.error(err.message)
@@ -90,7 +96,7 @@ export const ModalSupply = (props: Props) => {
 
         addToast(content, { appearance: 'success', autoDismiss: true })
 
-        onClose()
+        close()
       } catch (err) {
         // eslint-disable-next-line
             console.error(err.message)
@@ -127,7 +133,7 @@ export const ModalSupply = (props: Props) => {
   const errorAmountIsHigherThanBalance = amount && amount.isGreaterThan(amountAvailableToDeposit)
 
   return (
-    <ModalWrapper isOpen={isOpen} onRequestClose={onClose}>
+    <ModalWrapper isOpen={isOpen} onRequestClose={close}>
       <div className="card">
         <header className="is-center">
           <h4>{transferAction}</h4>
@@ -172,12 +178,16 @@ export const ModalSupply = (props: Props) => {
           </div>
         </div>
         <div className={`row is-left}`}>
-          <span className="text-grey">
-            Max amount allowed:{' '}
-            {transferAction === Action.Supply
-              ? tzFormatter(amountAvailableToDeposit, 'tz')
-              : tzFormatter(amountAvailableToWithdraw, 'tz')}
-          </span>
+          <div className="text-grey is-horizontal-align">
+            Max amount allowed: &nbsp;
+            {loadingAccountLiquidity && (
+              <Loader visible={true} type="ThreeDots" color="#14854f" height={18} width={18} />
+            )}
+            {!loadingAccountLiquidity &&
+              (transferAction === Action.Supply
+                ? tzFormatter(amountAvailableToDeposit, 'tz')
+                : tzFormatter(amountAvailableToWithdraw, 'tz'))}
+          </div>
         </div>
         <div className={`row is-left ${errorAmountIsHigherThanBalance ? '' : 'is-hidden'}`}>
           <span className="text-error">The amount to supply is higher than balance</span>
@@ -236,7 +246,7 @@ export const ModalSupply = (props: Props) => {
             {!account && !loadingTransferTransaction && 'Please connect to your account'}
             {loadingTransferTransaction && 'Waiting...'}
           </button>
-          <button disabled={disableButtonCancel} onClick={onClose} className="button">
+          <button disabled={disableButtonCancel} onClick={close} className="button">
             Cancel
           </button>
         </footer>

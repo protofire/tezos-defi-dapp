@@ -57,6 +57,13 @@ export const ModalBorrow = (props: Props) => {
     }
   }
 
+  const close = () => {
+    // Reset to initial state
+    setAmount(null)
+    setTransferAction(Action.Borrow)
+    onClose()
+  }
+
   const submit = async () => {
     if (!amount) return
 
@@ -71,7 +78,7 @@ export const ModalBorrow = (props: Props) => {
 
         addToast(content, { appearance: 'success', autoDismiss: true })
 
-        onClose()
+        close()
       } catch (err) {
         // eslint-disable-next-line
                 console.error(err.message)
@@ -89,7 +96,7 @@ export const ModalBorrow = (props: Props) => {
 
         addToast(content, { appearance: 'success', autoDismiss: true })
 
-        onClose()
+        close()
       } catch (err) {
         // eslint-disable-next-line
                 console.error(err.message)
@@ -124,7 +131,7 @@ export const ModalBorrow = (props: Props) => {
   const disableButtonCancel = loadingTransferTransaction
 
   return (
-    <ModalWrapper isOpen={isOpen} onRequestClose={onClose}>
+    <ModalWrapper isOpen={isOpen} onRequestClose={close}>
       <div className="card">
         <header className="is-center">
           <h4>{transferAction}</h4>
@@ -170,10 +177,14 @@ export const ModalBorrow = (props: Props) => {
         </div>
         <div className={`row is-left}`}>
           <span className="text-grey">
-            Max amount allowed:{' '}
-            {transferAction === Action.Borrow
-              ? tzFormatter(myBorrowAvailability, 'tz')
-              : tzFormatter(myBorrow, 'tz')}
+            Max amount allowed:
+            {loadingAccountLiquidity && (
+              <Loader visible={true} type="ThreeDots" color="#14854f" height={18} width={18} />
+            )}
+            {!loadingAccountLiquidity &&
+              (transferAction === Action.Borrow
+                ? tzFormatter(myBorrowAvailability, 'tz')
+                : tzFormatter(myBorrow, 'tz'))}
           </span>
         </div>
         <div className="row" style={{ marginTop: '30px' }}>
@@ -230,7 +241,7 @@ export const ModalBorrow = (props: Props) => {
             {!account && !loadingTransferTransaction && 'Please connect to your account'}
             {loadingTransferTransaction && 'Waiting...'}
           </button>
-          <button disabled={disableButtonCancel} onClick={onClose} className="button">
+          <button disabled={disableButtonCancel} onClick={close} className="button">
             Cancel
           </button>
         </footer>
