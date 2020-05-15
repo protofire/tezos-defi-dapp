@@ -12,6 +12,7 @@ import { PoolService } from '../services/poolContract.service'
 import { Action, Account } from '../utils/types'
 import { BorrowMessage, RepayBorrowMessage } from './messages.component'
 import { tzFormatter } from '../utils/tool'
+import { useAccountLiquidity } from '../hooks/accountLiquidity.hook'
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   isOpen: boolean
@@ -26,14 +27,33 @@ export const ModalBorrow = (props: Props) => {
   const { addToast } = useToasts()
 
   const [amount, setAmount] = useState<Maybe<BigNumber>>(null)
+  const [loadingAccountLiquidity, setLoadingAccountLiquidity] = useState<boolean>(false)
   const [transferAction, setTransferAction] = useState<Action>(Action.Borrow)
   const [loadingTransferTransaction, setLoadingTransferTransaction] = useState<boolean>(false)
 
+  const {
+    myBorrow,
+    myBorrowAvailability,
+    isAllowedToBorrow,
+    isAllowedToRepayBorrow,
+  } = useAccountLiquidity(
+    account,
+    poolService,
+    transferAction,
+    amount,
+    () => {
+      setLoadingAccountLiquidity(true)
+    },
+    () => {
+      setLoadingAccountLiquidity(false)
+    },
+  )
+
   const setMax = async () => {
     if (transferAction === Action.Borrow) {
-      // TODO add max amount
+      setAmount(myBorrowAvailability)
     } else {
-      // TODO add max amount
+      setAmount(myBorrow)
     }
   }
 
@@ -93,7 +113,13 @@ export const ModalBorrow = (props: Props) => {
     }
   }
 
-  const disableButtonSubmit = !amount || (amount && amount.isZero()) || loadingTransferTransaction
+  const disableButtonSubmit =
+    !amount ||
+    (amount && amount.isZero()) ||
+    loadingTransferTransaction ||
+    loadingAccountLiquidity ||
+    (transferAction === Action.Borrow && !isAllowedToBorrow) ||
+    (transferAction === Action.RepayBorrow && !isAllowedToRepayBorrow)
 
   const disableButtonCancel = loadingTransferTransaction
 
@@ -126,6 +152,11 @@ export const ModalBorrow = (props: Props) => {
                 newValue ? setAmount(new BigNumber(newValue)) : setAmount(null)
               }
               value={amount ? amount.toString() : ''}
+              max={
+                transferAction === Action.Borrow
+                  ? myBorrowAvailability.toString()
+                  : myBorrow.toString()
+              }
             />
             <button
               className="button primary"
@@ -138,14 +169,32 @@ export const ModalBorrow = (props: Props) => {
           </div>
         </div>
         <div className={`row is-left}`}>
-          <span className="text-grey">Max amount allowed: </span>
+          <span className="text-grey">
+            Max amount allowed:{' '}
+            {transferAction === Action.Borrow
+              ? tzFormatter(myBorrowAvailability, 'tz')
+              : tzFormatter(myBorrow, 'tz')}
+          </span>
         </div>
         <div className="row" style={{ marginTop: '30px' }}>
           <div className="col">
             <label>Borrow balance</label>
           </div>
           <div className="col is-right">
-            <BalanceVariationItem amountFrom={new BigNumber(0)} amountTo={new BigNumber(0)} />
+            {loadingAccountLiquidity && (
+              <Loader visible={true} type="ThreeDots" color="#14854f" height={18} width={18} />
+            )}
+            {!loadingAccountLiquidity && (
+              <BalanceVariationItem
+                amountFrom={myBorrow}
+                amountTo={
+                  amount &&
+                  (transferAction === Action.Borrow
+                    ? myBorrow.plus(amount)
+                    : myBorrow.minus(amount))
+                }
+              />
+            )}{' '}
           </div>
         </div>
         <div className="row" style={{ marginTop: '5px' }}>
@@ -153,7 +202,20 @@ export const ModalBorrow = (props: Props) => {
             <label>Borrow limit</label>
           </div>
           <div className="col is-right">
-            <BalanceVariationItem amountFrom={new BigNumber(0)} amountTo={new BigNumber(0)} />
+            {loadingAccountLiquidity && (
+              <Loader visible={true} type="ThreeDots" color="#14854f" height={18} width={18} />
+            )}
+            {!loadingAccountLiquidity && (
+              <BalanceVariationItem
+                amountFrom={myBorrowAvailability}
+                amountTo={
+                  amount &&
+                  (transferAction === Action.RepayBorrow
+                    ? myBorrowAvailability.plus(amount)
+                    : myBorrowAvailability.minus(amount))
+                }
+              />
+            )}{' '}
           </div>
         </div>
         <footer className="row is-right" style={{ marginTop: '30px' }}>

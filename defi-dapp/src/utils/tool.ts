@@ -77,7 +77,7 @@ export const checkAccountLiquidity = async (accountLiquidity: AccountLiquidity) 
   }
 
   return {
-    isAllowed: amountOfCollateralAvailable.isLessThanOrEqualTo(new BigNumber(0)),
+    isAllowed: amountOfCollateralAvailable.isGreaterThanOrEqualTo(0),
     amountOfCollateralAvailable,
   }
 }

@@ -7,6 +7,7 @@ import { Action, Account } from '../utils/types'
 
 interface AccountLiquidity {
   mySupply: BigNumber
+  myBorrow: BigNumber
   myBorrowAvailability: BigNumber
   myBorrowAvailabilityWithAmount: BigNumber
   isAllowedToDeposit: boolean
@@ -14,9 +15,7 @@ interface AccountLiquidity {
   isAllowedToWithdraw: boolean
   amountAvailableToWithdraw: BigNumber
   isAllowedToBorrow: boolean
-  amountAvailableToBorrow: BigNumber
   isAllowedToRepayBorrow: boolean
-  amountAvailableToRepayBorrow: BigNumber
 }
 
 export const useAccountLiquidity = (
@@ -37,9 +36,7 @@ export const useAccountLiquidity = (
     isAllowedToWithdraw: false,
     amountAvailableToWithdraw: new BigNumber(0),
     isAllowedToBorrow: false,
-    amountAvailableToBorrow: new BigNumber(0),
     isAllowedToRepayBorrow: false,
-    amountAvailableToRepayBorrow: new BigNumber(0),
   }
 
   const accountLiquidity: AccountLiquidity = useAsyncMemo(
@@ -86,10 +83,8 @@ export const useAccountLiquidity = (
         isAllowedToWithdraw: accountLiquidity.isAllowed && amount.isLessThanOrEqualTo(liquidity),
         amountAvailableToWithdraw: accountLiquidity.amountOfCollateralAvailable,
         isAllowedToBorrow:
-          accountLiquidity.isAllowed && amount.isLessThanOrEqualTo(borrowValues.used),
-        amountAvailableToBorrow: borrowValues.used.minus(amount),
-        isAllowedToRepayBorrow: borrowValues.totalAllowed.isGreaterThanOrEqualTo(new BigNumber(0)),
-        amountAvailableToRepayBorrow: borrowValues.used,
+          accountLiquidity.isAllowed && amount.isLessThanOrEqualTo(borrowValues.totalAllowed),
+        isAllowedToRepayBorrow: borrowValues.used.isGreaterThanOrEqualTo(new BigNumber(0)),
       }
     },
     [account, amount, action],
