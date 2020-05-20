@@ -2,7 +2,10 @@
 [![Netlify Status](https://api.netlify.com/api/v1/badges/3faddc9d-aa40-48f2-a98d-1862bac37c30/deploy-status)](https://app.netlify.com/sites/tezosdefidapp/deploys)
 
 # Tezos defi dapp
-User interface with high level of deFi functionalities 
+Implementations for common smart contract patterns of popular deFi applications and a User interface with high level of deFi functionalities.
+
+These implementations can be used as templates or starter kits to bootstrap new applications, greatly increasing developer productivity at the start of new projects.
+
 
 ## Getting started
 
