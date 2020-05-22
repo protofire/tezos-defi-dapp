@@ -19,10 +19,11 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
   onClose: () => void
   poolService: PoolService
   account: Account
+  updateFlag: boolean
 }
 
 export const ModalBorrow = (props: Props) => {
-  const { onClose, isOpen, poolService, account } = props
+  const { onClose, isOpen, poolService, account, updateFlag } = props
 
   const { addToast } = useToasts()
 
@@ -47,6 +48,7 @@ export const ModalBorrow = (props: Props) => {
     () => {
       setLoadingAccountLiquidity(false)
     },
+    updateFlag,
   )
 
   const setMax = async () => {
@@ -81,7 +83,7 @@ export const ModalBorrow = (props: Props) => {
         close()
       } catch (err) {
         // eslint-disable-next-line
-                console.error(err.message)
+        console.error(err.message)
         addToast(`There is an error borrowing an amount.`, {
           appearance: 'error',
           autoDismiss: true,
@@ -99,7 +101,7 @@ export const ModalBorrow = (props: Props) => {
         close()
       } catch (err) {
         // eslint-disable-next-line
-                console.error(err.message)
+        console.error(err.message)
         addToast(`There is an error paying the borrow.`, { appearance: 'error', autoDismiss: true })
       }
     }

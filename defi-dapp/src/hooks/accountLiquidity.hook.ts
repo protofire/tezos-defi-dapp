@@ -25,6 +25,7 @@ export const useAccountLiquidity = (
   amount: Maybe<BigNumber>,
   setSpinnerOn: () => void,
   setSpinnerOff: () => void,
+  updateFlag: boolean,
 ): AccountLiquidity => {
   const initialValues = {
     mySupply: new BigNumber(0),
@@ -87,7 +88,7 @@ export const useAccountLiquidity = (
         isAllowedToRepayBorrow: borrowValues.used.isGreaterThanOrEqualTo(new BigNumber(0)),
       }
     },
-    [account, amount, action],
+    [account, amount, action, updateFlag],
     initialValues,
   )
 

@@ -12,11 +12,7 @@ export const Tab = (props: TabProps) => {
   const { callback, action, active } = props
   return (
     // eslint-disable-next-line
-        <a
-            style={{ cursor: 'pointer' }}
-            onClick={callback}
-            className={`${active ? 'active' : ''}`}
-        >
+    <a style={{ cursor: 'pointer' }} onClick={callback} className={`${active ? 'active' : ''}`}>
       {action}
     </a>
   )

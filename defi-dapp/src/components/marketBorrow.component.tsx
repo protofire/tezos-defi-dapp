@@ -92,6 +92,7 @@ const MarketBorrowConnected = (props: Props) => {
             setModalBorrowState(false)
             setUpdateFlag(!updateFlag)
           }}
+          updateFlag={updateFlag}
         />
       )}
     </>

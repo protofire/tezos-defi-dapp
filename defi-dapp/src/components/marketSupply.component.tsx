@@ -79,6 +79,7 @@ const MarketSupplyConnected = (props: Props) => {
             setModalSupplyState(false)
             setUpdateFlag(!updateFlag)
           }}
+          updateFlag={updateFlag}
         />
       )}
     </>

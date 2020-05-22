@@ -135,39 +135,7 @@
                     { "prim": "nat", "annots": [ "%totalSupply" ] } ] } ] } ] },
   { "prim": "code",
     "args":
-      [ [ { "prim": "LAMBDA",
-            "args":
-              [ { "prim": "int" }, { "prim": "nat" },
-                [ { "prim": "DUP" },
-                  { "prim": "PUSH",
-                    "args": [ { "prim": "nat" }, { "int": "0" } ] },
-                  { "prim": "PAIR" },
-                  { "prim": "DIP", "args": [ [ { "prim": "DUP" } ] ] },
-                  { "prim": "SWAP" },
-                  { "prim": "PUSH",
-                    "args": [ { "prim": "int" }, { "int": "0" } ] },
-                  { "prim": "SWAP" }, { "prim": "COMPARE" },
-                  { "prim": "GE" },
-                  { "prim": "IF",
-                    "args":
-                      [ [ { "prim": "DUP" },
-                          { "prim": "DIP",
-                            "args": [ { "int": "2" }, [ { "prim": "DUP" } ] ] },
-                          { "prim": "DIG", "args": [ { "int": "2" } ] },
-                          { "prim": "ABS" }, { "prim": "SWAP" },
-                          { "prim": "CDR" }, { "prim": "SWAP" },
-                          { "prim": "PAIR" } ],
-                        [ { "prim": "PUSH",
-                            "args":
-                              [ { "prim": "string" },
-                                { "string":
-                                    "Not posible to convert from negative values" } ] },
-                          { "prim": "FAILWITH" } ] ] }, { "prim": "DUP" },
-                  { "prim": "CAR" },
-                  { "prim": "DIP",
-                    "args":
-                      [ [ { "prim": "DROP", "args": [ { "int": "3" } ] } ] ] } ] ] },
-          { "prim": "NIL", "args": [ { "prim": "operation" } ] },
+      [ [ { "prim": "NIL", "args": [ { "prim": "operation" } ] },
           { "prim": "LAMBDA",
             "args":
               [ { "prim": "pair",
@@ -277,8 +245,8 @@
                           { "prim": "CDR" } ] ] }, { "prim": "MEM" },
                   { "prim": "DIP", "args": [ [ { "prim": "DROP" } ] ] } ] ] },
           { "prim": "DIP",
-            "args": [ { "int": "5" }, [ { "prim": "DUP" } ] ] },
-          { "prim": "DIG", "args": [ { "int": "5" } ] }, { "prim": "CDR" },
+            "args": [ { "int": "4" }, [ { "prim": "DUP" } ] ] },
+          { "prim": "DIG", "args": [ { "int": "4" } ] }, { "prim": "CDR" },
           { "prim": "PUSH", "args": [ { "prim": "mutez" }, { "int": "0" } ] },
           { "prim": "AMOUNT" }, { "prim": "COMPARE" }, { "prim": "NEQ" },
           { "prim": "IF",
@@ -292,8 +260,8 @@
                 [ { "prim": "PUSH",
                     "args": [ { "prim": "unit" }, { "prim": "Unit" } ] } ] ] },
           { "prim": "DIP",
-            "args": [ { "int": "7" }, [ { "prim": "DUP" } ] ] },
-          { "prim": "DIG", "args": [ { "int": "7" } ] }, { "prim": "CAR" },
+            "args": [ { "int": "6" }, [ { "prim": "DUP" } ] ] },
+          { "prim": "DIG", "args": [ { "int": "6" } ] }, { "prim": "CAR" },
           { "prim": "IF_LEFT",
             "args":
               [ [ { "prim": "DUP" },
@@ -1184,15 +1152,7 @@
                                           { "prim": "DIG",
                                             "args": [ { "int": "2" } ] },
                                           { "prim": "CDR" },
-                                          { "prim": "DIP",
-                                            "args":
-                                              [ { "int": "15" },
-                                                [ { "prim": "DUP" } ] ] },
-                                          { "prim": "DIG",
-                                            "args": [ { "int": "15" } ] },
-                                          { "prim": "DIP",
-                                            "args": [ [ { "prim": "DUP" } ] ] },
-                                          { "prim": "PAIR" },
+                                          { "prim": "DUP" },
                                           { "prim": "DIP",
                                             "args":
                                               [ [ { "prim": "DIP",
@@ -1201,15 +1161,14 @@
                                                         [ { "prim": "DUP" } ] ] },
                                                   { "prim": "DIG",
                                                     "args":
-                                                      [ { "int": "2" } ] },
-                                                  { "prim": "DIP",
+                                                      [ { "int": "2" } ] } ] ] },
+                                          { "prim": "PAIR" },
+                                          { "prim": "DIP",
+                                            "args":
+                                              [ [ { "prim": "DIP",
                                                     "args":
-                                                      [ [ { "prim": "DIP",
-                                                            "args":
-                                                              [ [ { "prim":
-                                                                    "DUP" } ] ] },
-                                                          { "prim": "SWAP" } ] ] },
-                                                  { "prim": "PAIR" } ] ] },
+                                                      [ [ { "prim": "DUP" } ] ] },
+                                                  { "prim": "SWAP" } ] ] },
                                           { "prim": "PAIR" },
                                           { "prim": "DIP",
                                             "args": [ [ { "prim": "DUP" } ] ] },
@@ -1370,17 +1329,19 @@
                                                             "args":
                                                               [ { "int": "6" } ] } ] ] },
                                                   { "prim": "SUB" },
-                                                  { "prim": "DIP",
+                                                  { "prim": "ISNAT" },
+                                                  { "prim": "IF_NONE",
                                                     "args":
-                                                      [ [ { "prim": "DIP",
+                                                      [ [ { "prim": "PUSH",
                                                             "args":
-                                                              [ { "int": "20" },
-                                                                [ { "prim":
-                                                                    "DUP" } ] ] },
-                                                          { "prim": "DIG",
+                                                              [ { "prim":
+                                                                    "nat" },
+                                                                { "int": "0" } ] } ],
+                                                        [ { "prim": "DUP" },
+                                                          { "prim": "DIP",
                                                             "args":
-                                                              [ { "int": "20" } ] } ] ] },
-                                                  { "prim": "EXEC" },
+                                                              [ [ { "prim":
+                                                                    "DROP" } ] ] } ] ] },
                                                   { "prim": "DIP",
                                                     "args":
                                                       [ { "int": "6" },
@@ -1502,8 +1463,7 @@
                                                           { "prim": "CDR" },
                                                           { "prim": "SWAP" },
                                                           { "prim": "CAR" },
-                                                          { "prim": "CAR" } ] ] },
-                                                  { "prim": "SWAP" },
+                                                          { "prim": "CDR" } ] ] },
                                                   { "prim": "PAIR" },
                                                   { "prim": "PAIR" },
                                                   { "prim": "DIP",
@@ -1516,8 +1476,7 @@
                                                           { "prim": "CDR" },
                                                           { "prim": "SWAP" },
                                                           { "prim": "CAR" },
-                                                          { "prim": "CAR" } ] ] },
-                                                  { "prim": "SWAP" },
+                                                          { "prim": "CDR" } ] ] },
                                                   { "prim": "PAIR" },
                                                   { "prim": "PAIR" },
                                                   { "prim": "DIP",
@@ -1535,7 +1494,7 @@
                                             "args":
                                               [ [ { "prim": "DUP" },
                                                   { "prim": "CAR" },
-                                                  { "prim": "CDR" } ] ] },
+                                                  { "prim": "CAR" } ] ] },
                                           { "prim": "PAIR" },
                                           { "prim": "DIP",
                                             "args":
@@ -3392,5 +3351,5 @@
                                     "args": [ { "int": "9" } ] } ] ] } ] ] },
                   { "prim": "DIP", "args": [ [ { "prim": "DROP" } ] ] } ] ] },
           { "prim": "DIP",
-            "args": [ [ { "prim": "DROP", "args": [ { "int": "8" } ] } ] ] } ] ] } ]
+            "args": [ [ { "prim": "DROP", "args": [ { "int": "7" } ] } ] ] } ] ] } ]
 

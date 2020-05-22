@@ -30,8 +30,6 @@ const testMethods = async () => {
       'borrow',
       'repayBorrow',
       'addLiquidity',
-      'getExchangeRate',
-      'getBalanceOf',
     ];
 
     //Then
@@ -67,7 +65,7 @@ const testDeposit =  async () => {
   const accountFaucetA = await signerFaucetA.publicKeyHash();
   const accountFaucetB = await signerFaucetB.publicKeyHash();
 
-  const value = 2; // Send 1 tez
+  const value = 10; // Send 10 tez
 
   const beforePoolStorage = await getPoolStorage(contractPoolAddress, [accountFaucetA, accountFaucetB]);
   const beforeTokenStorage = await getTokenStorage(contractTokenAddress, [accountFaucetA, accountFaucetB]);
@@ -90,11 +88,10 @@ const testDeposit =  async () => {
   const afterTokenBalance = afterTokenStorage.accounts[accountFaucetA].balance;
 
   assert(afterDepositBalance.isGreaterThan(beforeDepositBalance), 'Pool deposit should be increased');
-  // TODO: check this test
-  //assert(afterPoolStorage.token.tokenSupply.isGreaterThan(beforePoolStorage.token.tokenSupply), 'Token supply should be increased');
+  assert(afterPoolStorage.token.tokenSupply.isGreaterThanOrEqualTo(beforePoolStorage.token.tokenSupply), 'Token supply should be increased');
   assert(afterPoolStorage.totalDeposits.isGreaterThan(beforePoolStorage.totalDeposits), 'Token deposit should be increased');
 
-  console.log(`[OK] Deposit: user made a deposit of ${value} tz. Minted an amount of ${tokenAmountInUnits(afterTokenBalance, afterTokenStorage.decimals.toString())} ${afterTokenStorage.symbol}`)
+  console.log(`[OK] Deposit: user made a deposit of ${value} tz. Minted an amount of ${tokenAmountInUnits(afterTokenBalance, afterTokenStorage.decimals.toNumber())} ${afterTokenStorage.symbol}`)
 };
 
 const testWithdraw = async() => {
@@ -135,8 +132,7 @@ const testWithdraw = async() => {
 
     assert(afterBalance.isGreaterThan(beforeBalance), 'Balance should be increased');
     assert(afterDepositBalance.isLessThan(beforeDepositBalance), 'Pool deposit should be decreased');
-    // TODO: check this test
-    //assert(afterPoolStorage.token.tokenSupply.isLessThan(beforePoolStorage.token.tokenSupply), 'Token supply should be decreased');
+    assert(afterPoolStorage.token.tokenSupply.isLessThanOrEqualTo(beforePoolStorage.token.tokenSupply), 'Token supply should be decreased');
     assert(afterPoolStorage.totalDeposits.isLessThan(beforePoolStorage.totalDeposits), 'Token deposit should be decreased');
   
     console.log(`[OK] Withdraw: user made a withdraw and have ${tzFormatter(afterBalance, 'tz')}.`)
