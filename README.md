@@ -36,7 +36,7 @@ It was created with React, and it's in the folder [defi-dapp](https://github.com
 We have written a series of blogpost that will guide you into some defi concepts with tezos.
 
 * [How to Integrate JavaScript with Smart Contracts and Run Unit Tests](https://medium.com/protofire-blog/tezos-part-4-how-to-integrate-javascript-with-smart-contracts-and-run-unit-tests-c36756149e9d)
-* [Token standars](https://medium.com/protofire-blog/tezos-part-5-token-standards-28b8733a3ce5)
+* [Token standards](https://medium.com/protofire-blog/tezos-part-5-token-standards-28b8733a3ce5)
 * [Smart contract explanation](https://github.com/protofire/tezos-defi-dapp/blob/master/defi-docs)
 
 ### Licensing
