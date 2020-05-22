@@ -4,5 +4,3 @@ type action is
 | Borrow of (nat)
 | RepayBorrow of (unit)
 | AddLiquidity of (unit)
-| GetExchangeRate of (unit * contract(nat))
-| GetBalanceOf of (address * contract(tez))

@@ -1,10 +1,11 @@
 // Naive iterative solution to calculate pow(x, n), would be to multiply x exactly n times
-function pow (var baseNumber : int; var exponent : int) : int is
+function natPow (var baseNumber : nat; var exponent : nat) : nat is
   block {
-    var result: int := 1;
+    var i: nat := 1n;
+    var result: nat := 1n;
 
-    while exponent =/= 0 block {
+    while i <= exponent block {
       result := result * baseNumber;
-      exponent := exponent - 1;
+      i := i + 1n;
     }
   } with result;

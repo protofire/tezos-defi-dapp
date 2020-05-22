@@ -243,7 +243,10 @@ function burnTo (const toAddress: address ; const value : nat ; var store : stor
     else skip;
 
     // Update balances and totalSupply
-    const newBalance :nat = intToNat(toAccount.balance - value);
+    const newBalance :nat = case is_nat(toAccount.balance - value) of
+      | Some(newBalance) -> newBalance
+      | None -> 0n
+    end;
     patch toAccount with record [balance = newBalance];
     store.accounts[toAddress] := toAccount;
 
