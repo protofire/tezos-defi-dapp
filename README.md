@@ -7,6 +7,24 @@ Implementations for common smart contract patterns of popular deFi applications 
 These implementations can be used as templates or starter kits to bootstrap new applications, greatly increasing developer productivity at the start of new projects.
 
 
+## Demo
+[LIVE DEMO](https://tezosdefidapp.netlify.app/)
+
+You can download wallets from the [faucet](https://faucet.tzalpha.net/) to use the dApp.
+
+
+## Sections
+
+#### Home
+<img src="https://i.ibb.co/Rbqqcy2/Screenshot-20200522-161648.png" width="600">
+ 
+#### Modal Borrow 
+<img src="https://i.ibb.co/p3sWTnN/Screenshot-20200522-161729.png" width="600"> 
+
+#### Modal Supply
+<img src="https://i.ibb.co/hBPDPdq/Screenshot-20200522-161702.png" width="600"> 
+
+
 ## Getting started
 
 A quick introduction of the minimal setup you need to get Tezos defi dapp up & running.
