@@ -1,19 +1,14 @@
 [![CircleCI](https://circleci.com/gh/protofire/tezos-defi-dapp.svg?style=svg)](https://circleci.com/gh/protofire/tezos-defi-dapp)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/3faddc9d-aa40-48f2-a98d-1862bac37c30/deploy-status)](https://app.netlify.com/sites/tezosdefidapp/deploys)
 
-# Tezos defi dapp
-Implementations for common smart contract patterns of popular deFi applications and a User interface with high level of deFi functionalities.
+# Tezos DeFi DApp
+Implementations for common smart contract patterns of popular DeFi applications and a user interface with high-level DeFi functionality. These implementations can be used as templates or starter kits to bootstrap new applications, therefore, greatly increasing developer productivity at the start of new projects.
+Checkout a [demo](https://tezosdefidapp.netlify.app/).
 
-These implementations can be used as templates or starter kits to bootstrap new applications, greatly increasing developer productivity at the start of new projects.
+## Getting started
+A quick introduction to the minimum setup you need to get a Tezos DeFi DApp up and running.
 
-
-## Demo
-[LIVE DEMO](https://tezosdefidapp.netlify.app/)
-
-You can download wallets from the [faucet](https://faucet.tzalpha.net/) to use the dApp.
-
-
-## Sections
+### Sections
 
 #### Home
 <img src="https://i.ibb.co/Rbqqcy2/Screenshot-20200522-161648.png" width="600">
@@ -24,21 +19,14 @@ You can download wallets from the [faucet](https://faucet.tzalpha.net/) to use t
 #### Modal Supply
 <img src="https://i.ibb.co/hBPDPdq/Screenshot-20200522-161702.png" width="600"> 
 
-
-## Getting started
-
-A quick introduction of the minimal setup you need to get Tezos defi dapp up & running.
-
-
 ### Prerequisites
-What is needed to set up the dev environment, click in the link to see installation instructions.
-- [Node.js](https://nodejs.org/es/download/) , version >= v10.20.1
-- [Ligo](https://ligolang.org/docs/intro/installation) , latest version
-- [Yarn](https://classic.yarnpkg.com/en/docs/install#debian-stable) , version ^1.12.3
-- [React](https://reactjs.org) , version ^16.13.1
+To set up a development environment, follow the links below to see installation instructions.
+- [Node.js](https://nodejs.org/es/download/) (v10.20.1 or higher)
+- [Ligo](https://ligolang.org/docs/intro/installation) (the latest version)
+- [Yarn](https://classic.yarnpkg.com/en/docs/install#debian-stable) (v1.12.3)
+- [React](https://reactjs.org) (v16.13.1)
 
-
-### Setting up Dev
+### Setting up a development environment
 
 ```shell
 git git@github.com:protofire/tezos-defi-dapp.git
@@ -48,17 +36,17 @@ yarn install
 
 ### Contracts
 The contracts are located in the folder [defi-contracts](https://github.com/protofire/tezos-defi-dapp/blob/master/defi-contracts) .
-You can check the [README](https://github.com/protofire/tezos-defi-dapp/blob/master/defi-contracts/README.md) file of the contracts for more help.
+For more details, you can check out the [README](https://github.com/protofire/tezos-defi-dapp/blob/master/defi-contracts/README.md) file.
 
 ### Application
-It was created with React, and it's in the folder [defi-dapp](https://github.com/protofire/tezos-defi-dapp/blob/master/defi-dapp) .
+The React-based application can be found in the [defi-dapp](https://github.com/protofire/tezos-defi-dapp/blob/master/defi-dapp) folder.
 
 ## Blog posts
-We have written a series of blogpost that will guide you into some defi concepts with tezos.
+We have written a series of blog posts that will guide you through the concepts of DeFi smart contracts in Tezos.
 
 * [How to Integrate JavaScript with Smart Contracts and Run Unit Tests](https://medium.com/protofire-blog/tezos-part-4-how-to-integrate-javascript-with-smart-contracts-and-run-unit-tests-c36756149e9d)
 * [Token standards](https://medium.com/protofire-blog/tezos-part-5-token-standards-28b8733a3ce5)
-* [Smart contract explanation](https://github.com/protofire/tezos-defi-dapp/blob/master/defi-docs)
+* [Explaining Smart Contracts](https://github.com/protofire/tezos-defi-dapp/blob/master/defi-docs)
 
 ### Licensing
 [MIT](https://github.com/protofire/tezos-defi-dapp/blob/master/LICENSE)
