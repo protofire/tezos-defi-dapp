@@ -71,7 +71,7 @@ export const ModalSupply = (props: Props) => {
   const close = () => {
     // Reset to initial state
     setAmount(null)
-    setTransferAction(Action.Borrow)
+    setTransferAction(Action.Supply)
     onClose()
   }
 
