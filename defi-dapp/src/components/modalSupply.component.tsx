@@ -9,21 +9,25 @@ import { GasEstimation } from './gasEstimation.component'
 import { Tab } from './tab.component'
 import { BalanceVariationItem } from './balanceVariation.component'
 import { PoolService } from '../services/poolContract.service'
+import { OracleService } from '../services/oracleContract.service'
 import { Action, Account } from '../utils/types'
 import { useAccountLiquidity } from '../hooks/accountLiquidity.hook'
+import { useAmountInDollars } from '../hooks/amountInDollars.hook'
 import { SupplyMessage, WithdrawMessage } from './messages.component'
-import { tzFormatter } from '../utils/tool'
+import { tzFormatter, dollarFormatter } from '../utils/tool'
+import {useTezosPrice} from "../hooks/tezosPrice.hook";
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   isOpen: boolean
   onClose: () => void
   poolService: PoolService
+  oracleService: OracleService
   account: Account
   updateFlag: boolean
 }
 
 export const ModalSupply = (props: Props) => {
-  const { onClose, isOpen, poolService, account, updateFlag } = props
+  const { onClose, isOpen, poolService, oracleService, account, updateFlag } = props
 
   const { addToast } = useToasts()
 
@@ -31,6 +35,9 @@ export const ModalSupply = (props: Props) => {
   const [loadingAccountLiquidity, setLoadingAccountLiquidity] = useState<boolean>(false)
   const [loadingTransferTransaction, setLoadingTransferTransaction] = useState<boolean>(false)
   const [transferAction, setTransferAction] = useState<Action>(Action.Supply)
+
+  const amountInDollars = useAmountInDollars(amount, oracleService)
+  const tezosPrice = useTezosPrice(oracleService)
 
   const {
     mySupply,
@@ -190,6 +197,17 @@ export const ModalSupply = (props: Props) => {
           </div>
         </div>
         <div className="row" style={{ marginTop: '30px' }}>
+            <div className="col">
+                <label>Amount in dollars</label>
+            </div>
+            <div className="col is-right" title={`Tezos price: $${tezosPrice.toString()}`}>
+                {loadingAccountLiquidity && (
+                    <Loader visible={true} type="ThreeDots" color="#14854f" height={18} width={18} />
+                )}
+                {!loadingAccountLiquidity && dollarFormatter(amountInDollars)}
+            </div>
+        </div>
+        <div className="row" style={{ marginTop: '5px' }}>
           <div className="col">
             <label>Supply balance</label>
           </div>

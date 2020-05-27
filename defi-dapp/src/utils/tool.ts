@@ -35,6 +35,14 @@ export const tzFormatter = (amount: any, format: any) => {
   }
 }
 
+export const dollarFormatter = (amount: any) => {
+    const bigNum = new BigNumber(amount)
+    if (bigNum.isNaN()) {
+        return amount
+    }
+    return `$${Tezos.format('mutez', 'tz', amount)}`
+}
+
 export const percentageFormatter = (amount: any) => {
   const bigNum = new BigNumber(amount)
   if (bigNum.isNaN()) {

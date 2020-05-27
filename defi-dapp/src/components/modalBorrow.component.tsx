@@ -11,19 +11,23 @@ import { BalanceVariationItem } from './balanceVariation.component'
 import { PoolService } from '../services/poolContract.service'
 import { Action, Account } from '../utils/types'
 import { BorrowMessage, RepayBorrowMessage } from './messages.component'
-import { tzFormatter } from '../utils/tool'
+import {dollarFormatter, tzFormatter} from '../utils/tool'
 import { useAccountLiquidity } from '../hooks/accountLiquidity.hook'
+import {useAmountInDollars} from "../hooks/amountInDollars.hook";
+import {useTezosPrice} from "../hooks/tezosPrice.hook";
+import {OracleService} from "../services/oracleContract.service";
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   isOpen: boolean
   onClose: () => void
   poolService: PoolService
+  oracleService: OracleService
   account: Account
   updateFlag: boolean
 }
 
 export const ModalBorrow = (props: Props) => {
-  const { onClose, isOpen, poolService, account, updateFlag } = props
+  const { onClose, isOpen, poolService, oracleService, account, updateFlag } = props
 
   const { addToast } = useToasts()
 
@@ -31,6 +35,9 @@ export const ModalBorrow = (props: Props) => {
   const [loadingAccountLiquidity, setLoadingAccountLiquidity] = useState<boolean>(false)
   const [transferAction, setTransferAction] = useState<Action>(Action.Borrow)
   const [loadingTransferTransaction, setLoadingTransferTransaction] = useState<boolean>(false)
+
+    const amountInDollars = useAmountInDollars(amount, oracleService)
+    const tezosPrice = useTezosPrice(oracleService)
 
   const {
     myBorrow,
@@ -189,7 +196,18 @@ export const ModalBorrow = (props: Props) => {
                 : tzFormatter(myBorrow, 'tz'))}
           </span>
         </div>
-        <div className="row" style={{ marginTop: '30px' }}>
+          <div className="row" style={{ marginTop: '30px' }}>
+              <div className="col">
+                  <label>Amount in dollars</label>
+              </div>
+              <div className="col is-right" title={`Tezos price: $${tezosPrice.toString()}`}>
+                  {loadingAccountLiquidity && (
+                      <Loader visible={true} type="ThreeDots" color="#14854f" height={18} width={18} />
+                  )}
+                  {!loadingAccountLiquidity && dollarFormatter(amountInDollars)}
+              </div>
+          </div>
+        <div className="row" style={{ marginTop: '5px' }}>
           <div className="col">
             <label>Borrow balance</label>
           </div>

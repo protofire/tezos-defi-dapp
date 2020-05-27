@@ -5,6 +5,7 @@ import { Table, TableProps } from './table.component'
 import { AssetTezImage } from './assetTezImage.component'
 import { ModalBorrow } from './modalBorrow.component'
 import { PoolService } from '../services/poolContract.service'
+import { OracleService } from '../services/oracleContract.service'
 import { useConnectedContext } from '../state/connected.context'
 import { useAsyncMemo } from 'use-async-memo'
 import { tzFormatter, percentageFormatter } from '../utils/tool'
@@ -12,6 +13,7 @@ import { Account } from '../utils/types'
 
 interface Props {
   poolService: PoolService
+  oracleService: OracleService
   account: Maybe<Account>
   updateFlag: boolean
   setUpdateFlag: (flag: boolean) => void
@@ -31,7 +33,7 @@ interface MarketBorrow {
 const borrowHeaders = ['Asset', 'APY', 'Wallet', '% of limit']
 
 const MarketBorrowConnected = (props: Props) => {
-  const { poolService, account, updateFlag, setUpdateFlag } = props
+  const { poolService, oracleService, account, updateFlag, setUpdateFlag } = props
 
   const [isModalBorrowOpen, setModalBorrowState] = useState(false)
 
@@ -86,6 +88,7 @@ const MarketBorrowConnected = (props: Props) => {
       {account && (
         <ModalBorrow
           poolService={poolService}
+          oracleService={oracleService}
           account={account}
           isOpen={isModalBorrowOpen}
           onClose={() => {
@@ -108,13 +111,14 @@ const MarketBorrowDisconnected = () => {
 }
 
 export const MarketBorrow = () => {
-  const { poolService, account, updateFlag, setUpdateFlag } = useConnectedContext()
+  const { poolService, oracleService, account, updateFlag, setUpdateFlag } = useConnectedContext()
 
   return (
     <>
-      {poolService ? (
+      {poolService && oracleService ? (
         <MarketBorrowConnected
           poolService={poolService}
+          oracleService={oracleService}
           account={account}
           updateFlag={updateFlag}
           setUpdateFlag={setUpdateFlag}

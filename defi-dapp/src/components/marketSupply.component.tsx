@@ -7,11 +7,13 @@ import { AssetTezImage } from './assetTezImage.component'
 import { ModalSupply } from './modalSupply.component'
 import { useConnectedContext } from '../state/connected.context'
 import { PoolService } from '../services/poolContract.service'
+import { OracleService } from '../services/oracleContract.service'
 import { tzFormatter, percentageFormatter } from '../utils/tool'
 import { Account } from '../utils/types'
 
 interface Props {
   poolService: PoolService
+  oracleService: OracleService
   account: Maybe<Account>
   updateFlag: boolean
   setUpdateFlag: (flag: boolean) => void
@@ -26,7 +28,7 @@ interface MarketSupply {
 const supplyHeaders = ['Asset', 'APY', 'Wallet']
 
 const MarketSupplyConnected = (props: Props) => {
-  const { poolService, account, updateFlag, setUpdateFlag } = props
+  const { poolService, oracleService, account, updateFlag, setUpdateFlag } = props
 
   const [isModalSupplyOpen, setModalSupplyState] = useState(false)
 
@@ -73,6 +75,7 @@ const MarketSupplyConnected = (props: Props) => {
       {account && (
         <ModalSupply
           poolService={poolService}
+          oracleService={oracleService}
           account={account}
           isOpen={isModalSupplyOpen}
           onClose={() => {
@@ -95,13 +98,14 @@ const MarketSupplyDisconnected = () => {
 }
 
 export const MarketSupply = () => {
-  const { poolService, account, updateFlag, setUpdateFlag } = useConnectedContext()
+  const { poolService, oracleService, account, updateFlag, setUpdateFlag } = useConnectedContext()
 
   return (
     <>
-      {poolService ? (
+      {poolService && oracleService ? (
         <MarketSupplyConnected
           poolService={poolService}
+          oracleService={oracleService}
           account={account}
           updateFlag={updateFlag}
           setUpdateFlag={setUpdateFlag}
