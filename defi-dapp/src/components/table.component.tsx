@@ -23,7 +23,7 @@ export const Table = (props: TableProps) => {
         <caption>
           <h4>{title}</h4>
         </caption>
-        <thead>
+        <thead style={{borderBottom: "1px solid black"}}>
           <tr>
             {headers.map((header: string, key: number) => (
               <th key={key}>{header}</th>
@@ -41,7 +41,7 @@ export const Table = (props: TableProps) => {
             </tr>
           )}
           {!loading && values && (
-            <tr>
+            <tr className={`${onClickRow ? 'tr-hover-class normal' : ''}`}>
               {Object.values(values).map((value: any, key: number) => {
                 const inputProps: {
                   key: number
