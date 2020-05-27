@@ -15,7 +15,7 @@ import { useAccountLiquidity } from '../hooks/accountLiquidity.hook'
 import { useAmountInDollars } from '../hooks/amountInDollars.hook'
 import { SupplyMessage, WithdrawMessage } from './messages.component'
 import { tzFormatter, dollarFormatter } from '../utils/tool'
-import {useTezosPrice} from "../hooks/tezosPrice.hook";
+import { useTezosPrice } from '../hooks/tezosPrice.hook'
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   isOpen: boolean
@@ -197,15 +197,15 @@ export const ModalSupply = (props: Props) => {
           </div>
         </div>
         <div className="row" style={{ marginTop: '30px' }}>
-            <div className="col">
-                <label>Amount in dollars</label>
-            </div>
-            <div className="col is-right" title={`Tezos price: $${tezosPrice.toString()}`}>
-                {loadingAccountLiquidity && (
-                    <Loader visible={true} type="ThreeDots" color="#14854f" height={18} width={18} />
-                )}
-                {!loadingAccountLiquidity && dollarFormatter(amountInDollars)}
-            </div>
+          <div className="col">
+            <label>Amount in dollars</label>
+          </div>
+          <div className="col is-right" title={`Tezos price: $${tezosPrice.toString()}`}>
+            {loadingAccountLiquidity && (
+              <Loader visible={true} type="ThreeDots" color="#14854f" height={18} width={18} />
+            )}
+            {!loadingAccountLiquidity && dollarFormatter(amountInDollars)}
+          </div>
         </div>
         <div className="row" style={{ marginTop: '5px' }}>
           <div className="col">

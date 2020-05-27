@@ -24,16 +24,16 @@ class OracleService {
   getStorage = async () => this.contract.storage()
 
   getAssetPrice = async (symbol: string): Promise<BigNumber> => {
-      const storage = await this.getStorage()
+    const storage = await this.getStorage()
 
-      let price = new BigNumber(0)
-      try {
-          price = new BigNumber((await storage.assets.get(symbol)).price)
-      } catch (err) {
-          // Do nothing
-      }
+    let price = new BigNumber(0)
+    try {
+      price = new BigNumber((await storage.assets.get(symbol)).price)
+    } catch (err) {
+      // Do nothing
+    }
 
-      return price
+    return price
   }
 }
 

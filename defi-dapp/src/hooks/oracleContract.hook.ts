@@ -2,7 +2,10 @@ import { InMemorySigner } from '@taquito/signer'
 import { useAsyncMemo } from 'use-async-memo'
 
 import { OracleService } from '../services/oracleContract.service'
-import { ORACLE_CONTRACT_ADDRESS as oracleContractAddress, TEZOS_RPC as rpc } from '../config/constants'
+import {
+  ORACLE_CONTRACT_ADDRESS as oracleContractAddress,
+  TEZOS_RPC as rpc,
+} from '../config/constants'
 import { Account } from '../utils/types'
 
 export const useOracleContract = (account: Maybe<Account>) => {

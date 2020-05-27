@@ -6,7 +6,7 @@ import { PoolService } from '../services/poolContract.service'
 import { OracleService } from '../services/oracleContract.service'
 import { Account } from '../utils/types'
 import { useUpdater } from '../hooks/updater.hook'
-import {useOracleContract} from "../hooks/oracleContract.hook"
+import { useOracleContract } from '../hooks/oracleContract.hook'
 
 export interface ConnectedContext {
   account: Maybe<Account>
