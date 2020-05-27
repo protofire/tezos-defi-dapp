@@ -23,7 +23,7 @@ export const Table = (props: TableProps) => {
         <caption>
           <h4>{title}</h4>
         </caption>
-        <thead style={{borderBottom: "1px solid black"}}>
+        <thead style={{ borderBottom: '1px solid black' }}>
           <tr>
             {headers.map((header: string, key: number) => (
               <th key={key}>{header}</th>
