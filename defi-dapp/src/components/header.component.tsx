@@ -17,7 +17,7 @@ export const Header = () => {
       </nav>
       <nav className="nav" style={{ marginTop: '30px' }}>
         <div className="nav-left">
-          <div className="brand">Pool liquidity</div>
+          <div className="brand">Liquidity pool</div>
           <div className="nav-right">{account ? <Account /> : <LoadFaucet />}</div>
         </div>
       </nav>
