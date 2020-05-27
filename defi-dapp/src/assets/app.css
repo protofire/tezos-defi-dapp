@@ -1,0 +1,8 @@
+tr.tr-hover-class:hover {
+    opacity: 0.6;
+}
+
+tr.normal {
+    opacity: 1;
+    transition: 0.3s;
+}
