@@ -173,6 +173,19 @@ export const ModalSupply = (props: Props) => {
                   ? amountAvailableToDeposit.toString()
                   : amountAvailableToWithdraw.toString()
               }
+              renderInput={(props: any) => {
+                const inputProps = {
+                  ...props,
+                  onKeyPress: (event: any) => {
+                    // Not allow decimals
+                    if (event.charCode === 46) {
+                      event.preventDefault()
+                      return
+                    }
+                  },
+                }
+                return <input {...inputProps} />
+              }}
             />
             <button
               className="button primary"
