@@ -1,23 +1,21 @@
-import { InMemorySigner } from '@taquito/signer'
-import { useAsyncMemo } from 'use-async-memo'
+import { TezosToolkit } from '@taquito/taquito'
+import { useEffect, useState } from 'react'
 
 import { OracleService } from '../services/oracleContract.service'
-import {
-  ORACLE_CONTRACT_ADDRESS as oracleContractAddress,
-  TEZOS_RPC as rpc,
-} from '../config/constants'
+import { ORACLE_CONTRACT_ADDRESS as oracleContractAddress } from '../config/constants'
 import { Account } from '../utils/types'
 
-export const useOracleContract = (account: Maybe<Account>) => {
-  const signer = account
-    ? InMemorySigner.fromFundraiser(account.email, account.password, account.mnemonic.join(' '))
-    : undefined
+export const useOracleContract = (account: Maybe<Account>, taquito: TezosToolkit) => {
+  const [oracleService, setOracleService] = useState<Maybe<OracleService>>(null)
 
-  const oracleService = useAsyncMemo(
-    async () => await OracleService.create(oracleContractAddress, rpc, signer),
-    [],
-    null,
-  )
+  useEffect(() => {
+    const initializeContract = async () => {
+      const oracleService = await OracleService.create(oracleContractAddress, taquito)
+      setOracleService(oracleService)
+    }
 
-  return { oracleService }
+    initializeContract()
+  }, [account])
+
+  return oracleService
 }

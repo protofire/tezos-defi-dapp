@@ -1,20 +1,21 @@
-import { InMemorySigner } from '@taquito/signer'
-import { useAsyncMemo } from 'use-async-memo'
+import { useEffect, useState } from 'react'
+import { TezosToolkit } from '@taquito/taquito'
 
 import { PoolService } from '../services/poolContract.service'
-import { POOL_CONTRACT_ADDRESS as poolContractAddress, TEZOS_RPC as rpc } from '../config/constants'
+import { POOL_CONTRACT_ADDRESS as poolContractAddress } from '../config/constants'
 import { Account } from '../utils/types'
 
-export const usePoolContract = (account: Maybe<Account>) => {
-  const signer = account
-    ? InMemorySigner.fromFundraiser(account.email, account.password, account.mnemonic.join(' '))
-    : undefined
+export const usePoolContract = (account: Maybe<Account>, taquito: TezosToolkit) => {
+  const [poolService, setPoolService] = useState<Maybe<PoolService>>(null)
 
-  const poolService = useAsyncMemo(
-    async () => await PoolService.create(poolContractAddress, rpc, signer),
-    [],
-    null,
-  )
+  useEffect(() => {
+    const initializeContract = async () => {
+      const poolService = await PoolService.create(poolContractAddress, taquito)
+      setPoolService(poolService)
+    }
 
-  return { poolService }
+    initializeContract()
+  }, [account])
+
+  return poolService
 }

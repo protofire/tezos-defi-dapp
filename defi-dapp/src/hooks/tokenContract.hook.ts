@@ -1,29 +1,21 @@
-import { useMemo } from 'react'
-import { InMemorySigner } from '@taquito/signer'
+import { useEffect, useState } from 'react'
+import { TezosToolkit } from '@taquito/taquito'
 
-import { useAsyncMemo } from 'use-async-memo'
 import { TokenService } from '../services/tokenContract.service'
+import { TOKEN_CONTRACT_ADDRESS as tokenContractAddress } from '../config/constants'
 import { Account } from '../utils/types'
-import {
-  TOKEN_CONTRACT_ADDRESS as tokenContractAddress,
-  TEZOS_RPC as rpc,
-} from '../config/constants'
 
-export const useTokenContract = (account: Account) => {
-  const signer = account
-    ? InMemorySigner.fromFundraiser(account.email, account.password, account.mnemonic.join(' '))
-    : undefined
+export const useTokenContract = (account: Maybe<Account>, taquito: TezosToolkit) => {
+  const [tokenService, setTokenService] = useState<Maybe<TokenService>>(null)
 
-  const tokenService = useAsyncMemo(
-    async () => await TokenService.create(tokenContractAddress, rpc, signer),
-    [tokenContractAddress, rpc, signer],
-    null,
-  )
+  useEffect(() => {
+    const initializeContract = async () => {
+      const tokenService = await TokenService.create(tokenContractAddress, taquito)
+      setTokenService(tokenService)
+    }
 
-  return useMemo(
-    () => ({
-      tokenService,
-    }),
-    [tokenService],
-  )
+    initializeContract()
+  }, [account])
+
+  return tokenService
 }
