@@ -3,6 +3,7 @@ import { BigNumberInput } from 'big-number-input'
 import BigNumber from 'bignumber.js'
 import { useToasts } from 'react-toast-notifications'
 import Loader from 'react-loader-spinner'
+import { TezosToolkit } from '@taquito/taquito'
 
 import { ModalWrapper } from './modalWrapper.component'
 import { GasEstimation } from './gasEstimation.component'
@@ -16,6 +17,7 @@ import { useAccountLiquidity } from '../hooks/accountLiquidity.hook'
 import { useAmountInDollars } from '../hooks/amountInDollars.hook'
 import { useTezosPrice } from '../hooks/tezosPrice.hook'
 import { OracleService } from '../services/oracleContract.service'
+import { OperationProgress } from './operationProgress.component'
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   isOpen: boolean
@@ -24,10 +26,11 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
   oracleService: OracleService
   account: Account
   updateFlag: boolean
+  taquito: TezosToolkit
 }
 
 export const ModalBorrow = (props: Props) => {
-  const { onClose, isOpen, poolService, oracleService, account, updateFlag } = props
+  const { onClose, isOpen, poolService, oracleService, account, updateFlag, taquito } = props
 
   const { addToast } = useToasts()
 
@@ -262,21 +265,28 @@ export const ModalBorrow = (props: Props) => {
             )}{' '}
           </div>
         </div>
-        <footer className="row is-right" style={{ marginTop: '30px' }}>
-          <GasEstimation amount={amount} action={transferAction} poolService={poolService} />
-          <button
-            className="button primary"
-            disabled={disableButtonSubmit}
-            onClick={submit}
-            style={{ marginLeft: '1rem' }}
-          >
-            {account && !loadingTransferTransaction && transferAction}
-            {!account && !loadingTransferTransaction && 'Please connect to your account'}
-            {loadingTransferTransaction && 'Waiting...'}
-          </button>
-          <button disabled={disableButtonCancel} onClick={close} className="button">
-            Cancel
-          </button>
+        <footer className="row" style={{ marginTop: '30px' }}>
+          <div className="col-12 is-right">
+            <GasEstimation amount={amount} action={transferAction} poolService={poolService} />
+            <button
+              className="button primary"
+              disabled={disableButtonSubmit}
+              onClick={submit}
+              style={{ marginLeft: '1rem' }}
+            >
+              {account && !loadingTransferTransaction && transferAction}
+              {!account && !loadingTransferTransaction && 'Please connect to your account'}
+              {loadingTransferTransaction && 'Waiting...'}
+            </button>
+            <button disabled={disableButtonCancel} onClick={close} className="button">
+              Cancel
+            </button>
+          </div>
+          {loadingTransferTransaction && (
+            <div className="col-12">
+              <OperationProgress taquito={taquito} />
+            </div>
+          )}
         </footer>
       </div>
     </ModalWrapper>
