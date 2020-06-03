@@ -176,19 +176,6 @@ export const ModalBorrow = (props: Props) => {
                   ? myBorrowAvailability.toString()
                   : myBorrow.toString()
               }
-              renderInput={(props: any) => {
-                const inputProps = {
-                  ...props,
-                  onKeyPress: (event: any) => {
-                    // Not allow decimals
-                    if (event.charCode === 46) {
-                      event.preventDefault()
-                      return
-                    }
-                  },
-                }
-                return <input {...inputProps} />
-              }}
             />
             <button
               className="button primary"
