@@ -2,7 +2,7 @@ export enum Action {
   Supply = 'Supply',
   Withdraw = 'Withdraw',
   Borrow = 'Borrow',
-  RepayBorrow = 'Repay Borrow',
+  RepayBorrow = 'Repay',
 }
 
 export interface Account {
