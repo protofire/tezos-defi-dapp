@@ -28,7 +28,7 @@ const testBorrow =  async () => {
   const accountFaucetA = await signerFaucetA.publicKeyHash();
   const accountFaucetB = await signerFaucetB.publicKeyHash();
 
-  const value = 1;
+  const value = 1200000; // Fixed pointer by 6
 
   const beforePoolStorage = await getPoolStorage(contractPoolAddress, [accountFaucetA, accountFaucetB]);
   const beforeBorrowBalance = beforePoolStorage.borrows[accountFaucetA].tezAmount;
@@ -57,7 +57,7 @@ const testExcessBorrow =  async () => {
   const contractPoolAddress = contractPoolDeploy.address;
   Tezos.setProvider({ rpc, signer: signerFaucetA });
   const contractPool = await Tezos.contract.at(contractPoolAddress);
-  const value = 20000000; // Send 1 tez
+  const value = 2000000000000000; // Send 1 tez
 
 
   try {

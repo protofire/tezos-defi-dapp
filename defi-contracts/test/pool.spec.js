@@ -107,7 +107,7 @@ const testWithdraw = async() => {
     const accountFaucetA = await signerFaucetA.publicKeyHash();
     const accountFaucetB = await signerFaucetB.publicKeyHash();
     const beforeBalance = await Tezos.tz.getBalance(accountFaucetA);
-    const amountToWithdraw = 1;
+    const amountToWithdraw = 1200000; // Fixed pointer by 6
 
     const beforePoolStorage = await getPoolStorage(contractPoolAddress, [accountFaucetA, accountFaucetB]);
     const beforeTokenStorage = await getTokenStorage(contractTokenAddress, [accountFaucetA, accountFaucetB]);
