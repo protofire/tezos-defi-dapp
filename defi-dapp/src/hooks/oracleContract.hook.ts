@@ -15,6 +15,7 @@ export const useOracleContract = (account: Maybe<Account>, taquito: TezosToolkit
     }
 
     initializeContract()
+    // eslint-disable-next-line
   }, [account])
 
   return oracleService

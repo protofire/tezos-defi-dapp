@@ -15,6 +15,7 @@ export const usePoolContract = (account: Maybe<Account>, taquito: TezosToolkit) 
     }
 
     initializeContract()
+    // eslint-disable-next-line
   }, [account])
 
   return poolService
