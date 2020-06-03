@@ -157,11 +157,12 @@ class PoolService {
 
   madeDeposit = async (amountToDeposit: BigNumber) => {
     const amount = Tezos.format('mutez', 'tz', amountToDeposit) as number
+
     return await this.contract.methods.deposit(UnitValue).send({ amount })
   }
 
   madeWithdraw = async (amountToWithdraw: BigNumber) => {
-    const amount = Tezos.format('mutez', 'tz', amountToWithdraw) as number
+    const amount = amountToWithdraw.toNumber()
     return await this.contract.methods.withdraw(amount).send()
   }
 
@@ -174,7 +175,7 @@ class PoolService {
   }
 
   getGasEstimationForWithdraw = async (amountToEstimate: BigNumber) => {
-    const amount = Tezos.format('mutez', 'tz', amountToEstimate) as number
+    const amount = amountToEstimate.toNumber()
 
     const tx = this.contract.methods.withdraw(amount).toTransferParams()
     Tezos.setProvider({ ...baseConfig, signer: this.signer })
@@ -182,17 +183,18 @@ class PoolService {
   }
 
   madeBorrow = async (amountToBorrow: BigNumber) => {
-    const amount = Tezos.format('mutez', 'tz', amountToBorrow) as number
+    const amount = amountToBorrow.toNumber()
     return await this.contract.methods.borrow(amount).send()
   }
 
   madeRepayBorrow = async (amountToRepayBorrow: BigNumber) => {
     const amount = Tezos.format('mutez', 'tz', amountToRepayBorrow) as number
+
     return await this.contract.methods.repayBorrow(UnitValue).send({ amount })
   }
 
   getGasEstimationForBorrow = async (amountToEstimate: BigNumber) => {
-    const amount = Tezos.format('mutez', 'tz', amountToEstimate) as number
+    const amount = amountToEstimate.toNumber()
 
     const tx = this.contract.methods.borrow(amount).toTransferParams()
     Tezos.setProvider({ ...baseConfig, signer: this.signer })
