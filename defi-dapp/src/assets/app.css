@@ -6,3 +6,9 @@ tr.normal {
     opacity: 1;
     transition: 0.3s;
 }
+
+div.disclaimer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}

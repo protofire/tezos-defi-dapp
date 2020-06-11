@@ -3,75 +3,11 @@
 #include "./partials/tokenActions.ligo"
 #include "./partials/poolActions.ligo"
 #include "./partials/poolTypes.ligo"
+#include "./partials/poolInterest.ligo"
 
 const emptyOps: list(operation) = list end
 
 type return is list(operation) * store
-
-function getExchangeRate(var store: store): nat is 
-  block {
-    var realTokenSupply :nat := 1n;
-    if store.token.tokenSupply > 0n
-      then realTokenSupply :=  store.token.tokenSupply / natPow(10n, store.token.tokenDecimals);
-      else skip;
-    var exchangeRate :nat := tezToNat(store.totalDeposits + store.totalBorrows) / realTokenSupply;
-  } with exchangeRate; attributes ["inline"];
-
-function getCoefficientInterest(var store: store): nat is 
-  block {
-    var coefficientInterest :nat := 1n;
-    if (store.totalDeposits + store.totalBorrows) > 0tez
-      then coefficientInterest := store.totalBorrows / (store.totalDeposits + store.totalBorrows);
-      else skip;
-  } with coefficientInterest; attributes ["inline"];
-
-function getBorrowInterestRate(var store: store): nat is (2n + getCoefficientInterest(store) * 20n);
-
-function getDepositInterestRate(var store: store): nat is (getBorrowInterestRate(store) * getCoefficientInterest(store));
-
-function calculateBorrowInterest(const accountInfo: balanceInfo; var store: store): tez is 
-  block {
-    const interest :tez = 0tez;
-    case (is_nat(now - accountInfo.blockTimestamp)) of
-      | Some (elapsedBlocks) -> block {
-          const hourlyBlocks: nat = 3600n; // Seconds x hour
-          if elapsedBlocks > hourlyBlocks 
-            then block {
-              const elapsedHours :nat = elapsedBlocks / hourlyBlocks; 
-              const interestRatePercentage :nat = getBorrowInterestRate(store) / 100n;
-              const amountInNat :nat = tezToNat(accountInfo.tezAmount);
-              case is_nat(amountInNat * natPow(1n + interestRatePercentage / (365n * 24n), 365n * elapsedHours) - amountInNat) of
-                | Some(interestInNat) -> interest := natToTz(interestInNat)
-                | None -> failwith ("Can get interest")
-              end;
-            }
-            else skip;
-        }
-      | None -> failwith ("Can't get elapsed blocks")
-    end;
-  } with interest;
-
-function calculateDepositInterest(const accountInfo: balanceInfo; var store: store): tez is 
-  block {
-    const interest :tez = 0tez;
-    case (is_nat(now - accountInfo.blockTimestamp)) of
-      | Some (elapsedBlocks) -> block {
-          const hourlyBlocks: nat = 3600n; // Seconds x hour
-          if elapsedBlocks > hourlyBlocks 
-            then block {
-              const elapsedHours :nat = elapsedBlocks / hourlyBlocks; 
-              const interestRatePercentage :nat = getDepositInterestRate(store) / 100n;
-              const amountInNat :nat = tezToNat(accountInfo.tezAmount);
-              case is_nat(amountInNat * natPow(1n + interestRatePercentage / (365n * 24n), 365n * elapsedHours) - amountInNat) of
-                | Some(interestInNat) -> interest := natToTz(interestInNat)
-                | None -> failwith ("Can't get interest")
-              end;
-            }
-            else skip;
-        }
-      | None -> failwith ("Can get elapsed blocks")
-    end;
-  } with interest;
 
 function tokenProxy (const action : tokenAction; const store : store): operation is
   block {
@@ -95,7 +31,7 @@ function getDeposit(var store: store): balanceInfo is
     | None -> record tezAmount = 0tez; blockTimestamp = now; end
   end; attributes ["inline"];
 
-function checkAccountLiquidity(var amountToValidate: nat; var isWithdraw: bool; var store: store): unit is
+function checkAccountLiquidity(var amountToValidate: tez; var isWithdraw: bool; var store: store): unit is
   block {
     // account liquidity is defined as the total estimated tez value of an account's collateral
     // supply balances multiplied by the protocol collateral rate factor, 
@@ -104,17 +40,15 @@ function checkAccountLiquidity(var amountToValidate: nat; var isWithdraw: bool; 
     var depositAccount: balanceInfo := getDeposit(store);
     var borrowAccount: balanceInfo := getBorrow(store);
 
-    const depositAmountInNat: nat = tezToNat(depositAccount.tezAmount);
-    const borrowAmountInNat: nat = tezToNat(borrowAccount.tezAmount);
+    const depositAmount: tez = depositAccount.tezAmount;
+    const borrowAmount: tez = borrowAccount.tezAmount;
 
-    var amountOfCollateralAvailable: int := 0;
-    if borrowAmountInNat = 0n and isWithdraw
-      then amountOfCollateralAvailable := depositAmountInNat - amountToValidate;
-      else amountOfCollateralAvailable := natToInt(depositAmountInNat * store.collateralRate) / 100 - (borrowAmountInNat + amountToValidate);
+    var amountOfCollateralAvailable: tez := 0tez;
+    if borrowAmount = 0tez and isWithdraw
+      then amountOfCollateralAvailable := depositAmount - amountToValidate;
+      else amountOfCollateralAvailable := depositAmount * store.collateralRate / 100n - borrowAmount + amountToValidate;
 
-    const amountToValidateInTz: tez = natToTz(amountToValidate);
-
-    if amountOfCollateralAvailable < 0 or amountToValidateInTz >= store.liquidity
+    if amountOfCollateralAvailable < 0tez or amountOfCollateralAvailable >= store.liquidity
       then failwith("Amount is greater than liquidity!");
       else skip;
   } with unit;
@@ -125,7 +59,7 @@ function depositImp(var store: store): return is
       then failwith("No tez transferred!");
       else skip;
 
-    var operations: list(operation) := nil;
+    var operations: list(operation) := list end;
 
     var accountInfo: balanceInfo := getDeposit(store);
 
@@ -154,32 +88,30 @@ function depositImp(var store: store): return is
 
   } with(operations, store);
 
-function withdrawImp(var amountToWithdraw: nat; var store: store): return is
+function withdrawImp(var amountToWithdraw: tez; var store: store): return is
   block {  
     // If the amount is zero, failwith
-    if amountToWithdraw = 0n
+    if amountToWithdraw = 0tez
       then failwith("No amount to withdraw!"); 
       else skip;
 
-    var operations: list(operation) := nil;
+    var operations: list(operation) := list end;
 
    // Check account liquidity
     checkAccountLiquidity(amountToWithdraw, True, store);
 
     var accountInfo: balanceInfo := getDeposit(store);
 
-    const amountToWithdrawInTz: tez = natToTz(amountToWithdraw);
-
     // calculate interest and update user's balance
     const interest:tez = calculateDepositInterest(accountInfo, store);
-    store.deposits[sender] := record tezAmount = accountInfo.tezAmount - amountToWithdrawInTz + interest; blockTimestamp = now; end;
-    store.totalDeposits := store.totalDeposits - amountToWithdrawInTz + interest;
+    store.deposits[sender] := record tezAmount = accountInfo.tezAmount - amountToWithdraw + interest; blockTimestamp = now; end;
+    store.totalDeposits := store.totalDeposits - amountToWithdraw + interest;
 
     // Update liquidity
-    store.liquidity := store.liquidity - amountToWithdrawInTz;
+    store.liquidity := store.liquidity - amountToWithdraw;
 
     // Calculate amount to burn
-    const amountToBurn: nat = amountToWithdraw / getExchangeRate(store) * natPow(10n, store.token.tokenDecimals);
+    const amountToBurn: nat = tezToNat(amountToWithdraw) / getExchangeRate(store) * natPow(10n, store.token.tokenDecimals);
 
     if amountToBurn > 0n
       then block {
@@ -201,7 +133,7 @@ function withdrawImp(var amountToWithdraw: nat; var store: store): return is
         | Some (contractSender) -> contractSender
         | None -> (failwith ("Not a contract") : (contract(unit)))
       end;
-    operations := Tezos.transaction(unit, amountToWithdrawInTz, receiver) # operations;
+    operations := Tezos.transaction(unit, amountToWithdraw, receiver) # operations;
   } with(operations, store); attributes ["inline"];
 
 function addLiquidity( var store : store) : return is
@@ -211,9 +143,9 @@ function addLiquidity( var store : store) : return is
     else store.liquidity := store.liquidity + amount;
 } with (emptyOps, store);
 
-function borrow(var amountToBorrow: nat; var store: store): return is
+function borrow(var amountToBorrow: tez; var store: store): return is
   block {  
-    if amountToBorrow = 0n
+    if amountToBorrow = 0tez
       then failwith("No amount to borrow!"); 
       else skip;
 
@@ -222,15 +154,13 @@ function borrow(var amountToBorrow: nat; var store: store): return is
 
     var accountInfo: balanceInfo := getBorrow(store);
 
-    const amountToBorrowInTz: tez = natToTz(amountToBorrow);
-
     // Calculate interest borrow, and set the borrow to the sender            
     const interestBorrow:tez = calculateBorrowInterest(accountInfo, store);
-    store.borrows[sender] := record tezAmount = accountInfo.tezAmount + amountToBorrowInTz + interestBorrow; blockTimestamp = now; end;
-    store.totalBorrows := store.totalBorrows + amountToBorrowInTz + interestBorrow;
+    store.borrows[sender] := record tezAmount = accountInfo.tezAmount + amountToBorrow + interestBorrow; blockTimestamp = now; end;
+    store.totalBorrows := store.totalBorrows + amountToBorrow + interestBorrow;
 
     // Update liquidity
-    store.liquidity := store.liquidity - amountToBorrowInTz;
+    store.liquidity := store.liquidity - amountToBorrow;
 
     // Payout transaction to the sender address, with the amount to borrow
     const receiver : contract (unit) = 
@@ -239,7 +169,7 @@ function borrow(var amountToBorrow: nat; var store: store): return is
         | None -> (failwith ("Not a contract") : (contract(unit)))
       end;
 
-    const operations : list (operation) = list [Tezos.transaction(unit, amountToBorrowInTz, receiver)];
+    const operations : list (operation) = list [Tezos.transaction(unit, amountToBorrow, receiver)];
   } with(operations, store); attributes ["inline"];
 
 function repayBorrow(var store: store): return is

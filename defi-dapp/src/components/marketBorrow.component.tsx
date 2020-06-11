@@ -10,6 +10,7 @@ import { useConnectedContext } from '../state/connected.context'
 import { useAsyncMemo } from 'use-async-memo'
 import { tzFormatter, percentageFormatter } from '../utils/tool'
 import { Account } from '../utils/types'
+import { TezosToolkit } from '@taquito/taquito'
 
 interface Props {
   poolService: PoolService
@@ -17,6 +18,7 @@ interface Props {
   account: Maybe<Account>
   updateFlag: boolean
   setUpdateFlag: (flag: boolean) => void
+  taquito: TezosToolkit
 }
 
 interface MarketBorrow {
@@ -33,7 +35,7 @@ interface MarketBorrow {
 const borrowHeaders = ['Asset', 'APY', 'Wallet', '% of limit']
 
 const MarketBorrowConnected = (props: Props) => {
-  const { poolService, oracleService, account, updateFlag, setUpdateFlag } = props
+  const { poolService, oracleService, account, updateFlag, setUpdateFlag, taquito } = props
 
   const [isModalBorrowOpen, setModalBorrowState] = useState(false)
 
@@ -96,6 +98,7 @@ const MarketBorrowConnected = (props: Props) => {
             setUpdateFlag(!updateFlag)
           }}
           updateFlag={updateFlag}
+          taquito={taquito}
         />
       )}
     </>
@@ -111,7 +114,14 @@ const MarketBorrowDisconnected = () => {
 }
 
 export const MarketBorrow = () => {
-  const { poolService, oracleService, account, updateFlag, setUpdateFlag } = useConnectedContext()
+  const {
+    poolService,
+    oracleService,
+    account,
+    updateFlag,
+    setUpdateFlag,
+    taquito,
+  } = useConnectedContext()
 
   return (
     <>
@@ -122,6 +132,7 @@ export const MarketBorrow = () => {
           account={account}
           updateFlag={updateFlag}
           setUpdateFlag={setUpdateFlag}
+          taquito={taquito}
         />
       ) : (
         <MarketBorrowDisconnected />

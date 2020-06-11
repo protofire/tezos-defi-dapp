@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useAsyncMemo } from 'use-async-memo'
 import BigNumber from 'bignumber.js'
+import { TezosToolkit } from '@taquito/taquito'
 
 import { Table, TableProps } from './table.component'
 import { AssetTezImage } from './assetTezImage.component'
@@ -17,6 +18,7 @@ interface Props {
   account: Maybe<Account>
   updateFlag: boolean
   setUpdateFlag: (flag: boolean) => void
+  taquito: TezosToolkit
 }
 
 interface MarketSupply {
@@ -28,7 +30,7 @@ interface MarketSupply {
 const supplyHeaders = ['Asset', 'APY', 'Wallet']
 
 const MarketSupplyConnected = (props: Props) => {
-  const { poolService, oracleService, account, updateFlag, setUpdateFlag } = props
+  const { poolService, oracleService, account, updateFlag, setUpdateFlag, taquito } = props
 
   const [isModalSupplyOpen, setModalSupplyState] = useState(false)
 
@@ -83,6 +85,7 @@ const MarketSupplyConnected = (props: Props) => {
             setUpdateFlag(!updateFlag)
           }}
           updateFlag={updateFlag}
+          taquito={taquito}
         />
       )}
     </>
@@ -98,7 +101,14 @@ const MarketSupplyDisconnected = () => {
 }
 
 export const MarketSupply = () => {
-  const { poolService, oracleService, account, updateFlag, setUpdateFlag } = useConnectedContext()
+  const {
+    poolService,
+    oracleService,
+    account,
+    updateFlag,
+    setUpdateFlag,
+    taquito,
+  } = useConnectedContext()
 
   return (
     <>
@@ -109,6 +119,7 @@ export const MarketSupply = () => {
           account={account}
           updateFlag={updateFlag}
           setUpdateFlag={setUpdateFlag}
+          taquito={taquito}
         />
       ) : (
         <MarketSupplyDisconnected />

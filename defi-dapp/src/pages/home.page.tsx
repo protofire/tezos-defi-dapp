@@ -17,7 +17,7 @@ export const HomePage = () => {
           <Balances />
           <Markets />
         </div>
-        <div className="nav-center" style={{ marginTop: '30px' }}>
+        <div className="nav-center disclaimer" style={{ marginTop: '30px' }}>
           <DisclaimerWarning />
         </div>
       </ConnectedNetwork>
