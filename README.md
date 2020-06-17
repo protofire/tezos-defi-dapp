@@ -44,6 +44,14 @@ The React-based application can be found in the [defi-dapp](https://github.com/p
 ### Oracle
 We use an Oracle only for showing the USD on the react frontend. For more information about how the oracle works you can check the [oracle repository](https://github.com/protofire/tezos-price-oracle).
 
+### Exchange Rate
+Currently the exchange rate is being calculated as follows
+```shell
+(totalDeposits + totalBorrows) / tokenSupply
+```
+You can check it in the file `poolInterest.ligo`. Soon we will include several changes like management of multiple assets, prices, fees, etc, and this formula will be modified.
+
+
 ## Blog posts
 We have written a series of blog posts that will guide you through the concepts of DeFi smart contracts in Tezos.
 
