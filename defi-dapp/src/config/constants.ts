@@ -10,3 +10,5 @@ export const baseConfig = {
     confirmationPollingIntervalSecond: 2,
   },
 }
+
+export const expMantissa = 1.0e6

@@ -41,12 +41,16 @@ For more details, you can check out the [README](https://github.com/protofire/te
 ### Application
 The React-based application can be found in the [defi-dapp](https://github.com/protofire/tezos-defi-dapp/blob/master/defi-dapp) folder.
 
+### Oracle
+We use an Oracle only for showing the USD on the react frontend. For more information about how the oracle works you can check the [oracle repository](https://github.com/protofire/tezos-price-oracle).
+
 ## Blog posts
 We have written a series of blog posts that will guide you through the concepts of DeFi smart contracts in Tezos.
 
 * [How to Integrate JavaScript with Smart Contracts and Run Unit Tests](https://medium.com/protofire-blog/tezos-part-4-how-to-integrate-javascript-with-smart-contracts-and-run-unit-tests-c36756149e9d)
 * [Token standards](https://medium.com/protofire-blog/tezos-part-5-token-standards-28b8733a3ce5)
 * [Recommendations to Enhance Security of Tezos Smart Contracts](https://medium.com/protofire-blog/recommendations-to-enhance-security-of-tezos-smart-contracts-d14c0e53a6d3)
+* [Enabling smart contract interactions in Tezos with ligo contracts and CPS](https://medium.com/protofire-blog/enabling-smart-contract-interaction-in-tezos-with-ligo-functions-and-cps-e3ea2aa49336)
 * [Explaining Smart Contracts](https://github.com/protofire/tezos-defi-dapp/blob/master/defi-docs)
 
 ### Licensing
