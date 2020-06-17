@@ -1,6 +1,9 @@
 ## Tezos defi contracts
 You will find some examples, such as a pool contract, and a contract with the Tezos specification fa1.2.
 
+### Deployed contracts
+You can find the addresses of the contracts deployed in carthagenet in this [directory](https://github.com/protofire/tezos-defi-dapp/blob/master/defi-contracts/deployed/).
+
 ### Getting faucet
 We are going to need some faucet to be able to interact with the contracts. You can download faucet from `https://faucet.tzalpha.net/` 
 Replace the content of the faucetA and faucetB files with some faucet downloaded from the previous url.
