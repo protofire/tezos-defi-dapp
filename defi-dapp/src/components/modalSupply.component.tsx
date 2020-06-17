@@ -18,6 +18,7 @@ import { SupplyMessage, WithdrawMessage } from './messages.component'
 import { tzFormatter, dollarFormatter } from '../utils/tool'
 import { useTezosPrice } from '../hooks/tezosPrice.hook'
 import { OperationProgress } from './operationProgress.component'
+import { expMantissa } from '../config/constants'
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   isOpen: boolean
@@ -203,7 +204,10 @@ export const ModalSupply = (props: Props) => {
           <div className="col">
             <label>Amount in dollars</label>
           </div>
-          <div className="col is-right" title={`Tezos price: $${tezosPrice.toString()}`}>
+          <div
+            className="col is-right"
+            title={`Tezos price: $${tezosPrice.dividedBy(expMantissa).toString()}`}
+          >
             {loadingAccountLiquidity && (
               <Loader visible={true} type="ThreeDots" color="#14854f" height={18} width={18} />
             )}

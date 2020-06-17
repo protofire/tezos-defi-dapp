@@ -2,6 +2,7 @@ import BigNumber from 'bignumber.js'
 import { useAsyncMemo } from 'use-async-memo'
 
 import { OracleService } from '../services/oracleContract.service'
+import { expMantissa } from '../config/constants'
 
 export const useAmountInDollars = (
   amount: Maybe<BigNumber>,
@@ -13,7 +14,7 @@ export const useAmountInDollars = (
 
       const price = await oracleService.getAssetPrice('xtz')
 
-      return amount.multipliedBy(price)
+      return amount.multipliedBy(price.dividedBy(expMantissa))
     },
     [oracleService, amount],
     new BigNumber(0),

@@ -6,7 +6,7 @@ import { Balances } from '../components/balances.component'
 import { Markets } from '../components/markets.component'
 
 import { ConnectedNetwork } from '../state/connected.context'
-import { DisclaimerWarning } from '../components/disclaimerWarning.component'
+import { FooterInformation } from '../components/footerInformation.component'
 
 export const HomePage = () => {
   return (
@@ -17,9 +17,9 @@ export const HomePage = () => {
           <Balances />
           <Markets />
         </div>
-        <div className="nav-center disclaimer" style={{ marginTop: '30px' }}>
-          <DisclaimerWarning />
-        </div>
+        <footer className="footerInformation" style={{ marginTop: '30px' }}>
+          <FooterInformation />
+        </footer>
       </ConnectedNetwork>
     </ToastProvider>
   )
